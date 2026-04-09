@@ -1,61 +1,39 @@
-# CodeIgniter 4 Framework
+# Mj AI Chatbot 🤖
 
-## What is CodeIgniter?
+A secure and dynamic web application built using the CodeIgniter 4 Framework.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## 👥 Development Team
+* **Mj Laurito**
+* **Adrian Lirazan**
+* **James Hanzo**
+* **Andrie Ravina**
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## 🚀 Getting Started
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Follow these step-by-step instructions to set up and run the project on your local development environment.
 
-## Important Change with index.php
+### 1. Database Setup (Crucial First Step)
+2. Create a new, empty database named exactly: **`mj_chatbot`**
+3. Import the provided database SQL file into `mj_chatbot`.
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+### 2. Installation
+Clone the repository to your local machine:
+```bash
+git clone <your-repository-url-here>
+cd <your-project-folder-name>
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+3. Running the Development Server
+⚠️ IMPORTANT: Do NOT use the standard CodeIgniter php spark serve command for this project.
+To start the application correctly, run the following command in your terminal:
 
-**Please** read the user guide for a better explanation of how CI4 works!
+npm run dev
 
-## Repository Management
+4. Access the Application
+Once the terminal indicates the server is running, open your web browser and navigate to:
+👉 http://localhost:8080/
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Contributing
-
-We welcome contributions from the community.
-
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
-
-## Server Requirements
-
-PHP version 8.2 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+5. User admin: admin12345@gmail.com
+    user pass: admin12345
