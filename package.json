@@ -1,0 +1,20 @@
+{
+  "name": "ai-chatbot",
+  "version": "2.0.0",
+  "description": "System UI & Tracking API Guard Flow Mapping Limits Data Ref Linked Systems XAMPP App Flow Setup Linked Ext API Node JS Secure Gen Chat Data Method Handler API Guard Limits Check System Linked Methods Check Target Valid Methods Configuration System Methods Valid Data Linked Ref Configuration Settings Gen Target Reference Settings Map Limit Flow Settings Obj Methods Map API Configuration Format Linked Auth Form Limits Method Mapping Object",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "concurrently \"node server.js\" \"php spark serve\""
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.1",
+    "mysql2": "^3.20.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
