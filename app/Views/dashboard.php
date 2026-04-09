@@ -20,7 +20,7 @@
     </header>
     
     <main>
-        <h2>Welcome to the Members Dashboard!</h2>
+        <h2>Welcome to the Members Customer</h2>
         <p>You are officially logged in via Firebase! Check out the pulsing bot on the bottom right!</p>
     </main>
 

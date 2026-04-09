@@ -17,10 +17,13 @@ $routes->get('logout', 'Auth::logout');
 $routes->get('/dashboard', 'Dashboard::index');
 
 // staff routes
-
 $routes->get('staff/dashboard', 'StaffController::index');
-// admin routes
 
+// admin routes
 $routes->get('admin/dashboard', 'AdminController::index');
 
 
+// --- NEW CRUD ROUTES FOR USER MANAGEMENT ---
+$routes->post('admin/saveUser', 'AdminController::saveUser');
+$routes->get('admin/deleteUser/(:num)', 'AdminController::deleteUser/$1');
+$routes->post('admin/updateUser', 'AdminController::updateUser');
