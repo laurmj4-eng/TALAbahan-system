@@ -195,10 +195,10 @@
                                     <td class="action-cell">
                                         <div class="action-btns">
                                             <!-- EDIT BTN -->
-                                            <button onclick="openEditModal(<?= $user['id'] ?>, '<?= esc($user['username']) ?>', '<?= esc($user['email']) ?>', '<?= esc($user['role']) ?>')" class="btn-edit">Config</button>
+                                            <button onclick="openEditModal(<?= $user['id'] ?>, '<?= esc($user['username']) ?>', '<?= esc($user['email']) ?>', '<?= esc($user['role']) ?>')" class="btn-edit">EDIT</button>
                                             
                                             <!-- DELETE BTN using site_url() to prevent 404 -->
-                                            <a href="<?= site_url('admin/deleteUser/'.$user['id']) ?>" class="btn-delete" onclick="return confirm('WARNING: Terminating <?= esc($user['username']) ?> from the mainframe. Confirm?')">Terminate</a>
+                                            <a href="<?= site_url('admin/deleteUser/'.$user['id']) ?>" class="btn-delete" onclick="return confirm('WARNING: Terminating <?= esc($user['username']) ?> from the mainframe. Confirm?')">DELETE</a>
                                         </div>
                                     </td>
                                 </tr>

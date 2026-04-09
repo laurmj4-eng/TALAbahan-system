@@ -68,6 +68,7 @@
             </div>
         </div>
     </div>
+      <a href="/logout" class="logout">Logout</a>
 
     <script src="<?= base_url('js/chat-script.js') ?>"></script>
 </body>
