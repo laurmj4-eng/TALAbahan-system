@@ -5,23 +5,26 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
+
+// Default & Login Routes
 $routes->get('/', 'Auth::index');
 $routes->get('auth', 'Auth::index');
-$routes->get('/login', 'Auth::index');
+$routes->get('login', 'Auth::index');
 $routes->post('auth/verify', 'Auth::verify');
 $routes->get('logout', 'Auth::logout');
 
+// Registration Routes (For Customers)
+$routes->get('register', 'Auth::register');
+$routes->post('auth/create_account', 'Auth::createAccount');
 
+// Customer Dashboard Route
+$routes->get('dashboard', 'Dashboard::index');
 
-// dashboard routes
-$routes->get('/dashboard', 'Dashboard::index');
-
-// staff routes
+// Staff Routes
 $routes->get('staff/dashboard', 'StaffController::index');
 
-// admin routes
+// Admin Routes
 $routes->get('admin/dashboard', 'AdminController::index');
-
 
 // --- NEW CRUD ROUTES FOR USER MANAGEMENT ---
 $routes->post('admin/saveUser', 'AdminController::saveUser');

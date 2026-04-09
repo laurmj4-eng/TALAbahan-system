@@ -11,7 +11,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSR0dDw5ETDH4SLpPA7BJT9OOgs2zovCw",
@@ -40,12 +40,12 @@
         }
     });
 
-    // --- 1. EMAIL & PASSWORD LOGIN ---
+    // --- 1. NORMAL EMAIL & PASSWORD LOGIN (FIXED TO USE YOUR DATABASE) ---
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault(); 
 
         const email = emailInput.value.trim().toLowerCase();
-        const password = document.getElementById('password').value;
+        const password = document.getElementById('password').value; // Get password
         const rememberMe = document.getElementById('rememberMe').checked;
         const loginBtn = document.getElementById('loginBtn');
 
@@ -60,20 +60,11 @@
         loginBtn.textContent = "Logging in...";
         loginBtn.disabled = true;
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Pass "email" as the provider
-                verifyWithBackend(userCredential.user.email, rememberMe, loginBtn, "Login", "", "email");
-            })
-            .catch((error) => {
-                alert("Login Error: Invalid Email or Password.");
-                loginBtn.textContent = "Login";
-                loginBtn.disabled = false;
-                if (captchaBox.style.display !== 'none') { grecaptcha.reset(); }
-            });
+        // FIXED: Send directly to your CodeIgniter Backend (Auth.php), DO NOT ask Firebase!
+        verifyWithBackend(email, password, rememberMe, loginBtn, "Login", "", "email");
     });
 
-    // --- 2. GOOGLE SIGN-IN LOGIC ---
+    // --- 2. GOOGLE SIGN-IN LOGIC (Unchanged, this works fine!) ---
     const googleBtn = document.getElementById('googleBtn');
     const provider = new GoogleAuthProvider();
 
@@ -84,8 +75,8 @@
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                // Pass "google" as provider, and grab their real Google Name!
-                verifyWithBackend(user.email, true, googleBtn, "Sign in with Google", user.displayName, "google");
+                // Send an empty password for Google, Auth.php knows how to handle it
+                verifyWithBackend(user.email, "", true, googleBtn, "Sign in with Google", user.displayName, "google");
             })
             .catch((error) => {
                 console.error(error);
@@ -95,17 +86,14 @@
             });
     });
 
-    document.getElementById('signupBtn').addEventListener('click', () => {
-        window.location.href = "<?= base_url('register') ?>"; 
-    });
-
-    // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND ---
-    function verifyWithBackend(email, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email") {
+    // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND (FIXED) ---
+    function verifyWithBackend(email, password, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email") {
         let formData = new FormData();
         formData.append('email', email);
+        formData.append('password', password); // FIXED: Actually send the password to PHP!
         formData.append('remember', rememberMe); 
-        formData.append('name', displayName); // NEW: Send Google Name
-        formData.append('provider', provider); // NEW: Tell PHP it's Google
+        formData.append('name', displayName); 
+        formData.append('provider', provider); 
 
         fetch('<?= base_url('auth/verify') ?>', {
             method: 'POST',
@@ -121,11 +109,16 @@
                         localStorage.setItem('mj_trusted_emails', JSON.stringify(trustedEmails));
                     }
                 }
+                // Redirect on success
                 window.location.href = data.redirect;
             } else {
-                alert("Account not found. Please create an account first.");
+                // Show the error message sent from Auth.php
+                alert(data.message || "Account not found. Please try again.");
                 buttonElement.textContent = originalButtonText;
                 buttonElement.disabled = false;
+                if (captchaBox.style.display !== 'none' && typeof grecaptcha !== 'undefined') { 
+                    grecaptcha.reset(); 
+                }
             }
         })
         .catch(err => {
@@ -154,7 +147,7 @@
     </div>
     
     <button type="submit" id="loginBtn">Login</button>
-    <button type="button" id="signupBtn" class="signup-btn">Create Account</button>
+    <a href="<?= site_url('register') ?>"><button type="button">Create Account</button></a>
     
     <div class="links">
         <a id="forgotPasswordBtn" href="#">Forgot Password?</a>
