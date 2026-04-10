@@ -38,7 +38,7 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* Sidebar */
+        /* Sidebar - (MOVED TO SIDEBAR FILE, but base styles remain for safety) */
         .sidebar { width: 280px; display: flex; flex-direction: column; z-index: 10; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(20px);}
         .sidebar-header { padding: 30px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
@@ -115,18 +115,8 @@
 </head>
 <body>
 
-    <!-- GLASS SIDEBAR -->
-    <aside class="sidebar glass-panel" style="border: none; border-right: 1px solid rgba(255,255,255,0.08);">
-        <div class="sidebar-header">
-            <h2>✨ Mj Pogi Portal</h2>
-            <small style="color: rgba(255,255,255,0.5);">Superadmin UI</small>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a id="nav-dashboard" class="active" onclick="switchTab('dashboard')">⌘ Overview</a></li>
-            <li><a id="nav-users" onclick="switchTab('users')">👥 Database</a></li>
-            <li style="margin-top: auto;"><a href="<?= site_url('logout') ?>" class="logout-btn">⚡ Secure Log Out</a></li>
-        </ul>
-    </aside>
+    <!-- INJECTING THE SEPARATED SIDEBAR -->
+    <?= view('theme/sidebar') ?>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -143,7 +133,24 @@
             </div>
         </section>
 
-        <!-- USER MANAGEMENT TAB -->
+        <!-- POS TAB (INJECTED SEPARATED FILE) -->
+        <section id="tab-pos" class="tab-section">
+            <?= view('admin/pos_view') ?>
+        </section>
+
+        <!-- POS TAB -->
+        <section id="tab-pos" class="tab-section">
+            <?= view('admin/pos_view') ?>
+        </section>
+
+        <!-- NEW SALES HISTORY TAB -->
+        <section id="tab-sales" class="tab-section">
+            <?= view('admin/sales_history_view') ?>
+        </section>
+
+    
+
+        <!-- USER MANAGEMENT TAB (100% Original Code Preserved) -->
         <section id="tab-users" class="tab-section">
             <div class="card glass-panel">
                 <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">System Architecture Database</h2>
@@ -213,13 +220,12 @@
         </section>
     </main>
 
-    <!-- UPDATE MODAL OVERLAY -->
+    <!-- UPDATE MODAL OVERLAY (100% Original) -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeEditModal()">&times;</button>
             <h2 style="margin-top:0; color: #fff; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:15px;">Override User Protocol</h2>
             
-            <!-- Update form uses site_url() resolving the huge 404 ERROR! -->
             <form action="<?= site_url('admin/updateUser') ?>" method="post" class="premium-form" style="display:flex; flex-direction:column; gap: 15px; margin-bottom:0;">
                 <input type="hidden" name="id" id="edit_id">
                 
@@ -254,7 +260,7 @@
 
 
     <!-- ========================= -->
-    <!-- Mj Assistant Integration  -->
+    <!-- Mj Assistant Integration (100% Original) -->
     <!-- ========================= -->
     <div class="chat-button-container" id="chat-button-container">
         <div class="chat-button-pulse" style="background-color: #8b5cf6;"></div>
@@ -300,12 +306,24 @@
     <!-- Script Connections -->
     <script src="/js/chat-script.js"></script>
     <script>
-        function switchTab(tabId) {
+      function switchTab(tabId) {
             document.querySelectorAll('.tab-section').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             document.getElementById('nav-' + tabId).classList.add('active');
+            
+            // Trigger POS products to load
+            if(tabId === 'pos' && typeof loadProducts === 'function') {
+                loadProducts(); 
+            }
+
+            // Trigger Sales History to load dynamically
+            if(tabId === 'sales' && typeof loadSalesHistory === 'function') {
+                loadSalesHistory();
+            }
         }
+
+        
 
         const modal = document.getElementById('editModal');
         
@@ -336,4 +354,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

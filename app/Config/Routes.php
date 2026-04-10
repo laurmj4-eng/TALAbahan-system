@@ -30,3 +30,13 @@ $routes->get('admin/dashboard', 'AdminController::index');
 $routes->post('admin/saveUser', 'AdminController::saveUser');
 $routes->get('admin/deleteUser/(:num)', 'AdminController::deleteUser/$1');
 $routes->post('admin/updateUser', 'AdminController::updateUser');
+
+// Add these to your existing routes
+$routes->get('api/pos/products', 'PosController::getProducts');
+$routes->post('api/pos/checkout', 'PosController::checkout');
+
+
+// POS and Sales Routes
+$routes->get('api/pos/products', 'PosController::getProducts');
+$routes->post('api/pos/checkout', 'PosController::checkout');
+$routes->get('api/pos/history', 'PosController::getHistory'); // NEW ROUTE
