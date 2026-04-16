@@ -9,6 +9,9 @@
 </head>
 <body>
 
+<!-- TOP RIGHT LOGO ADDED HERE -->
+<img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="top-right-logo">
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";

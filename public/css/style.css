@@ -1,6 +1,12 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+    
+    /* Background Image Additions */
+    background-image: url('../images/pic1.jpg'); 
+    background-size: cover;                      
+    background-position: center;                 
+    background-repeat: no-repeat;                
+    
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,17 +14,51 @@ body {
     margin: 0;
 }
 
+/* =========================================
+   NEW: LOGO SETTINGS (Even Bigger, Top Right)
+   ========================================= */
+.top-right-logo {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    width: 220px; /* <--- INCREASED SIZE HERE (was 150px) */
+    height: auto;
+    z-index: 1000;
+}
+
 .login-container {
-    background-color: white;
+    /* LOWERED TO 0.15 FOR MUCH MORE TRANSPARENCY */
+    background-color: rgba(255, 255, 255, 0.15); 
+    
+    /* Frosted Glass Blur Effect (Lowered to 8px to see the food more clearly) */
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px);
+
     padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    /* Strong shadow and subtle border to keep the shape defined */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Made border a bit more transparent too */
+    
     width: 100%;
     max-width: 350px;
     text-align: center;
 }
 
-h2 { margin-bottom: 20px; color: #333; }
+/* Darkened text slightly so it's readable against the transparent background */
+h2 { margin-bottom: 20px; color: #111; }
+
+/* Keep labels (like 'Remember Me') highly visible */
+label {
+    display: inline-block;
+    color: #000; /* Solid black */
+    font-weight: 700; /* Bold text */
+    font-size: 13px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9); /* Stronger white glow so it pops over the transparent food image */
+    text-align: left;
+}
 
 input {
     width: 100%;
@@ -27,6 +67,15 @@ input {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.9); 
+}
+
+/* Fixes the checkbox so it doesn't stretch to 100% width */
+input[type="checkbox"] {
+    width: auto;
+    margin: 10px 5px 10px 0;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 button {
@@ -59,28 +108,37 @@ button:hover { background-color: #0056b3; }
 }
 
 .links a {
-    color: #007bff;
+    /* Darkened blue so it stands out */
+    color: #003e80; 
     text-decoration: none;
     cursor: pointer;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); /* Added faint glow for readability */
 }
 
 .links a:hover { text-decoration: underline; }
 
 .divider {
     margin: 20px 0;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #444; /* Darker line for contrast */
     position: relative;
 }
 
 .divider span {
-    background: white;
+    /* Matched to the new container's extreme transparency */
+    background-color: rgba(255, 255, 255, 0.15); 
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     padding: 0 10px;
     position: absolute;
     top: -10px;
     left: 50%;
     transform: translateX(-50%);
-    color: #777;
+    color: #111; /* Darkened text */
+    font-weight: bold;
     font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Added for reCAPTCHA spacing */
