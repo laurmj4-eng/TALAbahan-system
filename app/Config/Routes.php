@@ -16,15 +16,21 @@ $routes->post('auth/create_account', 'Auth::createAccount');
 
 // --- 2. ADMIN GROUP ---
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+    // Dashboard & User Management
     $routes->get('dashboard', 'Dashboard::index');
     $routes->post('saveUser', 'AdminController::saveUser');
     $routes->post('updateUser', 'AdminController::updateUser');
     $routes->get('deleteUser/(:num)', 'AdminController::deleteUser/$1');
+    
+    // POS & Sales
     $routes->get('getProducts', 'PosController::getProducts');
     $routes->post('checkout', 'PosController::checkout');
     $routes->get('getHistory', 'PosController::getHistory');
+    
+    // Daily Inventory (Products)
     $routes->get('products', 'ProductController::index');
-    $routes->post('products/add', 'ProductController::store');
+    // FIXED: Removed redundant 'admin/' and 'Admin\' because they are already in the group settings
+    $routes->post('products/store', 'ProductController::store');
 });
 
 // --- 3. STAFF GROUP ---
@@ -32,7 +38,7 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff'], function($rout
     $routes->get('dashboard', 'StaffController::index');
 });
 
-// --- 4. CUSTOMER GROUP (Updated to use the new folder) ---
+// --- 4. CUSTOMER GROUP ---
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
 });
