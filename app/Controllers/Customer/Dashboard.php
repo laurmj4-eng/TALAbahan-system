@@ -1,26 +1,30 @@
 <?php
 
-namespace App\Controllers\Customer; // Updated namespace for the subfolder
+namespace App\Controllers\Customer;
 
-// Import the BaseController from the parent folder
 use App\Controllers\BaseController;
+use App\Models\ProductModel; // IMPORTANT: Add this to fetch products!
 
 class Dashboard extends BaseController
 {
     public function index()
     {
-        // 1. Security check: Kick out anyone who isn't a customer
+        // 1. Security check
         if (session()->get('role') !== 'customer') {
             return redirect()->to('/login');
         }
 
-        // 2. Prepare data for the view
-        $data = [
+        // 2. Fetch products from the database
+        $productModel = new ProductModel();
+
+        // 3. Prepare data for the view
+        $data =[
             'title'    => 'Customer Portal',
             'username' => session()->get('username'),
+            'products' => $productModel->findAll() // Sends products to the view
         ];
 
-        // 3. Load the customer dashboard view
+        // 4. Load the customer dashboard view
         return view('customer/dashboard', $data);
     }
 }
