@@ -29,8 +29,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        'throttle'      => \CodeIgniter\Filters\ThrottlerFilter::class,
-
+        
         // --- CUSTOM AUTH FILTERS ---
         'auth'          => \App\Filters\AuthGuard::class,     // Basic login check
         'guest'         => \App\Filters\GuestFilter::class,    // Redirect if already logged in
@@ -60,7 +59,7 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            'csrf', // Recommended to keep enabled for security
+            'csrf', // Keeps CSRF active for security
             // 'invalidchars',
         ],
         'after' => [
@@ -96,11 +95,6 @@ class Filters extends BaseFilters
         // 4. Protect Customer Routes
         'customerGuard' => [
             'before' => ['customer', 'customer/*']
-        ],
-
-        // 5. Rate Limiting (Throttle) to prevent Brute Force on login/register
-        'throttle' => [
-            'before' => ['auth/verify', 'auth/create_account']
         ],
     ];
 }

@@ -8,10 +8,8 @@ class Auth extends BaseController
 {
     public function index()
     {
-        // Load helpers
         helper(['url', 'form']); 
         
-        // If already logged in, redirect them to their respective dashboard
         if (session()->get('isLoggedIn')) {
             return $this->_redirectByRole(session()->get('role'));
         }
@@ -27,37 +25,57 @@ class Auth extends BaseController
         $remember = $this->request->getPost('remember'); 
         $name     = trim((string)$this->request->getPost('name'));      
         $provider = trim((string)$this->request->getPost('provider')); 
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+
+        // 2. Verify reCAPTCHA (Server-side)
+        // LOGIC: Only verify if the provider is NOT google AND the recaptcha response is NOT empty.
+        // If $recaptchaResponse is empty, it means your frontend hidden it because the device is trusted.
+        if ($provider !== 'google' && !empty($recaptchaResponse)) {
+            
+            // IMPORTANT: Replace this with your ACTUAL Google Secret Key
+            $secret = '6LcVGI0sAAAAAKG...REPLACE_THIS_WITH_YOUR_KEY...'; 
+            
+            $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
+            $captchaData = json_decode($verify);
+
+            if (!$captchaData->success) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'reCAPTCHA verification failed. Please try again.',
+                    'token'   => csrf_hash() // Send new token for next attempt
+                ]);
+            }
+        }
         
-        // 2. Connect to database
+        // 3. Connect to database
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('email', $email)->get()->getRowArray();
 
-        // 3. Handle GOOGLE Logins
+        // 4. Handle GOOGLE Logins
         if ($provider === 'google') {
             if (!$user) {
-                // Auto-register Google User
                 $username = !empty($name) ? $name : explode('@', $email)[0];
                 $newUserData =[
                     'username' => $username,
                     'email'    => $email,
-                    'role'     => 'customer' // Default role for new signups
+                    'role'     => 'customer'
                 ];
                 $db->table('users')->insert($newUserData);
                 $user = $db->table('users')->where('email', $email)->get()->getRowArray();
             }
         } 
-        // 4. Handle NORMAL Logins (Email & Password)
+        // 5. Handle NORMAL Logins
         else {
-            // Check if user exists and verify the hashed password
             if (!$user || !password_verify($password, $user['password'])) {
                 return $this->response->setJSON([
                     'status'  => 'error', 
-                    'message' => 'Invalid Email or Password.'
+                    'message' => 'Invalid Email or Password.',
+                    'token'   => csrf_hash() 
                 ]);
             }
         }
 
-        // 5. Set Session and Redirect
+        // 6. Set Session and Redirect
         if ($user) {
             $sessionData =[
                 'user_id'    => $user['id'],
@@ -68,16 +86,8 @@ class Auth extends BaseController
             ];
             session()->set($sessionData);
 
-            // 6. Determine Redirect URL based on Role
             $role = strtolower($user['role']);
-            if ($role === 'admin') {
-                $redirectUrl = base_url('admin/dashboard');
-            } elseif ($role === 'staff') {
-                $redirectUrl = base_url('staff/dashboard');
-            } else {
-                // Points to the new customer subfolder route
-                $redirectUrl = base_url('customer/dashboard'); 
-            }
+            $redirectUrl = $this->_getRedirectUrl($role);
 
             return $this->response->setJSON([
                 'status'       => 'success', 
@@ -87,56 +97,47 @@ class Auth extends BaseController
         }
     }
 
-    /**
-     * Shows the Registration Page
-     */
     public function register()
     {
+        helper(['form']);
         return view('auth/register'); 
     }
 
-    /**
-     * Processes the Form and Saves the Customer
-     */
     public function createAccount()
     {
         $userModel = new UserModel();
 
-        // FIX: Just pass the RAW password here! 
-        // Your UserModel's `beforeInsert` callback will hash it automatically!
         $data =[
             'username' => $this->request->getPost('username'),
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'), // <-- CHANGED THIS LINE
+            'password' => $this->request->getPost('password'), 
             'role'     => 'customer' 
         ];
 
-        $userModel->insert($data);
-
-        return redirect()->to('/login')->with('success', 'Account created successfully! Please login.');
+        if($userModel->insert($data)) {
+            return redirect()->to('/login')->with('success', 'Account created successfully!');
+        } else {
+            return redirect()->back()->with('error', 'Registration failed.')->withInput();
+        }
     }
 
-    /**
-     * Helper to redirect based on role (used in index)
-     */
+    private function _getRedirectUrl($role)
+    {
+        if ($role === 'admin') return base_url('admin/dashboard');
+        if ($role === 'staff') return base_url('staff/dashboard');
+        return base_url('customer/dashboard');
+    }
+
     private function _redirectByRole($role)
     {
-        if ($role === 'admin') return redirect()->to(base_url('admin/dashboard'));
-        if ($role === 'staff') return redirect()->to(base_url('staff/dashboard'));
-        return redirect()->to(base_url('customer/dashboard'));
+        return redirect()->to($this->_getRedirectUrl(strtolower($role)));
     }
 
-    /**
-     * Destroys session and clears cache for security
-     */
     public function logout()
     {
         session()->destroy();
-
-        // Clear headers to prevent "Back" button from showing sensitive data
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');
-
         return redirect()->to(base_url('login')); 
     }
 }

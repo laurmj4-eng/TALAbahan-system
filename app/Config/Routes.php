@@ -7,19 +7,18 @@ use CodeIgniter\Router\RouteCollection;
  */
 
 // --- 1. SHARED ROUTES ---
-// 'guest' filter prevents logged-in users from seeing the login/register pages again
+// Removed 'throttle' from here to fix the error
 $routes->get('/', 'Auth::index', ['filter' => 'guest']);
 $routes->get('login', 'Auth::index', ['filter' => 'guest']);
 $routes->get('register', 'Auth::register', ['filter' => 'guest']);
 
-// 'throttle' filter protects these routes from brute-force attacks
-$routes->post('auth/verify', 'Auth::verify', ['filter' => 'throttle']);
-$routes->post('auth/create_account', 'Auth::createAccount', ['filter' => 'throttle']);
+// FIXED: Removed ['filter' => 'throttle'] from these two lines
+$routes->post('auth/verify', 'Auth::verify');
+$routes->post('auth/create_account', 'Auth::createAccount');
 
 $routes->get('logout', 'Auth::logout');
 
 // --- 2. ADMIN GROUP ---
-// Changed 'isAdmin' to 'adminGuard' to match your Filters.php alias
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'adminGuard'], function($routes) {
     
     // --- Dashboard Overview ---
@@ -45,13 +44,11 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
 });
 
 // --- 3. STAFF GROUP ---
-// Changed 'isStaff' to 'staffGuard' to match your Filters.php alias
 $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'staffGuard'], function($routes) {
     $routes->get('dashboard', 'StaffController::index');
 });
 
 // --- 4. CUSTOMER GROUP ---
-// Changed 'isCustomer' to 'customerGuard' to match your Filters.php alias
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
 });

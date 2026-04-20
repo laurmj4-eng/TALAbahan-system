@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- TOP RIGHT LOGO ADDED HERE -->
+<!-- TOP RIGHT LOGO -->
 <img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="top-right-logo">
 
 <script type="module">
@@ -32,6 +32,9 @@
     const emailInput = document.getElementById('email');
     const captchaBox = document.getElementById('captcha-container');
 
+    // CSRF Token Info from CodeIgniter
+    const csrfTokenName = '<?= csrf_token() ?>';
+
     emailInput.addEventListener('input', () => {
         const typedEmail = emailInput.value.trim().toLowerCase();
         let trustedEmails = JSON.parse(localStorage.getItem('mj_trusted_emails')) || [];
@@ -43,17 +46,18 @@
         }
     });
 
-    // --- 1. NORMAL EMAIL & PASSWORD LOGIN (FIXED TO USE YOUR DATABASE) ---
+    // --- 1. NORMAL EMAIL & PASSWORD LOGIN ---
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault(); 
 
         const email = emailInput.value.trim().toLowerCase();
-        const password = document.getElementById('password').value; // Get password
+        const password = document.getElementById('password').value;
         const rememberMe = document.getElementById('rememberMe').checked;
         const loginBtn = document.getElementById('loginBtn');
 
+        let recaptchaResponse = "";
         if (captchaBox.style.display !== 'none') {
-            const recaptchaResponse = grecaptcha.getResponse();
+            recaptchaResponse = grecaptcha.getResponse();
             if (recaptchaResponse.length === 0) {
                 alert("Please complete the reCAPTCHA to verify you are human.");
                 return; 
@@ -63,11 +67,10 @@
         loginBtn.textContent = "Logging in...";
         loginBtn.disabled = true;
 
-        // FIXED: Send directly to your CodeIgniter Backend (Auth.php), DO NOT ask Firebase!
-        verifyWithBackend(email, password, rememberMe, loginBtn, "Login", "", "email");
+        verifyWithBackend(email, password, rememberMe, loginBtn, "Login", "", "email", recaptchaResponse);
     });
 
-    // --- 2. GOOGLE SIGN-IN LOGIC (Unchanged, this works fine!) ---
+    // --- 2. GOOGLE SIGN-IN LOGIC ---
     const googleBtn = document.getElementById('googleBtn');
     const provider = new GoogleAuthProvider();
 
@@ -78,8 +81,7 @@
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                // Send an empty password for Google, Auth.php knows how to handle it
-                verifyWithBackend(user.email, "", true, googleBtn, "Sign in with Google", user.displayName, "google");
+                verifyWithBackend(user.email, "", true, googleBtn, "Sign in with Google", user.displayName, "google", "");
             })
             .catch((error) => {
                 console.error(error);
@@ -89,18 +91,27 @@
             });
     });
 
-    // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND (FIXED) ---
-    function verifyWithBackend(email, password, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email") {
+    // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND ---
+    function verifyWithBackend(email, password, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email", recaptchaToken = "") {
         let formData = new FormData();
+        
+        // ADD CSRF TOKEN (Crucial to fix "Action not allowed")
+        const csrfHash = document.querySelector('input[name="' + csrfTokenName + '"]').value;
+        formData.append(csrfTokenName, csrfHash);
+
         formData.append('email', email);
-        formData.append('password', password); // FIXED: Actually send the password to PHP!
+        formData.append('password', password);
         formData.append('remember', rememberMe); 
         formData.append('name', displayName); 
         formData.append('provider', provider); 
+        formData.append('g-recaptcha-response', recaptchaToken); // Added for backend verification
 
         fetch('<?= base_url('auth/verify') ?>', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Tells CI this is an AJAX request
+            }
         })
         .then(response => response.json()) 
         .then(data => {
@@ -112,14 +123,18 @@
                         localStorage.setItem('mj_trusted_emails', JSON.stringify(trustedEmails));
                     }
                 }
-                // Redirect on success
                 window.location.href = data.redirect;
             } else {
-                // Show the error message sent from Auth.php
-                alert(data.message || "Account not found. Please try again.");
+                // UPDATE CSRF TOKEN ON FAILURE (So the next click doesn't get "Action not allowed")
+                if (data.token) {
+                    document.querySelector('input[name="' + csrfTokenName + '"]').value = data.token;
+                }
+
+                alert(data.message || "Account not found.");
                 buttonElement.textContent = originalButtonText;
                 buttonElement.disabled = false;
-                if (captchaBox.style.display !== 'none' && typeof grecaptcha !== 'undefined') { 
+                
+                if (typeof grecaptcha !== 'undefined') { 
                     grecaptcha.reset(); 
                 }
             }
@@ -134,6 +149,9 @@
 </script>
 
 <form id="loginForm" class="login-container">
+    <!-- ADDED: CSRF Field (Required by CodeIgniter) -->
+    <?= csrf_field() ?>
+
     <h2>Sign In to Mj AI</h2>
     
     <input type="email" id="email" name="email" placeholder="Email Address" autocomplete="username" required>
