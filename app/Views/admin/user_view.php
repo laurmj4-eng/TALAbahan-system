@@ -17,23 +17,23 @@
         <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Append, modify, or terminate entity access securely.</p>
         
         <form action="<?= site_url('admin/saveUser') ?>" method="post" class="premium-form">
-            <div class="form-group"><label>Identifier</label><input type="text" name="username" placeholder="Username..." required></div>
-            <div class="form-group"><label>Node (Email)</label><input type="email" name="email" placeholder="example@node.com" required></div>
-            <div class="form-group"><label>Auth Hash</label><input type="password" name="password" placeholder="••••••••" required></div>
+            <div class="form-group"><label>ID</label><input type="text" name="username" placeholder="Username..." required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="Your Gmail" required></div>
+            <div class="form-group"><label>Password</label><input type="password" name="password" placeholder="••••••••" required></div>
             <div class="form-group">
-                <label>Protocol Level</label>
+                <label>Role</label>
                 <select name="role" required>
-                    <option value="admin">Administrator (Tier 1)</option>
-                    <option value="staff">Staff Member (Tier 2)</option>
-                    <option value="customer" selected>Customer (Tier 3)</option>
+                    <option value="admin">Admin</option>
+                    <option value="staff">Staff Member</option>
+                    <option value="customer" selected>Customer</option>
                 </select>
             </div>
-            <button type="submit" class="btn-primary">Append Entity</button>
+            <button type="submit" class="btn-primary">Add+</button>
         </form>
 
         <div class="table-responsive glass-panel">
             <table class="premium-table">
-                <thead><tr><th>Entity Node</th><th>Authorization Address</th><th>Protocol Level</th><th class="action-cell">Terminal Controls</th></tr></thead>
+                <thead><tr><th>ID<th>Email Address</th><th>Role</th><th class="action-cell"> Edit/Delete</th></tr></thead>
                 <tbody>
                     <?php if(!empty($users)): foreach($users as $user): ?>
                     <tr>
