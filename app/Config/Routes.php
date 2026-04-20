@@ -7,24 +7,28 @@ use CodeIgniter\Router\RouteCollection;
  */
 
 // --- 1. SHARED ROUTES ---
-$routes->get('/', 'Auth::index');
-$routes->get('login', 'Auth::index');
-$routes->post('auth/verify', 'Auth::verify');
+// 'guest' filter prevents logged-in users from seeing the login/register pages again
+$routes->get('/', 'Auth::index', ['filter' => 'guest']);
+$routes->get('login', 'Auth::index', ['filter' => 'guest']);
+$routes->get('register', 'Auth::register', ['filter' => 'guest']);
+
+// 'throttle' filter protects these routes from brute-force attacks
+$routes->post('auth/verify', 'Auth::verify', ['filter' => 'throttle']);
+$routes->post('auth/create_account', 'Auth::createAccount', ['filter' => 'throttle']);
+
 $routes->get('logout', 'Auth::logout');
-$routes->get('register', 'Auth::register');
-$routes->post('auth/create_account', 'Auth::createAccount');
 
 // --- 2. ADMIN GROUP ---
-$routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+// Changed 'isAdmin' to 'adminGuard' to match your Filters.php alias
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'adminGuard'], function($routes) {
     
     // --- Dashboard Overview ---
     $routes->get('dashboard', 'Dashboard::index');
 
-    // --- User Management (Separated) ---
-    // This route loads the new user_view.php via the users() method in AdminController
+    // --- User Management ---
     $routes->get('users', 'AdminController::users'); 
     $routes->post('saveUser', 'AdminController::saveUser');
-    $routes->post('updateUser', 'AdminController::updateUser');
+    $routes->post('updateUser', 'AdminController::updateUser'); 
     $routes->get('deleteUser/(:num)', 'AdminController::deleteUser/$1');
     
     // --- POS & Sales ---
@@ -35,14 +39,19 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($rout
     // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
     $routes->post('products/store', 'ProductController::store');
+
+    // --- Order Routes ---
+    $routes->get('orders', 'Orders::index');
 });
 
 // --- 3. STAFF GROUP ---
-$routes->group('staff', ['namespace' => 'App\Controllers\Staff'], function($routes) {
+// Changed 'isStaff' to 'staffGuard' to match your Filters.php alias
+$routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'staffGuard'], function($routes) {
     $routes->get('dashboard', 'StaffController::index');
 });
 
 // --- 4. CUSTOMER GROUP ---
-$routes->group('customer', ['namespace' => 'App\Controllers\Customer'], function($routes) {
+// Changed 'isCustomer' to 'customerGuard' to match your Filters.php alias
+$routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
 });

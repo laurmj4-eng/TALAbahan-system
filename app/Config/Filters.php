@@ -18,11 +18,6 @@ class Filters extends BaseFilters
     /**
      * Configures aliases for Filter classes to
      * make reading things nicer and simpler.
-     *
-     * @var array<string, class-string|list<class-string>>
-     *
-     * [filter_name => classname]
-     * or [filter_name => [classname1, classname2, ...]]
      */
     public array $aliases = [
         'csrf'          => CSRF::class,
@@ -34,46 +29,38 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'throttle'      => \CodeIgniter\Filters\ThrottlerFilter::class,
+
+        // --- CUSTOM AUTH FILTERS ---
+        'auth'          => \App\Filters\AuthGuard::class,     // Basic login check
+        'guest'         => \App\Filters\GuestFilter::class,    // Redirect if already logged in
+        'adminGuard'    => \App\Filters\AdminGuard::class,    // Role: Admin
+        'staffGuard'    => \App\Filters\StaffGuard::class,    // Role: Staff
+        'customerGuard' => \App\Filters\CustomerGuard::class, // Role: Customer
     ];
 
     /**
      * List of special required filters.
-     *
-     * The filters listed here are special. They are applied before and after
-     * other kinds of filters, and always applied even if a route does not exist.
-     *
-     * Filters set by default provide framework functionality. If removed,
-     * those functions will no longer work.
-     *
-     * @see https://codeigniter.com/user_guide/incoming/filters.html#provided-filters
-     *
-     * @var array{before: list<string>, after: list<string>}
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
+            'forcehttps', 
+            'pagecache',  
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
-            'performance', // Performance Metrics
-            'toolbar',     // Debug Toolbar
+            'pagecache',   
+            'performance', 
+            'toolbar',     
         ],
     ];
 
     /**
-     * List of filter aliases that are always
-     * applied before and after every request.
-     *
-     * @var array{
-     *     before: array<string, array{except: list<string>|string}>|list<string>,
-     *     after: array<string, array{except: list<string>|string}>|list<string>
-     * }
+     * List of filter aliases that are always applied.
      */
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
+            'csrf', // Recommended to keep enabled for security
             // 'invalidchars',
         ],
         'after' => [
@@ -83,28 +70,37 @@ class Filters extends BaseFilters
     ];
 
     /**
-     * List of filter aliases that works on a
-     * particular HTTP method (GET, POST, etc.).
-     *
-     * Example:
-     * 'POST' => ['foo', 'bar']
-     *
-     * If you use this, you should disable auto-routing because auto-routing
-     * permits any HTTP method to access a controller. Accessing the controller
-     * with a method you don't expect could bypass the filter.
-     *
-     * @var array<string, list<string>>
+     * List of filter aliases that works on a particular HTTP method.
      */
     public array $methods = [];
 
     /**
-     * List of filter aliases that should run on any
-     * before or after URI patterns.
-     *
-     * Example:
-     * 'isLoggedIn' => ['before' => ['account/*', 'profiles/*']]
-     *
-     * @var array<string, array<string, list<string>>>
+     * List of filter aliases that should run on any before or after URI patterns.
      */
-    public array $filters = [];
+    public array $filters = [
+        // 1. Prevent logged-in users from seeing Auth pages
+        'guest' => [
+            'before' => ['/', 'login', 'register', 'auth/verify', 'auth/create_account']
+        ],
+
+        // 2. Protect Admin Routes
+        'adminGuard' => [
+            'before' => ['admin', 'admin/*']
+        ],
+
+        // 3. Protect Staff Routes
+        'staffGuard' => [
+            'before' => ['staff', 'staff/*']
+        ],
+
+        // 4. Protect Customer Routes
+        'customerGuard' => [
+            'before' => ['customer', 'customer/*']
+        ],
+
+        // 5. Rate Limiting (Throttle) to prevent Brute Force on login/register
+        'throttle' => [
+            'before' => ['auth/verify', 'auth/create_account']
+        ],
+    ];
 }

@@ -29,19 +29,27 @@
             </a>
         </li>
         
+        <!-- Inventory Link -->
         <li>
             <a id="nav-inventory" href="<?= site_url('admin/products') ?>" class="<?= url_is('admin/products*') ? 'active' : '' ?>">
                 <span style="margin-right: 12px;">🐟</span> Product
             </a>
         </li>
 
+        <!-- NEW: Order View Link -->
+        <li>
+            <a id="nav-orders" href="<?= site_url('admin/orders') ?>" class="<?= url_is('admin/orders*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">📑</span> Order Tracking
+            </a>
+        </li>
+
         <?php if ($role === 'admin'): ?>
-         <!-- Find the Database link and change it to this -->
-<li>
-    <a id="nav-users" href="<?= site_url('admin/users') ?>" class="<?= url_is('admin/users*') ? 'active' : '' ?>">
-        <span style="margin-right: 12px;">👥</span> Database
-    </a>
-</li>
+        <!-- Database/Users Link -->
+        <li>
+            <a id="nav-users" href="<?= site_url('admin/users') ?>" class="<?= url_is('admin/users*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">👥</span> Database
+            </a>
+        </li>
         <?php endif; ?>
 
         <!-- Logout Section locked to bottom -->

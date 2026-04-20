@@ -24,6 +24,13 @@
     <section id="tab-sales" class="tab-section">
         <?= $this->include('admin/sales_history_view') ?>
     </section>
+
+    
+    <!-- order view -->
+    <section id="tab-sales" class="tab-section">
+        <?= $this->include('admin/orderview') ?>
+    </section>
+
 </main>
 
 <?= $this->include('theme/footer') ?>
