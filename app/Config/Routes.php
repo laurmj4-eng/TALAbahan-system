@@ -16,20 +16,24 @@ $routes->post('auth/create_account', 'Auth::createAccount');
 
 // --- 2. ADMIN GROUP ---
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
-    // Dashboard & User Management
+    
+    // --- Dashboard Overview ---
     $routes->get('dashboard', 'Dashboard::index');
+
+    // --- User Management (Separated) ---
+    // This route loads the new user_view.php via the users() method in AdminController
+    $routes->get('users', 'AdminController::users'); 
     $routes->post('saveUser', 'AdminController::saveUser');
     $routes->post('updateUser', 'AdminController::updateUser');
     $routes->get('deleteUser/(:num)', 'AdminController::deleteUser/$1');
     
-    // POS & Sales
+    // --- POS & Sales ---
     $routes->get('getProducts', 'PosController::getProducts');
     $routes->post('checkout', 'PosController::checkout');
     $routes->get('getHistory', 'PosController::getHistory');
     
-    // Daily Inventory (Products)
+    // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
-    // FIXED: Removed redundant 'admin/' and 'Admin\' because they are already in the group settings
     $routes->post('products/store', 'ProductController::store');
 });
 

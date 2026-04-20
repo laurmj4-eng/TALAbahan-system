@@ -36,11 +36,12 @@
         </li>
 
         <?php if ($role === 'admin'): ?>
-            <li>
-                <a id="nav-users" onclick="switchTab('users')">
-                    <span style="margin-right: 12px;">👥</span> Database
-                </a>
-            </li>
+         <!-- Find the Database link and change it to this -->
+<li>
+    <a id="nav-users" href="<?= site_url('admin/users') ?>" class="<?= url_is('admin/users*') ? 'active' : '' ?>">
+        <span style="margin-right: 12px;">👥</span> Database
+    </a>
+</li>
         <?php endif; ?>
 
         <!-- Logout Section locked to bottom -->

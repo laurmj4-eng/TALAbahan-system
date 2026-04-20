@@ -8,6 +8,9 @@ use App\Models\UserModel;
 
 class AdminController extends BaseController
 {
+    /**
+     * Display the Main Dashboard Overview
+     */
     public function index()
     {
         // Simple security check: Ensure only admins can access
@@ -15,34 +18,58 @@ class AdminController extends BaseController
             return redirect()->to('/login')->with('error', 'Access Denied...');
         }
 
-        $userModel = new UserModel();
         $data = [
             'title'    => 'Admin Dashboard',
             'username' => session()->get('username'),
-            'users'    => $userModel->findAll()
         ];
 
         // Points to app/Views/admin/dashboard.php
         return view('admin/dashboard', $data);
     }
 
+    /**
+     * Display the Separate User Management (Database) Page
+     */
+    public function users()
+    {
+        // Security check
+        if (session()->get('role') !== 'admin') {
+            return redirect()->to('/login')->with('error', 'Access Denied...');
+        }
+
+        $userModel = new UserModel();
+        $data = [
+            'title' => 'Database Management',
+            'users' => $userModel->findAll() // Fetches all users for the table
+        ];
+
+        // Points to the new separate view: app/Views/admin/user_view.php
+        return view('admin/user_view', $data);
+    }
+
+    /**
+     * Save a new User (Append Entity)
+     */
     public function saveUser()
     {
         $userModel = new UserModel();
+        
         $data = [
             'username' => $this->request->getPost('username'), 
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'), // Ideally use password_hash() here
+            'password' => $this->request->getPost('password'), // Ideally use password_hash() in Model
             'role'     => $this->request->getPost('role'),
         ];
         
         $userModel->insert($data);
         
-        // FIXED REDIRECT (Points to your admin route)
-        return redirect()->to('/admin/dashboard')->with('msg', 'User successfully added!');
+        // REDIRECT FIX: Go back to the Users page, not the dashboard
+        return redirect()->to('/admin/users')->with('msg', 'User successfully added to the database!');
     }
 
-    // NEW: Update Functionality
+    /**
+     * Update an existing User (Override Protocol)
+     */
     public function updateUser()
     {
         $userModel = new UserModel();
@@ -54,21 +81,26 @@ class AdminController extends BaseController
             'role'     => $this->request->getPost('role'),
         ];
 
-        // Only update password if the admin typed a new one in the modal/form
+        // Only update password if the admin typed a new one
         if(!empty($this->request->getPost('password'))) {
             $data['password'] = $this->request->getPost('password');
         }
 
         $userModel->update($id, $data);
-        return redirect()->to('/admin/dashboard')->with('msg', 'User updated successfully!');
+
+        // REDIRECT FIX: Stay on the Users page
+        return redirect()->to('/admin/users')->with('msg', 'User protocol updated successfully!');
     }
 
+    /**
+     * Delete a User (Terminate Node)
+     */
     public function deleteUser($id)
     {
         $userModel = new UserModel();
         $userModel->delete($id);
         
-        // FIXED REDIRECT
-        return redirect()->to('/admin/dashboard')->with('msg', 'User deleted successfully!');
+        // REDIRECT FIX: Stay on the Users page
+        return redirect()->to('/admin/users')->with('msg', 'User terminated from the system.');
     }
 }
