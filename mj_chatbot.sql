@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2026 at 12:13 PM
+-- Generation Time: Apr 20, 2026 at 12:31 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,6 +43,28 @@ INSERT INTO `firebase_users_tracking` (`uid`, `prompt_count`, `last_reset`) VALU
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `products`
+--
+
+CREATE TABLE `products` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `category_id` int(11) DEFAULT NULL,
+  `cost_price` decimal(10,2) DEFAULT 0.00,
+  `selling_price` decimal(10,2) DEFAULT 0.00,
+  `initial_stock` decimal(10,2) DEFAULT 0.00,
+  `current_stock` decimal(10,2) DEFAULT 0.00,
+  `wastage_qty` decimal(10,2) DEFAULT 0.00,
+  `unit` enum('kg','piece','batch') DEFAULT 'kg',
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -63,8 +85,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `email`, `role`, `password`, `prompt_count`, `last_reset`) VALUES
 (2, 'admin_user', 'admin12345@gmail.com', 'admin', '$2y$10$I3pGQiDVIKDfV.KixpkdTuhr6JhaH/s7mPZ2PFRtWi6iSDSLI3.HC', 0, '2026-04-08'),
 (3, 'staff_member', 'staff12345@gmail.com', 'staff', '$2y$10$xYNpeBlyRK/8/E5/I8nbsupnzPUN40OkbZf145UmiVEu2L/6gSgti', 0, '2026-04-08'),
-(8, 'Mj Laurito', 'laurmj4@gmail.com', 'customer', '', 0, '2026-04-09'),
-(13, 'laurito12345@gmail.com', 'laurito12345@gmail.com', 'customer', '$2y$10$XAuY70ZMSzxLcUXqTtARNuMSz5UuqK13GKX/WY6bbTelTRWXJIG7O', 0, '2026-04-20');
+(13, 'laurito12345@gmail.com', 'laurito12345@gmail.com', 'customer', '$2y$10$XAuY70ZMSzxLcUXqTtARNuMSz5UuqK13GKX/WY6bbTelTRWXJIG7O', 0, '2026-04-20'),
+(14, 'Mj Laurito', 'laurmj4@gmail.com', 'customer', '', 0, '2026-04-20');
 
 --
 -- Indexes for dumped tables
@@ -75,6 +97,12 @@ INSERT INTO `users` (`id`, `username`, `email`, `role`, `password`, `prompt_coun
 --
 ALTER TABLE `firebase_users_tracking`
   ADD PRIMARY KEY (`uid`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `users`
@@ -88,10 +116,16 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
