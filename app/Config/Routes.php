@@ -6,37 +6,33 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-// Default & Login Routes
+// --- 1. SHARED ROUTES ---
 $routes->get('/', 'Auth::index');
-$routes->get('auth', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->post('auth/verify', 'Auth::verify');
 $routes->get('logout', 'Auth::logout');
-
-// Registration Routes (For Customers)
 $routes->get('register', 'Auth::register');
 $routes->post('auth/create_account', 'Auth::createAccount');
 
-// Customer Dashboard Route
-$routes->get('dashboard', 'Dashboard::index');
+// --- 2. ADMIN GROUP ---
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+    $routes->get('dashboard', 'Dashboard::index');
+    $routes->post('saveUser', 'AdminController::saveUser');
+    $routes->post('updateUser', 'AdminController::updateUser');
+    $routes->get('deleteUser/(:num)', 'AdminController::deleteUser/$1');
+    $routes->get('getProducts', 'PosController::getProducts');
+    $routes->post('checkout', 'PosController::checkout');
+    $routes->get('getHistory', 'PosController::getHistory');
+    $routes->get('products', 'ProductController::index');
+    $routes->post('products/add', 'ProductController::store');
+});
 
-// Staff Routes
-$routes->get('staff/dashboard', 'StaffController::index');
+// --- 3. STAFF GROUP ---
+$routes->group('staff', ['namespace' => 'App\Controllers\Staff'], function($routes) {
+    $routes->get('dashboard', 'StaffController::index');
+});
 
-// Admin Routes
-$routes->get('admin/dashboard', 'AdminController::index');
-
-// --- NEW CRUD ROUTES FOR USER MANAGEMENT ---
-$routes->post('admin/saveUser', 'AdminController::saveUser');
-$routes->get('admin/deleteUser/(:num)', 'AdminController::deleteUser/$1');
-$routes->post('admin/updateUser', 'AdminController::updateUser');
-
-// Add these to your existing routes
-$routes->get('api/pos/products', 'PosController::getProducts');
-$routes->post('api/pos/checkout', 'PosController::checkout');
-
-
-// POS and Sales Routes
-$routes->get('api/pos/products', 'PosController::getProducts');
-$routes->post('api/pos/checkout', 'PosController::checkout');
-$routes->get('api/pos/history', 'PosController::getHistory'); // NEW ROUTE
+// --- 4. CUSTOMER GROUP (Updated to use the new folder) ---
+$routes->group('customer', ['namespace' => 'App\Controllers\Customer'], function($routes) {
+    $routes->get('dashboard', 'Dashboard::index');
+});

@@ -1,11 +1,16 @@
-<?php namespace App\Controllers;
+<?php
 
+namespace App\Controllers\Admin; // Updated namespace for the subfolder
+
+// Import the BaseController and the UserModel so this file can find them
+use App\Controllers\BaseController;
 use App\Models\UserModel;
 
 class AdminController extends BaseController
 {
     public function index()
     {
+        // Simple security check: Ensure only admins can access
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/login')->with('error', 'Access Denied...');
         }
@@ -17,6 +22,7 @@ class AdminController extends BaseController
             'users'    => $userModel->findAll()
         ];
 
+        // Points to app/Views/admin/dashboard.php
         return view('admin/dashboard', $data);
     }
 
@@ -26,12 +32,13 @@ class AdminController extends BaseController
         $data = [
             'username' => $this->request->getPost('username'), 
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
+            'password' => $this->request->getPost('password'), // Ideally use password_hash() here
             'role'     => $this->request->getPost('role'),
         ];
+        
         $userModel->insert($data);
         
-        // FIXED REDIRECT (Solves the 404 Error)
+        // FIXED REDIRECT (Points to your admin route)
         return redirect()->to('/admin/dashboard')->with('msg', 'User successfully added!');
     }
 
@@ -47,7 +54,7 @@ class AdminController extends BaseController
             'role'     => $this->request->getPost('role'),
         ];
 
-        // Only update password if they typed a new one
+        // Only update password if the admin typed a new one in the modal/form
         if(!empty($this->request->getPost('password'))) {
             $data['password'] = $this->request->getPost('password');
         }

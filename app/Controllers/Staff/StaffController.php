@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Staff; // Updated namespace for the Staff subfolder
+
+// Import the BaseController from the parent directory
+use App\Controllers\BaseController;
 
 class StaffController extends BaseController
 {
@@ -12,10 +15,11 @@ class StaffController extends BaseController
         }
 
         $data = [
-            'title' => 'Staff Dashboard',
+            'title'    => 'Staff Dashboard',
             'username' => session()->get('username')
         ];
 
+        // Points to app/Views/staff/dashboard.php
         return view('staff/dashboard', $data);
     }
 }

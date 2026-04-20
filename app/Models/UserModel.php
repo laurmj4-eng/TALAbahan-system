@@ -1,4 +1,6 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
@@ -7,28 +9,40 @@ class UserModel extends Model
     protected $table      = 'users';
     protected $primaryKey = 'id';
     
-    // All allowed fields, including 'role' which is necessary for 'customer'
-    protected $allowedFields = ['username', 'email', 'password', 'role', 'prompt_count', 'last_reset'];
+    // Allowed fields for the database
+    protected $allowedFields = [
+        'username', 
+        'email', 
+        'password', 
+        'role', 
+        'prompt_count', 
+        'last_reset'
+    ];
 
-    // Callbacks to ensure passwords hash correctly when registering or editing!
+    // CI4 Callbacks: These run automatically before saving to the database
     protected $beforeInsert = ['hashPassword'];
     protected $beforeUpdate = ['hashPassword'];
 
+    /**
+     * Automatically hashes the password before it is saved.
+     * If the password field is empty (common during profile updates), 
+     * it removes the field so the existing password is not overwritten.
+     */
     protected function hashPassword(array $data)
     {
-        // FIX: Check if password is not set OR is completely empty
-        if (!isset($data['data']['password']) || empty(trim($data['data']['password']))) {
-            
-            // If it is empty (e.g., during a profile update), remove it from the data array
-            // so we don't accidentally overwrite the customer's existing password with an empty hash!
-            if (isset($data['data']['password'])) {
-                unset($data['data']['password']);
-            }
-            
+        // 1. Check if the password key exists in the incoming data
+        if (!isset($data['data']['password'])) {
             return $data;
         }
 
-        // If a password was provided, hash it securely
+        // 2. If the password is empty or just whitespace, remove it from the update
+        if (empty(trim($data['data']['password']))) {
+            unset($data['data']['password']);
+            return $data;
+        }
+
+        // 3. Hash the plain-text password securely
+        // This will turn "mypassword123" into a 60-character string starting with $2y$
         $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
         
         return $data;

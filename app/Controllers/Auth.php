@@ -2,12 +2,20 @@
 
 namespace App\Controllers;
 
+use App\Models\UserModel;
+
 class Auth extends BaseController
 {
     public function index()
     {
         // Load helpers
         helper(['url', 'form']); 
+        
+        // If already logged in, redirect them to their respective dashboard
+        if (session()->get('isLoggedIn')) {
+            return $this->_redirectByRole(session()->get('role'));
+        }
+
         return view('auth/login');
     }
 
@@ -15,7 +23,7 @@ class Auth extends BaseController
     {
         // 1. Get POST data
         $email    = strtolower(trim((string)$this->request->getPost('email')));
-        $password = (string)$this->request->getPost('password'); // THIS WAS MISSING IN YOUR CODE!
+        $password = (string)$this->request->getPost('password'); 
         $remember = $this->request->getPost('remember'); 
         $name     = trim((string)$this->request->getPost('name'));      
         $provider = trim((string)$this->request->getPost('provider')); 
@@ -29,18 +37,18 @@ class Auth extends BaseController
             if (!$user) {
                 // Auto-register Google User
                 $username = !empty($name) ? $name : explode('@', $email)[0];
-                $newUserData = [
+                $newUserData =[
                     'username' => $username,
                     'email'    => $email,
-                    'role'     => 'customer' 
+                    'role'     => 'customer' // Default role for new signups
                 ];
                 $db->table('users')->insert($newUserData);
                 $user = $db->table('users')->where('email', $email)->get()->getRowArray();
             }
         } 
-        // 4. Handle NORMAL Logins (Customers typing Email & Password)
+        // 4. Handle NORMAL Logins (Email & Password)
         else {
-            // FIX: Check if user exists AND if the password matches the hash in the database!
+            // Check if user exists and verify the hashed password
             if (!$user || !password_verify($password, $user['password'])) {
                 return $this->response->setJSON([
                     'status'  => 'error', 
@@ -49,9 +57,9 @@ class Auth extends BaseController
             }
         }
 
-        // 5. Set Session and Redirect if user exists and password is correct
+        // 5. Set Session and Redirect
         if ($user) {
-            $sessionData = [
+            $sessionData =[
                 'user_id'    => $user['id'],
                 'username'   => $user['username'],
                 'email'      => $user['email'],
@@ -67,8 +75,8 @@ class Auth extends BaseController
             } elseif ($role === 'staff') {
                 $redirectUrl = base_url('staff/dashboard');
             } else {
-                // Customer dashboard
-                $redirectUrl = base_url('dashboard'); 
+                // Points to the new customer subfolder route
+                $redirectUrl = base_url('customer/dashboard'); 
             }
 
             return $this->response->setJSON([
@@ -79,23 +87,27 @@ class Auth extends BaseController
         }
     }
 
-    // --- THESE WERE MISSING IN YOUR CODE! THEY ARE REQUIRED FOR REGISTRATION ---
-
-    // Shows the Registration Page
+    /**
+     * Shows the Registration Page
+     */
     public function register()
     {
         return view('auth/register'); 
     }
 
-    // Processes the Form and Saves the Customer
+    /**
+     * Processes the Form and Saves the Customer
+     */
     public function createAccount()
     {
-        $userModel = new \App\Models\UserModel();
+        $userModel = new UserModel();
 
-        $data = [
+        // FIX: Just pass the RAW password here! 
+        // Your UserModel's `beforeInsert` callback will hash it automatically!
+        $data =[
             'username' => $this->request->getPost('username'),
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
+            'password' => $this->request->getPost('password'), // <-- CHANGED THIS LINE
             'role'     => 'customer' 
         ];
 
@@ -104,12 +116,24 @@ class Auth extends BaseController
         return redirect()->to('/login')->with('success', 'Account created successfully! Please login.');
     }
 
-    // --------------------------------------------------------------------------
+    /**
+     * Helper to redirect based on role (used in index)
+     */
+    private function _redirectByRole($role)
+    {
+        if ($role === 'admin') return redirect()->to(base_url('admin/dashboard'));
+        if ($role === 'staff') return redirect()->to(base_url('staff/dashboard'));
+        return redirect()->to(base_url('customer/dashboard'));
+    }
 
+    /**
+     * Destroys session and clears cache for security
+     */
     public function logout()
     {
         session()->destroy();
 
+        // Clear headers to prevent "Back" button from showing sensitive data
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');
 

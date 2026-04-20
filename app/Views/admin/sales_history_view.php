@@ -25,7 +25,8 @@
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:rgba(255,255,255,0.4);">Loading financial data...</td></tr>';
         
         try {
-            const response = await fetch('<?= site_url('api/pos/history') ?>');
+            // UPDATED: Points to the Admin PosController getHistory method
+            const response = await fetch('<?= site_url('admin/getHistory') ?>');
             const history = await response.json();
             
             if (history.length === 0) {

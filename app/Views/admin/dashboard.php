@@ -115,8 +115,8 @@
 </head>
 <body>
 
-    <!-- INJECTING THE SEPARATED SIDEBAR -->
-    <?= view('theme/sidebar') ?>
+    <!-- INJECTING THE SEPARATED SIDEBAR (CI4 Standard syntax) -->
+    <?= $this->include('theme/sidebar') ?>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -135,20 +135,13 @@
 
         <!-- POS TAB (INJECTED SEPARATED FILE) -->
         <section id="tab-pos" class="tab-section">
-            <?= view('admin/pos_view') ?>
-        </section>
-
-        <!-- POS TAB -->
-        <section id="tab-pos" class="tab-section">
-            <?= view('admin/pos_view') ?>
+            <?= $this->include('admin/pos_view') ?>
         </section>
 
         <!-- NEW SALES HISTORY TAB -->
         <section id="tab-sales" class="tab-section">
-            <?= view('admin/sales_history_view') ?>
+            <?= $this->include('admin/sales_history_view') ?>
         </section>
-
-    
 
         <!-- USER MANAGEMENT TAB (100% Original Code Preserved) -->
         <section id="tab-users" class="tab-section">
@@ -156,7 +149,7 @@
                 <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">System Architecture Database</h2>
                 <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Append, modify, or terminate entity access securely.</p>
                 
-                <!-- Use site_url() to strictly map Codeigniter properly (fixes 404 index error) -->
+                <!-- Use site_url() to strictly map Codeigniter properly -->
                 <form action="<?= site_url('admin/saveUser') ?>" method="post" class="premium-form">
                     <div class="form-group">
                         <label>Identifier</label>
@@ -322,8 +315,6 @@
                 loadSalesHistory();
             }
         }
-
-        
 
         const modal = document.getElementById('editModal');
         

@@ -45,15 +45,16 @@
 
 <script>
     let cart = [];
-    let products = [];
+    let products =[];
 
     async function loadProducts() {
         try {
-            const response = await fetch('<?= site_url('api/pos/products') ?>');
+            // UPDATED: Points to the Admin PosController getProducts method
+            const response = await fetch('<?= site_url('admin/getProducts') ?>');
             products = await response.json();
             renderProducts();
         } catch (e) {
-            products = [
+            products =[
                 { id: 1, name: "Baked Talaba", price: 250, icon: "🦪" },
                 { id: 2, name: "Garlic Butter Crab", price: 850, icon: "🦀" },
                 { id: 3, name: "Spicy Cajun Shrimp", price: 450, icon: "🦐" },
@@ -125,14 +126,15 @@
         if(cart.length === 0) return alert("Cart is empty!");
         const totalText = document.getElementById('cart-total').innerText.replace('₱', '');
         try {
-            const res = await fetch('<?= site_url('api/pos/checkout') ?>', {
+            // UPDATED: Points to the Admin PosController checkout method
+            const res = await fetch('<?= site_url('admin/checkout') ?>', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: cart, total: parseFloat(totalText) })
             });
             const data = await res.json();
-            alert(data.message); cart = []; updateCartUI();
+            alert(data.message); cart =[]; updateCartUI();
         } catch (err) {
-            alert("Payment processed! (Offline Mode)"); cart = []; updateCartUI();
+            alert("Payment processed! (Offline Mode)"); cart =[]; updateCartUI();
         }
     }
 </script>

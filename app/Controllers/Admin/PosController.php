@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin; // Updated namespace for the Admin subfolder
 
-use App\Controllers\BaseController;
+use App\Controllers\BaseController; // Required to find BaseController
 use App\Models\ProductModel;
 use App\Models\SalesModel;
 
@@ -33,6 +33,7 @@ class PosController extends BaseController
         foreach ($json->items as $item) {
             $product = $productModel->find($item->id);
             if ($product) {
+                // Note: Ensure your DB column is 'stock' or 'current_stock' as per your Model
                 $newStock = $product['stock'] - $item->qty;
                 $productModel->update($item->id, ['stock' => $newStock]);
             }
