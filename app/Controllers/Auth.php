@@ -30,7 +30,8 @@ class Auth extends BaseController
         // 2. Verify reCAPTCHA (Server-side)
         // LOGIC: Only verify if the provider is NOT google AND the recaptcha response is NOT empty.
         // If $recaptchaResponse is empty, it means your frontend hidden it because the device is trusted.
-        if ($provider !== 'google' && !empty($recaptchaResponse)) {
+        // NOTE: Skip reCAPTCHA in development since the secret key is not configured.
+        if ($provider !== 'google' && !empty($recaptchaResponse) && ENVIRONMENT !== 'development') {
             
             // IMPORTANT: Replace this with your ACTUAL Google Secret Key
             $secret = '6LcVGI0sAAAAAKG...REPLACE_THIS_WITH_YOUR_KEY...'; 
