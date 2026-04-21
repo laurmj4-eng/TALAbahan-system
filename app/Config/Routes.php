@@ -41,6 +41,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
 
     // --- Order Routes ---
     $routes->get('orders', 'Orders::index');
+    $routes->get('orders/show/(:num)', 'Orders::show/$1');
+    $routes->post('orders/updateStatus', 'Orders::updateStatus');
 });
 
 // --- 3. STAFF GROUP ---
