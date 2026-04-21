@@ -27,9 +27,14 @@
         try {
             // UPDATED: Points to the Admin PosController getHistory method
             const response = await fetch('<?= site_url('admin/getHistory') ?>');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const history = await response.json();
             
-            if (history.length === 0) {
+            if (!history || history.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:rgba(255,255,255,0.4);">No transactions found in ledger.</td></tr>';
                 return;
             }
@@ -52,7 +57,11 @@
                 `;
             });
         } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:#f87171;">Database connection error. Could not fetch ledger.</td></tr>';
+            console.error('Error loading sales history:', error);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:#f87171;">Unable to fetch financial ledger. Please refresh the page.</td></tr>';
         }
     }
+    
+    // Auto-load when page loads
+    document.addEventListener('DOMContentLoaded', loadSalesHistory);
 </script>

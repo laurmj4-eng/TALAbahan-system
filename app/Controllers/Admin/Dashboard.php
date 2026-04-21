@@ -3,18 +3,12 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\UserModel; // Add this!
-use App\Models\PurchaseModel;
-use App\Models\DeliveryModel;
-use App\Models\PaymentModel;
+use App\Models\UserModel;
+use App\Models\OrderModel;
+use App\Models\ProductModel;
 
 class Dashboard extends BaseController
 {
-    private function tableExists(string $table): bool
-    {
-        return db_connect()->tableExists($table);
-    }
-
     public function index()
     {
         if (session()->get('role') !== 'admin') {
@@ -28,34 +22,39 @@ class Dashboard extends BaseController
             'username' => session()->get('username'),
             'users'    => $userModel->findAll(),
             'cards'    => [
-                'today_purchases'    => 0,
-                'pending_deliveries' => 0,
-                'unpaid_amount'      => 0,
+                'today_sales'     => 0,
+                'today_orders'    => 0,
+                'low_stock_count' => 0,
+            ],
+            'chart'    => [
+                'labels'   => [],
+                'dates'    => [],
+                'sales'    => [],
             ],
         ];
 
-        if ($this->tableExists('purchases')) {
-            $purchaseModel = new PurchaseModel();
-            $data['cards']['today_purchases'] = (float) ($purchaseModel
-                ->selectSum('total_cost')
-                ->where('purchase_date', date('Y-m-d'))
-                ->first()['total_cost'] ?? 0);
+        // Last 7-day trend chart for owner-friendly monitoring.
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} day"));
+            $data['chart']['dates'][] = $date;
+            $data['chart']['labels'][] = date('M d', strtotime($date));
+            $data['chart']['sales'][] = 0;
         }
 
-        if ($this->tableExists('deliveries')) {
-            $deliveryModel = new DeliveryModel();
-            $data['cards']['pending_deliveries'] = $deliveryModel
-                ->whereIn('status', [DeliveryModel::STATUS_SCHEDULED, DeliveryModel::STATUS_IN_TRANSIT])
-                ->countAllResults();
+        $orderModel = new OrderModel();
+        foreach ($data['chart']['dates'] as $idx => $date) {
+            $data['chart']['sales'][$idx] = round($orderModel->getDailyRevenue($date), 2);
         }
 
-        if ($this->tableExists('payments')) {
-            $paymentModel = new PaymentModel();
-            $data['cards']['unpaid_amount'] = (float) ($paymentModel
-                ->selectSum('amount')
-                ->where('status', PaymentModel::STATUS_PENDING)
-                ->first()['amount'] ?? 0);
-        }
+        $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
+        $data['cards']['today_orders'] = (int) $orderModel
+            ->where('DATE(created_at)', date('Y-m-d'))
+            ->countAllResults();
+
+        $productModel = new ProductModel();
+        $data['cards']['low_stock_count'] = (int) $productModel
+            ->where('current_stock <=', 5)
+            ->countAllResults();
 
         return view('admin/dashboard', $data);
     }

@@ -45,9 +45,18 @@ class PosController extends BaseController
     // 3. Fetch Sales History for the Dashboard
     public function getHistory()
     {
-        $salesModel = new SalesModel();
-        $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
-        
-        return $this->response->setJSON($history);
+        try {
+            $salesModel = new SalesModel();
+            $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
+            
+            if ($history === false || $history === null) {
+                return $this->response->setJSON([])->setStatusCode(200);
+            }
+            
+            return $this->response->setJSON($history ?? [])->setStatusCode(200);
+        } catch (\Exception $e) {
+            log_message('error', 'getHistory error: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => 'Failed to fetch history'])->setStatusCode(500);
+        }
     }
 }

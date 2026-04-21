@@ -44,30 +44,165 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* IMPROVED SIDEBAR LAYOUT */
+        /* IMPROVED SIDEBAR LAYOUT - MODERN DESIGN */
         .sidebar { 
             width: var(--sidebar-width); 
             min-width: var(--sidebar-width);
             display: flex; 
             flex-direction: column; 
             z-index: 10; 
-            border-right: 1px solid rgba(255,255,255,0.08); /* Clean dividing line */
-            background: rgba(0, 0, 0, 0.2); 
+            border-right: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0, 0, 0, 0.3); 
             backdrop-filter: blur(20px);
         }
         
-        .sidebar-header { padding: 30px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
-        
-        .sidebar-menu { list-style: none; padding: 20px 10px; margin: 0; flex: 1; overflow-y: auto; }
-        .sidebar-menu a { 
-            display: flex; align-items: center; justify-content: flex-start; 
-            padding: 14px 18px; margin-bottom: 5px; color: rgba(255,255,255,0.7); 
-            text-decoration: none; font-weight: 500; transition: 0.3s ease; border-radius: 12px; cursor: pointer; 
+        .sidebar-header { 
+            padding: 28px 20px; 
+            text-align: center; 
+            border-bottom: 2px solid rgba(168, 85, 247, 0.2);
+            background: rgba(168, 85, 247, 0.08);
         }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(5px); }
-        .logout-btn { color: #f87171 !important; margin-top: auto; }
-        .logout-btn:hover { background: rgba(248, 113, 113, 0.2) !important; }
+        .sidebar-header h2 { 
+            margin: 0 0 6px 0; 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            color: #fff; 
+            letter-spacing: 0.5px;
+        }
+        .sidebar-header small {
+            display: block;
+            color: rgba(168, 85, 247, 0.9);
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .sidebar-menu { 
+            list-style: none !important; 
+            padding: 20px 8px; 
+            margin: 0; 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 16px 12px 16px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: rgba(168, 85, 247, 0.6);
+            margin: 0;
+        }
+
+        .sidebar-menu li { 
+            margin-bottom: 4px !important;
+            list-style: none !important;
+        }
+
+        .sidebar-menu li:last-child {
+            margin-top: auto;
+        }
+
+        .sidebar-menu a { 
+            display: flex !important; 
+            align-items: center; 
+            justify-content: flex-start; 
+            padding: 12px 16px; 
+            color: rgba(255,255,255,0.75) !important; 
+            text-decoration: none !important;
+            font-weight: 500; 
+            font-size: 0.95rem;
+            transition: all 0.25s ease; 
+            border-radius: 10px; 
+            cursor: pointer;
+            gap: 12px;
+            border-left: 3px solid transparent;
+            width: 100%;
+            position: relative;
+        }
+
+        .sidebar-menu a span:first-child { 
+            font-size: 1.3rem; 
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .sidebar-menu a:hover { 
+            background: rgba(168, 85, 247, 0.12); 
+            color: #e9d5ff !important;
+            transform: translateX(3px);
+            border-left-color: #a855f7;
+        }
+
+        .sidebar-menu a.active { 
+            background: rgba(168, 85, 247, 0.2); 
+            color: #c4b5fd !important;
+            border-left-color: #a855f7;
+            font-weight: 600;
+            box-shadow: inset -3px 0 0 #a855f7;
+        }
+
+        .sidebar-footer {
+            padding: 20px 8px;
+            border-top: 2px solid rgba(255,255,255,0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info {
+            padding: 12px 16px;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .user-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(168, 85, 247, 0.7);
+            margin-bottom: 6px;
+        }
+
+        .user-name {
+            font-size: 0.95rem;
+            color: #e9d5ff;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .logout-btn { 
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            color: #fecaca !important;
+            padding: 12px 16px !important;
+            background: rgba(248, 113, 113, 0.12) !important;
+            border: 1px solid rgba(248, 113, 113, 0.3) !important;
+            border-radius: 10px !important;
+            width: 100%;
+            margin: 0 !important;
+            padding: 12px 16px !important;
+            transition: all 0.25s ease;
+        }
+
+        .logout-btn span:first-child {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .logout-btn:hover { 
+            background: rgba(248, 113, 113, 0.2) !important; 
+            color: #ffb4a0 !important;
+            transform: translateX(-2px);
+            border-color: rgba(248, 113, 113, 0.5) !important;
+        }
         
         /* IMPROVED MAIN AREA - Edited to expand fully */
         .main-content { 
@@ -118,6 +253,74 @@
         .btn-delete { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
         
         .alert { padding: 18px 24px; background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; margin-bottom: 25px; font-weight: 500; }
+
+        /* Global pagination cleanup: remove white bullets and style links */
+        nav[aria-label="Page navigation"] { margin-top: 14px; }
+        ul.pagination {
+            list-style: none !important;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        ul.pagination li {
+            list-style: none !important;
+            margin: 0;
+            padding: 0;
+        }
+        /* Hide pagination when only one page exists */
+        ul.pagination li:only-child {
+            display: none;
+        }
+        ul.pagination:has(li:only-child) {
+            display: none;
+        }
+        ul.pagination .page-link {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(0,0,0,0.18);
+        }
+        /* Fallback for CI pager templates that don't use .page-link */
+        ul.pagination a,
+        ul.pagination span {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(0,0,0,0.18);
+            line-height: 1;
+            min-width: 34px;
+            text-align: center;
+        }
+        ul.pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+        }
+        ul.pagination .active a,
+        ul.pagination .active span {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+        }
+        ul.pagination .page-item.disabled .page-link {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        ul.pagination .disabled a,
+        ul.pagination .disabled span {
+            opacity: 0.45;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>

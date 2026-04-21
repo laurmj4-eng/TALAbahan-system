@@ -34,6 +34,10 @@ class OrderModel extends Model
 
     protected $beforeInsert = ['applyDefaultStatus'];
 
+    // Status constants
+    public const STATUS_CANCELLED = 'Cancelled';
+    public const STATUS_REFUNDED  = 'Refunded';
+
     /**
      * Fetch all orders with the count of items in each order.
      * This powers the main Order Tracking table.
@@ -112,6 +116,107 @@ class OrderModel extends Model
         return $this->where('status', $status)->countAllResults();
     }
 
+    /**
+     * Get orders by date range with pagination.
+     */
+    public function getByDateRange(string $startDate, string $endDate, int $page = 1, int $limit = 15): array
+    {
+        $offset = ($page - 1) * $limit;
+        return $this->db->table('orders')
+            ->whereBetween('DATE(created_at)', [$startDate, $endDate])
+            ->orderBy('created_at', 'DESC')
+            ->limit($limit, $offset)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Get total count of orders in date range (for pagination).
+     */
+    public function countByDateRange(string $startDate, string $endDate): int
+    {
+        return $this->db->table('orders')
+            ->whereBetween('DATE(created_at)', [$startDate, $endDate])
+            ->countAllResults();
+    }
+
+    /**
+     * Search orders by customer name.
+     */
+    public function searchByCustomer(string $customerName, int $limit = 20): array
+    {
+        return $this->like('customer_name', $customerName)
+            ->orderBy('created_at', 'DESC')
+            ->limit($limit)
+            ->findAll();
+    }
+
+    /**
+     * Get orders with their profit information.
+     */
+    public function getOrdersWithProfit(): array
+    {
+        return $this->db->table('orders o')
+            ->select('o.*, SUM(oi.subtotal) as revenue')
+            ->join('order_items oi', 'oi.order_id = o.id', 'left')
+            ->groupBy('o.id')
+            ->orderBy('o.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Get completion rate for the given time period.
+     */
+    public function getCompletionRate(string $startDate, string $endDate): float
+    {
+        $completed = $this->db->table('orders')
+            ->whereBetween('DATE(created_at)', [$startDate, $endDate])
+            ->where('status', self::STATUS_COMPLETED)
+            ->countAllResults();
+
+        $total = $this->countByDateRange($startDate, $endDate);
+        return $total === 0 ? 0 : round(($completed / $total) * 100, 2);
+    }
+
+    /**
+     * Get orders with item details.
+     */
+    public function getOrdersWithDetails(): array
+    {
+        return $this->db->table('orders o')
+            ->select('o.*, COUNT(oi.id) as item_count, SUM(oi.quantity) as total_qty')
+            ->join('order_items oi', 'oi.order_id = o.id', 'left')
+            ->groupBy('o.id')
+            ->orderBy('o.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Mark order as cancelled.
+     */
+    public function cancelOrder(int $orderId): bool
+    {
+        return $this->update($orderId, ['status' => self::STATUS_CANCELLED]);
+    }
+
+    /**
+     * Mark order as refunded (reverses stock).
+     */
+    public function refundOrder(int $orderId): bool
+    {
+        $order = $this->getOrderWithItems($orderId);
+        if (!$order) return false;
+
+        $productModel = new ProductModel();
+        foreach ($order['items'] as $item) {
+            $productModel->increaseStock((int) $item['product_id'], (float) $item['quantity']);
+        }
+
+        return $this->update($orderId, ['status' => self::STATUS_REFUNDED]);
+    }
+
     protected function applyDefaultStatus(array $data): array
     {
         if (!isset($data['data']['status']) || $data['data']['status'] === '') {
@@ -129,9 +234,6 @@ class OrderModel extends Model
         $productModel   = new ProductModel();
         $orderItemModel = new OrderItemModel();
         $salesModel     = new SalesModel();
-        $paymentModel   = new PaymentModel();
-        $movementModel  = new InventoryMovementModel();
-        $deliveryModel  = new DeliveryModel();
 
         $customerName = trim((string) ($payload['customer_name'] ?? 'Walk-in Customer'));
         $cartItems     = $payload['items'] ?? [];
@@ -178,9 +280,6 @@ class OrderModel extends Model
         }
 
         $transactionCode = 'TXN-' . date('Ymd-His') . '-' . strtoupper(substr(uniqid(), -4));
-        $paymentMethod   = trim((string) ($payload['payment_method'] ?? 'Cash'));
-        $movedBy         = (int) ($payload['moved_by'] ?? 0);
-        $needsDelivery   = (bool) ($payload['needs_delivery'] ?? false);
 
         $db = db_connect();
         $db->transBegin();
@@ -206,31 +305,9 @@ class OrderModel extends Model
                 if (! $productModel->reduceStock((int) $line['product_id'], (float) $line['quantity'])) {
                     throw new Exception("Failed to update stock for {$line['product_name']}.");
                 }
-
-                $movementModel->logMovement([
-                    'product_id'      => (int) $line['product_id'],
-                    'movement_type'   => InventoryMovementModel::TYPE_OUT,
-                    'quantity'        => (float) $line['quantity'],
-                    'reference_type'  => 'order',
-                    'reference_id'    => $orderId,
-                    'notes'           => 'Stock OUT for order ' . $transactionCode,
-                    'moved_by'        => $movedBy ?: null,
-                ]);
             }
 
             $salesModel->recordFromOrder($transactionCode, $itemsSummary, round($totalAmount, 2));
-            $paymentModel->recordForOrder($orderId, round($totalAmount, 2), $paymentMethod, PaymentModel::STATUS_PAID);
-
-            if ($needsDelivery) {
-                $deliveryModel->insert([
-                    'order_id'   => $orderId,
-                    'rider_name' => $payload['rider_name'] ?? null,
-                    'route_note' => $payload['route_note'] ?? 'Auto-created at checkout',
-                    'eta_at'     => $payload['eta_at'] ?? null,
-                    'status'     => DeliveryModel::STATUS_SCHEDULED,
-                    'notes'      => 'Generated from checkout transaction.',
-                ]);
-            }
         } catch (Exception $e) {
             $db->transRollback();
             return ['ok' => false, 'message' => $e->getMessage()];

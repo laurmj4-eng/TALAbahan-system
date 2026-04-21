@@ -5,8 +5,6 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
-use App\Models\PaymentModel;
-use App\Models\DeliveryModel;
 
 class Orders extends BaseController
 {
@@ -28,20 +26,8 @@ class Orders extends BaseController
 
         $orderItemModel = new OrderItemModel();
         $order['items'] = $orderItemModel->getItemsByOrder($id);
-        $db = db_connect();
-        if ($db->tableExists('payments')) {
-            $paymentModel      = new PaymentModel();
-            $order['payments'] = $paymentModel->where('order_id', $id)->orderBy('created_at', 'DESC')->findAll();
-        } else {
-            $order['payments'] = [];
-        }
-
-        if ($db->tableExists('deliveries')) {
-            $deliveryModel     = new DeliveryModel();
-            $order['delivery'] = $deliveryModel->where('order_id', $id)->orderBy('created_at', 'DESC')->first();
-        } else {
-            $order['delivery'] = null;
-        }
+        $order['payments'] = [];
+        $order['delivery'] = null;
         
         return $this->response->setJSON(['status' => 'success', 'data' => $order]);
     }

@@ -38,25 +38,6 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
     $routes->post('products/store', 'ProductController::store');
-    $routes->get('inventory/movements', 'InventoryController::movements');
-
-    // --- Categories ---
-    $routes->get('categories', 'CategoriesController::index');
-    $routes->post('categories/store', 'CategoriesController::store');
-
-    // --- Purchases (Inbound Stock) ---
-    $routes->get('purchases', 'PurchasesController::index');
-    $routes->post('purchases/receive', 'PurchasesController::receive');
-
-    // --- Payments ---
-    $routes->get('payments', 'PaymentsController::index');
-    $routes->post('payments/store', 'PaymentsController::store');
-    $routes->get('payments/markPaid/(:num)', 'PaymentsController::markPaid/$1');
-
-    // --- Deliveries ---
-    $routes->get('deliveries', 'DeliveriesController::index');
-    $routes->post('deliveries/store', 'DeliveriesController::store');
-    $routes->get('deliveries/markDelivered/(:num)', 'DeliveriesController::markDelivered/$1');
 
     // --- Order Routes ---
     $routes->get('orders', 'Orders::index');
@@ -68,7 +49,27 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
 
 // --- 3. STAFF GROUP ---
 $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'staffGuard'], function($routes) {
+    // Dashboard
     $routes->get('dashboard', 'StaffController::index');
+    
+    // Product Management
+    $routes->get('products', 'StaffController::products');
+    $routes->get('getProducts', 'StaffController::getProducts');
+    $routes->post('addProduct', 'StaffController::addProduct');
+    $routes->post('updateProduct', 'StaffController::updateProduct');
+    $routes->post('updateStock', 'StaffController::updateStock');
+    $routes->get('getLowStockProducts', 'StaffController::getLowStockProducts');
+    $routes->get('getBestSellers', 'StaffController::getBestSellers');
+    $routes->get('getInventorySummary', 'StaffController::getInventorySummary');
+    
+    // Order Management
+    $routes->get('orders', 'StaffController::orders');
+    $routes->get('getOrders', 'StaffController::getOrders');
+    $routes->get('getOrderDetail/(:num)', 'StaffController::getOrderDetail/$1');
+    
+    // Sales History
+    $routes->get('salesHistory', 'StaffController::salesHistory');
+    $routes->get('getSalesHistory', 'StaffController::getSalesHistory');
 });
 
 // --- 4. CUSTOMER GROUP ---
