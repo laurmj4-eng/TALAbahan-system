@@ -9,7 +9,7 @@ class ProductModel extends Model
     protected $table            = 'products';
     protected $primaryKey       = 'id';
     protected $allowedFields    = [
-        'name', 'category_id', 'cost_price', 'selling_price', 
+        'name', 'cost_price', 'selling_price', 
         'initial_stock', 'current_stock', 'wastage_qty', 'unit'
     ];
 
@@ -22,7 +22,6 @@ class ProductModel extends Model
         'selling_price' => 'required|decimal|greater_than[0]|validate_price_gt_cost',
         'initial_stock' => 'required|decimal|greater_than_equal_to[0]',
         'current_stock' => 'required|decimal|greater_than_equal_to[0]',
-        'category_id'   => 'permit_empty|integer|greater_than[0]',
     ];
 
     protected $validationMessages = [
@@ -44,12 +43,8 @@ class ProductModel extends Model
 
     public function getWithCategory(): array
     {
-        return $this->db->table('products p')
-            ->select('p.*, c.name as category_name')
-            ->join('categories c', 'c.id = p.category_id', 'left')
-            ->orderBy('p.name', 'ASC')
-            ->get()
-            ->getResultArray();
+        return $this->orderBy('name', 'ASC')
+            ->findAll();
     }
 
     public function getSellableById(int $productId): ?array
@@ -95,18 +90,6 @@ class ProductModel extends Model
         $current = (float) ($product['current_stock'] ?? 0);
         $newStock = round($current + $qty, 2);
         return $this->update($productId, ['current_stock' => $newStock]);
-    }
-
-    /**
-     * Get products by category ID.
-     */
-    public function getByCategory(int $categoryId, int $limit = 50): array
-    {
-        return $this->where('category_id', $categoryId)
-            ->where('current_stock >', 0)
-            ->orderBy('name', 'ASC')
-            ->limit($limit)
-            ->findAll();
     }
 
     /**

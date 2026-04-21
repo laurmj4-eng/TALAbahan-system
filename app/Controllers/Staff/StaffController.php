@@ -92,7 +92,6 @@ class StaffController extends BaseController
 
         $data = [
             'name'           => trim($this->request->getPost('name')),
-            'category_id'    => (int) $this->request->getPost('category_id') ?? 0,
             'cost_price'     => (float) $this->request->getPost('cost_price') ?? 0,
             'selling_price'  => (float) $this->request->getPost('selling_price') ?? 0,
             'initial_stock'  => (float) $this->request->getPost('initial_stock') ?? 0,

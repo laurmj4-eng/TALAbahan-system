@@ -1756,3 +1756,439 @@ ORDER BY `p`.`name` ASC', [], false)
 12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
 DEBUG - 2026-04-21 11:46:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 11:57:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-21 12:02:32 --> Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:02:32 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+[Method: GET, Route: staff/products]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 2 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:02:32 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 4 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:02:32 --> [Caused by] mysqli_sql_exception: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+DEBUG - 2026-04-21 12:02:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2026-04-21 12:02:47 --> CSRF token verified.
+DEBUG - 2026-04-21 12:02:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:02:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-21 12:02:47 --> Table 'mj_chatbot.sales_history' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', [], false)
+ 5 SYSTEMPATH\Model.php(253): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\Admin\PosController.php(50): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PosController->getHistory()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PosController))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+ERROR - 2026-04-21 12:02:47 --> getHistory error: Table 'mj_chatbot.sales_history' doesn't exist
+DEBUG - 2026-04-21 12:02:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2026-04-21 12:03:15 --> CSRF token verified.
+DEBUG - 2026-04-21 12:03:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-21 12:03:21 --> Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:21 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+[Method: GET, Route: staff/products]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 2 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:21 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 4 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:21 --> [Caused by] mysqli_sql_exception: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+DEBUG - 2026-04-21 12:03:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-21 12:03:24 --> Table 'mj_chatbot.sales_history' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', [], false)
+ 5 SYSTEMPATH\Model.php(253): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\Staff\StaffController.php(255): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->salesHistory()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:24 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.sales_history' doesn't exist
+[Method: GET, Route: staff/salesHistory]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', [], false)
+ 2 SYSTEMPATH\Model.php(253): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Controllers\Staff\StaffController.php(255): CodeIgniter\BaseModel->findAll()
+ 5 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->salesHistory()
+ 6 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 7 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:24 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.sales_history' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', [], false)
+ 4 SYSTEMPATH\Model.php(253): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Controllers\Staff\StaffController.php(255): CodeIgniter\BaseModel->findAll()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->salesHistory()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:24 --> [Caused by] mysqli_sql_exception: Table 'mj_chatbot.sales_history' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `sales_history`
+ORDER BY `created_at` DESC', [], false)
+ 5 SYSTEMPATH\Model.php(253): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\Staff\StaffController.php(255): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->salesHistory()
+ 9 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+10 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+DEBUG - 2026-04-21 12:03:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:03:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-21 12:03:52 --> Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:52 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+[Method: GET, Route: staff/products]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 2 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:52 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 4 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 6 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 7 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 8 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+CRITICAL - 2026-04-21 12:03:52 --> [Caused by] mysqli_sql_exception: Table 'mj_chatbot.categories' doesn't exist
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `c`.`name` as `category_name`
+FROM `products` `p`
+LEFT JOIN `categories` `c` ON `c`.`id` = `p`.`category_id`
+ORDER BY `p`.`name` ASC', [], false)
+ 5 APPPATH\Models\ProductModel.php(51): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\Staff\StaffController.php(63): App\Models\ProductModel->getWithCategory()
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Staff\StaffController->products()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Staff\StaffController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\TALAbahan-system\\public\\index.php')
+DEBUG - 2026-04-21 12:08:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:08:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:14:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:15:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:15:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:15:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2026-04-21 12:15:46 --> CSRF token verified.
+DEBUG - 2026-04-21 12:15:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:15:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-21 12:15:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

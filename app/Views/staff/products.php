@@ -6,6 +6,7 @@
     <title>Product Management | Staff</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; }
         
@@ -348,7 +349,6 @@
                     <thead>
                         <tr>
                             <th>Product Name</th>
-                            <th>Category</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
                             <th>Current Stock</th>
@@ -357,7 +357,7 @@
                         </tr>
                     </thead>
                     <tbody id="productsBody">
-                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -384,10 +384,6 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="categoryId">Category ID</label>
-                        <input type="number" id="categoryId" name="category_id" min="0" value="0">
-                    </div>
                     <div class="form-group">
                         <label for="unit">Unit *</label>
                         <input type="text" id="unit" name="unit" required value="piece">
@@ -468,14 +464,13 @@
             const tbody = document.getElementById('productsBody');
             
             if (!products || products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
                 return;
             }
 
             tbody.innerHTML = products.map(p => `
                 <tr>
                     <td><strong>${p.name}</strong></td>
-                    <td>${p.category_name || 'N/A'}</td>
                     <td>₱${parseFloat(p.cost_price || 0).toFixed(2)}</td>
                     <td>₱${parseFloat(p.selling_price || 0).toFixed(2)}</td>
                     <td class="${parseFloat(p.current_stock || 0) <= 5 ? 'stock-low' : 'stock-ok'}">
