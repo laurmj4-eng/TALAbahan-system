@@ -40,7 +40,9 @@ class ProductController extends BaseController
             'unit'          => $this->request->getPost('unit'),
         ];
 
-        $model->save($data);
+        if (! $model->save($data)) {
+            return redirect()->back()->with('error', implode(' ', $model->errors()))->withInput();
+        }
         
         // Redirect back to the inventory list
         return redirect()->to('/admin/products')->with('msg', 'Seafood stock added successfully!');

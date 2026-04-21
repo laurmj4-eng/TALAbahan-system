@@ -38,10 +38,31 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
     $routes->post('products/store', 'ProductController::store');
+    $routes->get('inventory/movements', 'InventoryController::movements');
+
+    // --- Categories ---
+    $routes->get('categories', 'CategoriesController::index');
+    $routes->post('categories/store', 'CategoriesController::store');
+
+    // --- Purchases (Inbound Stock) ---
+    $routes->get('purchases', 'PurchasesController::index');
+    $routes->post('purchases/receive', 'PurchasesController::receive');
+
+    // --- Payments ---
+    $routes->get('payments', 'PaymentsController::index');
+    $routes->post('payments/store', 'PaymentsController::store');
+    $routes->get('payments/markPaid/(:num)', 'PaymentsController::markPaid/$1');
+
+    // --- Deliveries ---
+    $routes->get('deliveries', 'DeliveriesController::index');
+    $routes->post('deliveries/store', 'DeliveriesController::store');
+    $routes->get('deliveries/markDelivered/(:num)', 'DeliveriesController::markDelivered/$1');
 
     // --- Order Routes ---
     $routes->get('orders', 'Orders::index');
     $routes->get('orders/show/(:num)', 'Orders::show/$1');
+    $routes->get('orders/items', 'Orders::itemsPage');
+    $routes->get('orders/items/(:num)', 'Orders::items/$1');
     $routes->post('orders/updateStatus', 'Orders::updateStatus');
 });
 

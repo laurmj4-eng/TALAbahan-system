@@ -49,20 +49,22 @@ class Auth extends BaseController
         }
         
         // 3. Connect to database
-        $db = \Config\Database::connect();
-        $user = $db->table('users')->where('email', $email)->get()->getRowArray();
+        $userModel = new UserModel();
+        $user = $userModel->where('email', $email)->first();
 
         // 4. Handle GOOGLE Logins
         if ($provider === 'google') {
             if (!$user) {
                 $username = !empty($name) ? $name : explode('@', $email)[0];
-                $newUserData =[
+                $newUserData = [
                     'username' => $username,
                     'email'    => $email,
+                    // Keep schema constraint happy; this is never used for Google sign-in.
+                    'password' => bin2hex(random_bytes(16)),
                     'role'     => 'customer'
                 ];
-                $db->table('users')->insert($newUserData);
-                $user = $db->table('users')->where('email', $email)->get()->getRowArray();
+                $userModel->insert($newUserData);
+                $user = $userModel->where('email', $email)->first();
             }
         } 
         // 5. Handle NORMAL Logins

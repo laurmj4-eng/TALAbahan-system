@@ -36,7 +36,6 @@
                                 <select onchange="updateStatus(<?= $o['id'] ?>, this.value)" style="padding: 5px; border-radius: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2);">
                                     <option value="Pending" <?= $o['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
                                     <option value="Completed" <?= $o['status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
-                                    <option value="Cancelled" <?= $o['status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                 </select>
                             </td>
                             <td class="action-cell">
@@ -95,16 +94,20 @@ async function viewOrderDetails(orderId) {
             const tbody = document.getElementById('modalItems');
             tbody.innerHTML = '';
             
-            order.items.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.product_name}</td>
-                        <td>${item.quantity} ${item.unit}</td>
-                        <td>₱${parseFloat(item.unit_price).toFixed(2)}</td>
-                        <td>₱${parseFloat(item.subtotal).toFixed(2)}</td>
-                    </tr>
-                `;
-            });
+            if (!order.items || order.items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#aaa;">No line items found for this order.</td></tr>`;
+            } else {
+                order.items.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.product_name}</td>
+                            <td>${item.quantity} ${item.unit ?? ''}</td>
+                            <td>₱${parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td>₱${parseFloat(item.subtotal).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
             
             document.getElementById('orderModal').style.display = 'flex';
         } else {

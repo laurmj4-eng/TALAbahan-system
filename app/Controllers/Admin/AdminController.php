@@ -61,7 +61,9 @@ class AdminController extends BaseController
             'role'     => $this->request->getPost('role'),
         ];
         
-        $userModel->insert($data);
+        if (! $userModel->insert($data)) {
+            return redirect()->back()->with('error', implode(' ', $userModel->errors()))->withInput();
+        }
         
         // REDIRECT FIX: Go back to the Users page, not the dashboard
         return redirect()->to('/admin/users')->with('msg', 'User successfully added to the database!');
@@ -86,7 +88,9 @@ class AdminController extends BaseController
             $data['password'] = $this->request->getPost('password');
         }
 
-        $userModel->update($id, $data);
+        if (! $userModel->update($id, $data)) {
+            return redirect()->back()->with('error', implode(' ', $userModel->errors()))->withInput();
+        }
 
         // REDIRECT FIX: Stay on the Users page
         return redirect()->to('/admin/users')->with('msg', 'User protocol updated successfully!');
@@ -97,6 +101,10 @@ class AdminController extends BaseController
      */
     public function deleteUser($id)
     {
+        if ((int) session()->get('user_id') === (int) $id) {
+            return redirect()->to('/admin/users')->with('error', 'You cannot delete your own active account.');
+        }
+
         $userModel = new UserModel();
         $userModel->delete($id);
         

@@ -19,6 +19,15 @@ class UserModel extends Model
         'last_reset'
     ];
 
+    protected $returnType = 'array';
+
+    protected $validationRules = [
+        'username' => 'required|min_length[3]|max_length[50]',
+        'email'    => 'required|valid_email|max_length[100]',
+        'password' => 'permit_empty|min_length[6]|max_length[255]',
+        'role'     => 'required|in_list[admin,staff,customer]',
+    ];
+
     // CI4 Callbacks: These run automatically before saving to the database
     protected $beforeInsert = ['hashPassword'];
     protected $beforeUpdate = ['hashPassword'];

@@ -2,6 +2,8 @@
     $role = session()->get('role') ?? 'admin'; 
     $username = session()->get('username') ?? 'User';
     $is_dashboard = url_is($role.'/dashboard*') || url_is('dashboard*');
+    $is_order_items = url_is('admin/orders/items*');
+    $is_orders = url_is('admin/orders*') && ! $is_order_items;
 ?>
 
 <aside class="sidebar glass-panel">
@@ -38,8 +40,38 @@
 
         <!-- NEW: Order View Link -->
         <li>
-            <a id="nav-orders" href="<?= site_url('admin/orders') ?>" class="<?= url_is('admin/orders*') ? 'active' : '' ?>">
+            <a id="nav-orders" href="<?= site_url('admin/orders') ?>" class="<?= $is_orders ? 'active' : '' ?>">
                 <span style="margin-right: 12px;">📑</span> Order Tracking
+            </a>
+        </li>
+        <li>
+            <a id="nav-order-items" href="<?= site_url('admin/orders/items') ?>" class="<?= $is_order_items ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">🧾</span> Order Items
+            </a>
+        </li>
+        <li>
+            <a id="nav-categories" href="<?= site_url('admin/categories') ?>" class="<?= url_is('admin/categories*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">🏷️</span> Categories
+            </a>
+        </li>
+        <li>
+            <a id="nav-purchases" href="<?= site_url('admin/purchases') ?>" class="<?= url_is('admin/purchases*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">📥</span> Purchases
+            </a>
+        </li>
+        <li>
+            <a id="nav-payments" href="<?= site_url('admin/payments') ?>" class="<?= url_is('admin/payments*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">💳</span> Payments
+            </a>
+        </li>
+        <li>
+            <a id="nav-deliveries" href="<?= site_url('admin/deliveries') ?>" class="<?= url_is('admin/deliveries*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">🚚</span> Deliveries
+            </a>
+        </li>
+        <li>
+            <a id="nav-movements" href="<?= site_url('admin/inventory/movements') ?>" class="<?= url_is('admin/inventory/movements*') ? 'active' : '' ?>">
+                <span style="margin-right: 12px;">📒</span> Movements
             </a>
         </li>
 
