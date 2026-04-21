@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Controllers\Admin; // Updated namespace for the Admin subfolder
+namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController; // Required to find BaseController
+use App\Controllers\BaseController;
 use App\Models\ProductModel;
 use App\Models\SalesModel;
+use App\Models\OrderModel;
+use App\Models\OrderItemModel;
 
 class PosController extends BaseController
 {
@@ -15,7 +17,7 @@ class PosController extends BaseController
         return $this->response->setJSON($model->findAll());
     }
 
-    // 2. Process checkout and SAVE to Sales History
+    // 2. Process checkout — writes to orders, order_items, AND sales_history
     public function checkout()
     {
         $json = $this->request->getJSON();
@@ -24,34 +26,61 @@ class PosController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Cart is empty.']);
         }
 
-        $productModel = new ProductModel();
-        $salesModel = new SalesModel();
+        $productModel   = new ProductModel();
+        $salesModel     = new SalesModel();
+        $orderModel     = new OrderModel();
+        $orderItemModel = new OrderItemModel();
         
-        $itemNames = []; // To store a summary of items bought
+        $transactionCode = 'TXN-' . strtoupper(substr(uniqid(), -6));
+        $itemNames = [];
 
-        // Deduct stock
+        // --- A. Create the Order header ---
+        $orderModel->insert([
+            'transaction_code' => $transactionCode,
+            'customer_name'    => $json->customer_name ?? 'Walk-in Customer',
+            'total_amount'     => $json->total,
+            'status'           => 'Completed',
+        ]);
+        $orderId = $orderModel->getInsertID();
+
+        // --- B. Loop items: create line items + deduct stock ---
         foreach ($json->items as $item) {
             $product = $productModel->find($item->id);
+
             if ($product) {
-                // Note: Ensure your DB column is 'stock' or 'current_stock' as per your Model
-                $newStock = $product['stock'] - $item->qty;
-                $productModel->update($item->id, ['stock' => $newStock]);
+                // Snapshot the price at time of sale (data integrity)
+                $unitPrice = $product['selling_price'];
+                $subtotal  = $unitPrice * $item->qty;
+
+                // Insert order line item
+                $orderItemModel->insert([
+                    'order_id'     => $orderId,
+                    'product_id'   => $item->id,
+                    'product_name' => $product['name'],
+                    'unit'         => $product['unit'] ?? 'piece',
+                    'quantity'     => $item->qty,
+                    'unit_price'   => $unitPrice,
+                    'subtotal'     => $subtotal,
+                ]);
+
+                // Deduct stock (FIXED: was using 'stock', now uses 'current_stock')
+                $newStock = $product['current_stock'] - $item->qty;
+                $productModel->update($item->id, ['current_stock' => max(0, $newStock)]);
             }
-            $itemNames[] = $item->qty . 'x ' . $item->name;
+
+            $itemNames[] = $item->qty . 'x ' . ($product['name'] ?? $item->name);
         }
 
-        // Save to Sales History
-        $transactionCode = 'TXN-' . strtoupper(substr(uniqid(), -6));
-        
+        // --- C. Also write to sales_history for backward compatibility ---
         $salesModel->insert([
             'transaction_code' => $transactionCode,
-            'items_summary'    => implode(', ', $itemNames), // e.g., "2x Baked Talaba, 1x Crab"
+            'items_summary'    => implode(', ', $itemNames),
             'total_amount'     => $json->total,
             'created_at'       => date('Y-m-d H:i:s')
         ]);
 
         return $this->response->setJSON([
-            'status' => 'success', 
+            'status'  => 'success', 
             'message' => "Payment of ₱" . number_format($json->total, 2) . " processed! (TXN: $transactionCode)"
         ]);
     }
