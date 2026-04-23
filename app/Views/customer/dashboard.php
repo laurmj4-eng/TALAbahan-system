@@ -395,42 +395,62 @@
         <!-- CHECKOUT MODAL -->
         <div id="checkoutModal" class="modal">
             <div class="modal-content">
-                <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-shopping-basket" style="color: #a855f7;"></i> Confirm Order
-                </h2>
-                
-                <div id="cartItemsList" style="margin-bottom: 25px; max-height: 200px; overflow-y: auto;">
-                    <!-- Items will be injected here -->
-                </div>
+                <div id="checkoutMain">
+                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shopping-basket" style="color: #a855f7;"></i> Confirm Order
+                    </h2>
+                    
+                    <div id="cartItemsList" style="margin-bottom: 25px; max-height: 200px; overflow-y: auto;">
+                        <!-- Items will be injected here -->
+                    </div>
 
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
-                        <span>Total Amount:</span>
-                        <span id="cartTotal" style="color: #10b981;">₱0.00</span>
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
+                            <span>Total Amount:</span>
+                            <span id="cartTotal" style="color: #10b981;">₱0.00</span>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
+                    
+                    <div class="payment-option" onclick="selectPayment('COD')" id="payCOD">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <div>
+                            <h4>Cash on Delivery</h4>
+                            <p>Pay when your order arrives</p>
+                        </div>
+                    </div>
+
+                    <div class="payment-option" onclick="selectPayment('GCash')" id="payGCash">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>
+                            <h4>GCash</h4>
+                            <p>Pay via GCash transfer</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button class="btn-buy" style="background: #444; flex: 1;" onclick="closeCheckoutModal()">Cancel</button>
+                        <button id="btnPlaceOrder" class="btn-buy" style="flex: 2;" onclick="initiateOrder()" disabled>Place Order</button>
                     </div>
                 </div>
 
-                <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
-                
-                <div class="payment-option" onclick="selectPayment('COD')" id="payCOD">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <div>
-                        <h4>Cash on Delivery</h4>
-                        <p>Pay when your order arrives</p>
+                <!-- GCash Mock UI -->
+                <div id="gcashMock" style="display: none; text-align: center;">
+                    <h2 style="margin-top: 0; color: #2175f3;">GCash Checkout</h2>
+                    <div style="background: #2175f3; padding: 20px; border-radius: 20px; margin: 20px 0;">
+                        <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block;">
+                            <i class="fas fa-qrcode" style="font-size: 8rem; color: #000;"></i>
+                        </div>
+                        <p style="color: #fff; margin-top: 15px; font-weight: 700;">Scan to Pay</p>
                     </div>
-                </div>
-
-                <div class="payment-option" onclick="selectPayment('GCash')" id="payGCash">
-                    <i class="fas fa-mobile-alt"></i>
-                    <div>
-                        <h4>GCash</h4>
-                        <p>Pay via GCash transfer</p>
+                    <p style="color: rgba(255,255,255,0.6);">Please complete the payment in your GCash app.</p>
+                    <div style="margin-top: 30px;">
+                        <button class="btn-buy" style="background: #2175f3;" onclick="confirmGcashPayment()">
+                            <i class="fas fa-check-circle"></i> I have paid
+                        </button>
+                        <button class="btn-buy" style="background: transparent; color: #fff; margin-top: 10px;" onclick="cancelGcash()">Cancel</button>
                     </div>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 30px;">
-                    <button class="btn-buy" style="background: #444; flex: 1;" onclick="closeCheckoutModal()">Cancel</button>
-                    <button id="btnPlaceOrder" class="btn-buy" style="flex: 2;" onclick="placeOrder()" disabled>Place Order</button>
                 </div>
             </div>
         </div>
@@ -502,15 +522,35 @@
             document.getElementById('btnPlaceOrder').disabled = false;
         }
 
-        async function placeOrder() {
-            if (!selectedPayment) {
-                alert('Please select a payment method!');
-                return;
+        function initiateOrder() {
+            if (selectedPayment === 'GCash') {
+                document.getElementById('checkoutMain').style.display = 'none';
+                document.getElementById('gcashMock').style.display = 'block';
+            } else {
+                placeOrder();
             }
+        }
 
+        function cancelGcash() {
+            document.getElementById('gcashMock').style.display = 'none';
+            document.getElementById('checkoutMain').style.display = 'block';
+        }
+
+        function confirmGcashPayment() {
+            placeOrder();
+        }
+
+        async function placeOrder() {
             const btn = document.getElementById('btnPlaceOrder');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            const gcashBtn = document.querySelector('#gcashMock .btn-buy');
+            
+            if (selectedPayment === 'GCash') {
+                gcashBtn.disabled = true;
+                gcashBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Payment...';
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
 
             const formData = new FormData();
             formData.append('order_data', JSON.stringify({
@@ -528,21 +568,28 @@
 
                 const result = await response.json();
                 if (result.status === 'success') {
-                    alert('Order placed successfully! Transaction Code: ' + result.transaction_code);
+                    alert(result.message + '\nTransaction Code: ' + result.transaction_code);
                     cart = [];
                     updateCartUI();
                     closeCheckoutModal();
-                    location.reload(); // Refresh to see updated stock
+                    location.reload(); 
                 } else {
                     alert('Error: ' + result.message);
-                    btn.disabled = false;
-                    btn.textContent = 'Place Order';
+                    resetOrderButtons();
                 }
             } catch (error) {
                 alert('An error occurred. Please try again.');
-                btn.disabled = false;
-                btn.textContent = 'Place Order';
+                resetOrderButtons();
             }
+        }
+
+        function resetOrderButtons() {
+            const btn = document.getElementById('btnPlaceOrder');
+            const gcashBtn = document.querySelector('#gcashMock .btn-buy');
+            btn.disabled = false;
+            btn.textContent = 'Place Order';
+            gcashBtn.disabled = false;
+            gcashBtn.innerHTML = '<i class="fas fa-check-circle"></i> I have paid';
         }
     </script>
 

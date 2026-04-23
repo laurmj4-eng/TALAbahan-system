@@ -107,21 +107,30 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => implode(' ', $errors)])->setStatusCode(400);
         }
 
-        // Create the main order
+        // 5. Handle Mock GCash API Simulation
+        $paymentMethod = $orderData['payment_method'] ?? 'COD';
+        if ($paymentMethod === 'GCash') {
+            $paymentResult = $this->simulateGcashPayment($serverCalculatedTotal, $transactionCode);
+            if (!$paymentResult['success']) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'GCash Payment Failed: ' . $paymentResult['error']])->setStatusCode(400);
+            }
+        }
+
+        // 6. Create the main order
         $orderId = $orderModel->insert([
             'transaction_code' => $transactionCode,
             'customer_name'    => session()->get('username'), // Or actual customer name from user model
             'total_amount'     => $serverCalculatedTotal,
             'status'           => 'Pending',
             'notes'            => 'Customer online order',
-            'payment_method'   => $orderData['payment_method'] ?? 'COD',
+            'payment_method'   => $paymentMethod,
         ]);
 
         if (!$orderId) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to create order.'])->setStatusCode(500);
         }
 
-        // Save order items and update product stock
+        // 7. Save order items and update product stock
         foreach ($itemsToSave as $item) {
             $item['order_id'] = $orderId;
             $orderItemModel->insert($item);
@@ -130,10 +139,31 @@ class Dashboard extends BaseController
             $productModel->update($item['product_id'], ['current_stock' => new \CodeIgniter\Database\RawSql('current_stock - ' . $item['quantity'])]);
         }
 
-        // Record sales history (optional, if different from orders)
+        // 8. Record sales history (optional, if different from orders)
         $salesModel = new \App\Models\SalesModel();
         $salesModel->recordFromOrder($transactionCode, array_column($itemsToSave, 'product_name'), $serverCalculatedTotal);
 
-        return $this->response->setJSON(['status' => 'success', 'message' => 'Order placed!', 'transaction_code' => $transactionCode]);
+        return $this->response->setJSON([
+            'status' => 'success', 
+            'message' => ($paymentMethod === 'GCash' ? 'GCash Payment Successful! ' : '') . 'Order placed!', 
+            'transaction_code' => $transactionCode
+        ]);
+    }
+
+    /**
+     * Temporary Mock GCash API Simulation
+     */
+    private function simulateGcashPayment($amount, $refCode)
+    {
+        // Simulate external API call delay
+        usleep(1500000); // 1.5 seconds
+
+        // Simulate success for now
+        return [
+            'success' => true,
+            'transaction_id' => 'GC-' . strtoupper(bin2hex(random_bytes(4))),
+            'amount' => $amount,
+            'ref_code' => $refCode
+        ];
     }
 }

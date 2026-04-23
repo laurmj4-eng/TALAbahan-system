@@ -80,5 +80,5 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('order-items', 'Dashboard::orderItems');
-    $routes->post('place-order', 'Dashboard::placeOrder');
+    $routes->post('placeOrder', 'Dashboard::placeOrder');
 });
