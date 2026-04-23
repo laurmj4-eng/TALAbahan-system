@@ -14,14 +14,16 @@ class Dashboard extends BaseController
             return redirect()->to('/login');
         }
 
-        // 2. Fetch products from the database
+        // 2. Fetch products and shippable locations
         $productModel = new ProductModel();
+        $shippingModel = new \App\Models\ShippingLocationModel();
 
         // 3. Prepare data for the view
         $data =[
-            'title'    => 'Customer Portal',
-            'username' => session()->get('username'),
-            'products' => $productModel->findAll() // Sends products to the view
+            'title'             => 'Customer Portal',
+            'username'          => session()->get('username'),
+            'products'          => $productModel->findAll(),
+            'shippingLocations' => $shippingModel->where('is_active', 1)->findAll()
         ];
 
         // 4. Load the customer dashboard view
@@ -169,17 +171,24 @@ class Dashboard extends BaseController
      */
     public function validateLocation()
     {
-        $barangay = $this->request->getPost('barangay');
+        $barangay = trim($this->request->getPost('barangay'));
         if (empty($barangay)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'No location detected']);
         }
 
         $shippingModel = new \App\Models\ShippingLocationModel();
         
-        // Search for active barangay matching the name
+        // Simple search - MySQL is case-insensitive by default for VARCHAR
         $location = $shippingModel->where('barangay_name', $barangay)
                                  ->where('is_active', 1)
                                  ->first();
+
+        // If not found, try a broader search just in case
+        if (!$location) {
+            $location = $shippingModel->like('barangay_name', $barangay)
+                                     ->where('is_active', 1)
+                                     ->first();
+        }
 
         if ($location) {
             return $this->response->setJSON(['status' => 'success']);

@@ -462,7 +462,23 @@
 
                     <div class="location-input-group">
                         <label>Detected Barangay / Area</label>
-                        <input type="text" id="detectedBarangay" readonly placeholder="Detecting...">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
+                            <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
+                        <label style="color: #818cf8;">Select Correct Barangay Manually</label>
+                        <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
+                            <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
+                            <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
+                                <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                        <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 30px;">
@@ -602,6 +618,22 @@
         }
 
         // GEOLOCATION LOGIC
+        function toggleManualSelect() {
+            const group = document.getElementById('manualBarangayGroup');
+            group.style.display = group.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function handleManualSelect(val) {
+            if (val) {
+                // Clear previous errors immediately
+                const status = document.getElementById('locationError');
+                status.style.display = 'none';
+                
+                document.getElementById('detectedBarangay').value = val;
+                validateShippingLocation(val);
+            }
+        }
+
         function getLocation() {
             const status = document.getElementById('locationError');
             const btn = document.querySelector('.btn-location');
@@ -698,7 +730,7 @@
 
         function initiateOrder() {
             if (selectedPayment === 'GCash') {
-                document.getElementById('checkoutMain').style.display = 'none';
+                document.getElementById('checkoutPayment').style.display = 'none';
                 document.getElementById('gcashMock').style.display = 'block';
             } else {
                 placeOrder();
@@ -707,7 +739,7 @@
 
         function cancelGcash() {
             document.getElementById('gcashMock').style.display = 'none';
-            document.getElementById('checkoutMain').style.display = 'block';
+            document.getElementById('checkoutPayment').style.display = 'block';
         }
 
         function confirmGcashPayment() {

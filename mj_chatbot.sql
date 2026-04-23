@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 21, 2026 at 01:47 PM
+-- Generation Time: Apr 23, 2026 at 03:33 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -64,7 +64,8 @@ INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`
 (1, '2026-04-21-071900', 'App\\Database\\Migrations\\CreateOrdersTable', 'default', 'App', 1776758276, 1),
 (2, '2026-04-21-072000', 'App\\Database\\Migrations\\CreateOrderItemsTable', 'default', 'App', 1776758276, 1),
 (3, '2026-04-21-090000', 'App\\Database\\Migrations\\CreateAdvancedSeafoodModules', 'default', 'App', 1776758370, 2),
-(4, '2026-04-21-100000', 'App\\Database\\Migrations\\RemoveAdvancedSeafoodModules', 'default', 'App', 1776764245, 3);
+(4, '2026-04-21-100000', 'App\\Database\\Migrations\\RemoveAdvancedSeafoodModules', 'default', 'App', 1776764245, 3),
+(5, '2026-04-21-110000', 'App\\Database\\Migrations\\CreateSalesHistoryTable', 'default', 'App', 1776936710, 4);
 
 -- --------------------------------------------------------
 
@@ -86,6 +87,15 @@ CREATE TABLE `orders` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `transaction_code`, `customer_name`, `total_amount`, `status`, `notes`, `payment_method`, `shipping_barangay`, `shipping_phone`, `created_at`, `updated_at`) VALUES
+(1, 'ORD-69EA021EB5182', 'Mj Laurito', 700.00, 'Processing', 'Customer online order', 'COD', NULL, NULL, '2026-04-23 11:27:26', '2026-04-23 12:44:37'),
+(2, 'ORD-69EA15A176419', 'Mj Laurito', 700.00, 'Cancelled', 'Customer online order', 'COD', NULL, NULL, '2026-04-23 12:50:41', '2026-04-23 12:51:39'),
+(3, 'ORD-69EA1EAFCACCC', 'Mj Laurito', 500.00, 'Pending', 'Customer online order', 'COD', 'bocana', '09129238032', '2026-04-23 13:29:19', '2026-04-23 13:29:19');
+
 -- --------------------------------------------------------
 
 --
@@ -102,6 +112,17 @@ CREATE TABLE `order_items` (
   `unit_price` decimal(10,2) NOT NULL,
   `subtotal` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `unit`, `quantity`, `unit_price`, `subtotal`) VALUES
+(1, 1, 3, 'pasayan', '', 1.00, 500.00, 500.00),
+(2, 1, 1, 'bangros', '', 1.00, 200.00, 200.00),
+(3, 2, 3, 'pasayan', '', 1.00, 500.00, 500.00),
+(4, 2, 1, 'bangros', '', 1.00, 200.00, 200.00),
+(5, 3, 3, 'pasayan', '', 1.00, 500.00, 500.00);
 
 -- --------------------------------------------------------
 
@@ -129,8 +150,32 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `cost_price`, `selling_price`, `initial_stock`, `current_stock`, `wastage_qty`, `unit`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'bangros', 212.00, 200.00, 2.00, 23.00, 0.00, '', 'active', '2026-04-21 07:37:33', '2026-04-21 09:06:27', NULL);
+INSERT INTO `products` (`id`, `name`, `cost_price`, `selling_price`, `initial_stock`, `current_stock`, `wastage_qty`, `unit`, `image`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 'bangros', 212.00, 200.00, 2.00, 23.00, 0.00, '', '1776942474_a709a6b323bc76e7d97e.jpeg', 'active', '2026-04-21 07:37:33', '2026-04-23 11:07:54', NULL),
+(3, 'pasayan', 200.00, 500.00, 20.00, 20.00, 0.00, '', '1776941975_58dd3f54ca0bdbf59570.jpg', 'active', '2026-04-23 10:59:35', '2026-04-23 10:59:35', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sales_history`
+--
+
+CREATE TABLE `sales_history` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `transaction_code` varchar(50) NOT NULL,
+  `items_summary` text DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `created_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sales_history`
+--
+
+INSERT INTO `sales_history` (`id`, `transaction_code`, `items_summary`, `total_amount`, `created_at`) VALUES
+(1, 'ORD-69EA021EB5182', 'pasayan, bangros', 700.00, '2026-04-23 11:27:26'),
+(2, 'ORD-69EA15A176419', 'pasayan, bangros', 700.00, '2026-04-23 12:50:41'),
+(3, 'ORD-69EA1EAFCACCC', 'pasayan', 500.00, '2026-04-23 13:29:20');
 
 -- --------------------------------------------------------
 
@@ -139,14 +184,21 @@ INSERT INTO `products` (`id`, `name`, `cost_price`, `selling_price`, `initial_st
 --
 
 CREATE TABLE `shipping_locations` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL,
   `barangay_name` varchar(255) NOT NULL,
   `city_municipality` varchar(255) DEFAULT 'Bacolod City',
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `shipping_locations`
+--
+
+INSERT INTO `shipping_locations` (`id`, `barangay_name`, `city_municipality`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'dancalan', 'Ilog', 1, '2026-04-23 13:10:32', '2026-04-23 13:10:32'),
+(2, 'bocana', 'ilog', 1, '2026-04-23 13:10:50', '2026-04-23 13:10:50');
 
 -- --------------------------------------------------------
 
@@ -210,6 +262,19 @@ ALTER TABLE `products`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `sales_history`
+--
+ALTER TABLE `sales_history`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `transaction_code` (`transaction_code`);
+
+--
+-- Indexes for table `shipping_locations`
+--
+ALTER TABLE `shipping_locations`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -224,25 +289,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sales_history`
+--
+ALTER TABLE `sales_history`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `shipping_locations`
+--
+ALTER TABLE `shipping_locations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
