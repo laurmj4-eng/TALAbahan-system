@@ -1,17 +1,19 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     
     /* Background Image Additions */
-    background-image: url('../images/pic1.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/pic1.jpg'); 
     background-size: cover;                      
     background-position: center;                 
     background-repeat: no-repeat;                
+    background-attachment: fixed;
     
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
+    overflow-x: hidden;
 }
 
 /* =========================================
@@ -19,131 +21,230 @@ body {
    ========================================= */
 .top-right-logo {
     position: absolute;
-    top: 20px;
-    right: 30px;
-    width: 220px; /* <--- INCREASED SIZE HERE (was 150px) */
+    top: 30px;
+    right: 40px;
+    width: 200px;
     height: auto;
     z-index: 1000;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.top-right-logo:hover {
+    transform: scale(1.05);
 }
 
 .login-container {
-    /* LOWERED TO 0.15 FOR MUCH MORE TRANSPARENCY */
-    background-color: rgba(255, 255, 255, 0.15); 
-    
-    /* Frosted Glass Blur Effect (Lowered to 8px to see the food more clearly) */
-    backdrop-filter: blur(8px); 
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
 
-    padding: 40px;
-    border-radius: 8px;
+    padding: 50px 40px;
+    border-radius: 24px;
     
-    /* Strong shadow and subtle border to keep the shape defined */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
-    border: 1px solid rgba(255, 255, 255, 0.4); /* Made border a bit more transparent too */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     
     width: 100%;
-    max-width: 350px;
+    max-width: 400px;
     text-align: center;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Darkened text slightly so it's readable against the transparent background */
-h2 { margin-bottom: 20px; color: #111; }
+.login-container:hover {
+    transform: translateY(-5px);
+}
 
-/* Keep labels (like 'Remember Me') highly visible */
-label {
-    display: inline-block;
-    color: #000; /* Solid black */
-    font-weight: 700; /* Bold text */
-    font-size: 13px;
-    cursor: pointer;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9); /* Stronger white glow so it pops over the transparent food image */
+h2 { 
+    margin-bottom: 30px; 
+    color: #ffffff; 
+    font-weight: 800;
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.remember-me-container {
+    display: flex;
+    align-items: center;
+    margin: 15px 0 25px 0;
     text-align: left;
 }
 
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    background-color: rgba(255, 255, 255, 0.9); 
+label {
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-align: left;
+    gap: 10px;
+    padding: 5px 0;
 }
 
-/* Fixes the checkbox so it doesn't stretch to 100% width */
+input:not([type="checkbox"]) {
+    width: 100%;
+    padding: 14px 18px;
+    margin: 12px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input:not([type="checkbox"]):focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
 input[type="checkbox"] {
-    width: auto;
-    margin: 10px 5px 10px 0;
-    vertical-align: middle;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.2);
     cursor: pointer;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+input[type="checkbox"]:checked {
+    background: #007bff;
+    border-color: #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+input[type="checkbox"]:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+input[type="checkbox"]:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
 button {
     width: 100%;
-    padding: 12px;
-    background-color: #007bff;
+    padding: 14px;
+    background: #007bff;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
-    margin-top: 10px;
+    font-weight: 600;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-button:hover { background-color: #0056b3; }
+button:hover { 
+    background: #0069d9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
 
-.signup-btn { background-color: #28a745; }
-.signup-btn:hover { background-color: #218838; }
+button:active {
+    transform: translateY(0);
+}
+
+button[type="button"]:not(.google-btn) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
+button[type="button"]:not(.google-btn):hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
 
 .google-btn {
-    background-color: #db4437;
+    background: #ffffff;
+    color: #444;
     margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.google-btn:hover { background-color: #c23321; }
+.google-btn:hover { 
+    background: #f8f9fa;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
 
 .links {
-    margin-top: 15px;
+    margin-top: 25px;
     font-size: 14px;
 }
 
 .links a {
-    /* Darkened blue so it stands out */
-    color: #003e80; 
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     cursor: pointer;
-    font-weight: 600;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); /* Added faint glow for readability */
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
-.links a:hover { text-decoration: underline; }
+.links a:hover { 
+    color: white;
+    text-decoration: underline; 
+}
 
 .divider {
-    margin: 20px 0;
-    border-bottom: 1px solid #444; /* Darker line for contrast */
+    margin: 30px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
 }
 
 .divider span {
-    /* Matched to the new container's extreme transparency */
-    background-color: rgba(255, 255, 255, 0.15); 
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 0 10px;
+    background: transparent;
+    backdrop-filter: blur(20px);
+    padding: 0 15px;
     position: absolute;
-    top: -10px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    color: #111; /* Darkened text */
-    font-weight: bold;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Added for reCAPTCHA spacing */
 .g-recaptcha {
-    margin: 15px 0;
+    margin: 20px 0;
     display: flex;
     justify-content: center;
+    filter: brightness(0.9) contrast(1.1);
 }

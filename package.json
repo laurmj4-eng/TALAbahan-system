@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"node server.js\" \"php spark serve\""
+    "dev": "concurrently \"node server.js\" \"php -d extension=intl -S localhost:8080 -t public system/rewrite.php\""
   },
   "dependencies": {
     "cors": "^2.8.6",
