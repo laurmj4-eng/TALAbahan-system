@@ -178,10 +178,26 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .modal-close-btn:hover {
+            color: #fff;
         }
 
         .modal-header {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 20px;
             color: #fff;
@@ -235,6 +251,15 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .items-table tfoot {
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .items-table tfoot td {
+            padding: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         .btn-close-modal {
             padding: 10px 20px;
             background: rgba(107, 114, 128, 0.3);
@@ -248,6 +273,9 @@
         }
 
         .btn-close-modal:hover {
+            background: rgba(107, 114, 128, 0.5);
+            color: #fff;
+        }
             background: rgba(107, 114, 128, 0.4);
         }
     </style>
@@ -259,87 +287,104 @@
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
-        <div class="header">
-            <h1>📋 Order Tracking</h1>
-            <a href="<?= site_url('staff/dashboard') ?>" class="btn btn-back">← Back to Dashboard</a>
-        </div>
+            <div class="header">
+                <h1><i class="fas fa-clipboard-list"></i> Order Tracking</h1>
+                <a href="<?= site_url('staff/dashboard') ?>" class="btn btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
 
-        <div class="glass-panel">
-            <div class="table-responsive">
-                <table id="ordersTable">
+            <div class="glass-panel" style="padding: 20px; border-radius: 15px;">
+                <table>
                     <thead>
                         <tr>
-                            <th>Transaction Code</th>
-                            <th>Customer</th>
-                            <th>Items</th>
-                            <th>Total Amount</th>
-                            <th>Status</th>
-                            <th>Date & Time</th>
-                            <th>Actions</th>
+                            <th>TXN CODE</th>
+                            <th>DATE</th>
+                            <th>CUSTOMER</th>
+                            <th>ITEMS</th>
+                            <th>TOTAL AMOUNT</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody id="ordersBody">
-                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading orders...</td></tr>
+                    <tbody>
+                        <?php if (!empty($orders)): foreach ($orders as $order): ?>
+                            <tr>
+                                <td><strong style="color: #818cf8;"><?= esc($order['transaction_code']) ?></strong></td>
+                                <td><?= date('M d, Y h:i A', strtotime($order['created_at'])) ?></td>
+                                <td><strong style="color: #c084fc;"><?= esc($order['customer_name']) ?: 'Walk-in Customer' ?></strong></td>
+                                <td><?= esc($order['item_count']) ?> items</td>
+                                <td>₱<?= number_format($order['total_amount'], 2) ?></td>
+                                <td>
+                                    <select onchange="updateStatus(<?= $order['id'] ?>, this.value)" style="padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.4); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem;">
+                                        <option value="Pending" <?= $order['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
+                                        <option value="Completed" <?= $order['status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn-view" onclick="viewOrderDetails(<?= $order['id'] ?>)">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; else: ?>
+                            <tr><td colspan="7" class="empty-state">No orders found.</td></tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
-        </div>
     </main>
 
-    <!-- ORDER DETAIL MODAL -->
-    <div id="orderModal" class="modal">
+    <div id="orderDetailModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">Order Details</div>
+            <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            <h2 class="modal-header">Order Details</h2>
             
-            <div class="order-detail-row">
-                <div class="detail-item">
-                    <div class="detail-label">Transaction Code</div>
-                    <div class="detail-value" id="detailTxnCode">-</div>
+            <div class="order-detail">
+                <div class="order-detail-row">
+                    <div class="detail-item">
+                        <div class="detail-label">Transaction Code</div>
+                        <div class="detail-value" id="modal-txn-code"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Customer Name</div>
+                        <div class="detail-value" id="modal-customer-name"></div>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Customer Name</div>
-                    <div class="detail-value" id="detailCustomer">-</div>
-                </div>
-            </div>
-
-            <div class="order-detail-row">
-                <div class="detail-item">
-                    <div class="detail-label">Total Amount</div>
-                    <div class="detail-value" id="detailTotal" style="color: #86efac;">₱0.00</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Status</div>
-                    <div class="detail-value" id="detailStatus">-</div>
-                </div>
-            </div>
-
-            <div class="order-detail-row">
-                <div class="detail-item">
-                    <div class="detail-label">Date & Time</div>
-                    <div class="detail-value" id="detailDateTime">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Items Count</div>
-                    <div class="detail-value" id="detailItemCount">0</div>
+                <div class="order-detail-row">
+                    <div class="detail-item">
+                        <div class="detail-label">Order Date</div>
+                        <div class="detail-value" id="modal-order-date"></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="modal-status"></div>
+                    </div>
                 </div>
             </div>
 
-            <h3 style="margin-top: 25px; margin-bottom: 15px; font-size: 1.1rem;">Order Items</h3>
+            <h3 style="color: #fff; margin-top: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Items</h3>
             <table class="items-table">
                 <thead>
                     <tr>
                         <th>Product</th>
-                        <th>Qty</th>
                         <th>Unit Price</th>
+                        <th>Quantity</th>
                         <th>Subtotal</th>
                     </tr>
                 </thead>
-                <tbody id="detailItems">
-                    <tr><td colspan="4">Loading items...</td></tr>
+                <tbody id="modal-items-body">
+                    <!-- Order items will be loaded here by JS -->
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;">Total:</td>
+                        <td id="modal-total-amount"></td>
+                    </tr>
+                </tfoot>
             </table>
 
-            <button class="btn-close-modal" onclick="closeOrderModal()">Close</button>
+            <div style="text-align: right; margin-top: 30px;">
+                <button class="btn-close-modal" onclick="closeModal()">Close</button>
+            </div>
         </div>
     </div>
 
@@ -377,51 +422,103 @@
                         <td><span class="status-badge ${statusClass}">${order.status}</span></td>
                         <td style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">${formattedDate}</td>
                         <td>
-                            <button class="btn-view" onclick="viewOrder(${order.id})">View Details</button>
+                            <button class="btn-view" onclick="viewOrderDetails(${order.id})">View Details</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        async function viewOrder(orderId) {
-            try {
-                const response = await fetch(`<?= site_url('staff/getOrderDetail') ?>/${orderId}`);
-                const order = await response.json();
-                
-                document.getElementById('detailTxnCode').textContent = order.transaction_code || '-';
-                document.getElementById('detailCustomer').textContent = order.customer_name || 'N/A';
-                document.getElementById('detailTotal').textContent = '₱' + parseFloat(order.total_amount || 0).toFixed(2);
-                document.getElementById('detailStatus').textContent = order.status;
-                document.getElementById('detailItemCount').textContent = (order.items || []).length;
-                
-                const dateObj = new Date(order.created_at);
-                document.getElementById('detailDateTime').textContent = dateObj.toLocaleString();
+        async function viewOrderDetails(orderId) {
+            const modal = document.getElementById('orderDetailModal');
+            modal.classList.add('show');
 
-                // Render items table
-                const itemsBody = document.getElementById('detailItems');
-                if (order.items && order.items.length > 0) {
-                    itemsBody.innerHTML = order.items.map(item => `
-                        <tr>
-                            <td>${item.product_name}</td>
-                            <td>${parseFloat(item.quantity || 0).toFixed(2)} ${item.unit || 'pc'}</td>
-                            <td>₱${parseFloat(item.unit_price || 0).toFixed(2)}</td>
-                            <td style="color: #86efac; font-weight: 600;">₱${parseFloat(item.subtotal || 0).toFixed(2)}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    itemsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: rgba(255,255,255,0.5);">No items</td></tr>';
+            try {
+                const response = await fetch(`<?= site_url('staff/getOrderDetail/') ?>${orderId}`);
+                const result = await response.json();
+
+                if (result.error) {
+                    alert(result.error);
+                    closeModal();
+                    return;
                 }
 
-                document.getElementById('orderModal').classList.add('show');
+                const order = result; // Assuming the controller returns the order directly
+
+                document.getElementById('modal-txn-code').textContent = order.transaction_code;
+                document.getElementById('modal-customer-name').textContent = order.customer_name || 'Walk-in Customer';
+                document.getElementById('modal-order-date').textContent = new Date(order.created_at).toLocaleString();
+                document.getElementById('modal-status').textContent = order.status;
+
+                const itemsBody = document.getElementById('modal-items-body');
+                itemsBody.innerHTML = '';
+                let totalAmount = 0;
+
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach(item => {
+                        itemsBody.innerHTML += `
+                            <tr>
+                                <td>${item.product_name}</td>
+                                <td>₱${parseFloat(item.unit_price).toFixed(2)}</td>
+                                <td>${item.quantity} ${item.unit}</td>
+                                <td>₱${parseFloat(item.subtotal).toFixed(2)}</td>
+                            </tr>
+                        `;
+                        totalAmount += parseFloat(item.subtotal);
+                    });
+                } else {
+                    itemsBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:rgba(255,255,255,0.6);">No items found for this order.</td></tr>`;
+                }
+                document.getElementById('modal-total-amount').textContent = `₱${totalAmount.toFixed(2)}`;
+
             } catch (error) {
                 console.error('Error fetching order details:', error);
-                alert('Error loading order details');
+                alert('Failed to load order details.');
+                closeModal();
             }
         }
 
-        function closeOrderModal() {
-            document.getElementById('orderModal').classList.remove('show');
+        function closeModal() {
+            document.getElementById('orderDetailModal').classList.remove('show');
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            // CSRF Token Info from CodeIgniter
+            const csrfTokenName = '<?= csrf_token() ?>';
+            const csrfHash = document.querySelector('input[name="' + csrfTokenName + '"]').value;
+
+            const formData = new FormData();
+            formData.append('id', orderId);
+            formData.append('status', newStatus);
+            formData.append(csrfTokenName, csrfHash);
+
+            try {
+                const response = await fetch('<?= site_url('admin/orders/updateStatus') ?>', { // Reusing admin endpoint for now
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alert('Order status updated successfully!');
+                    // Optionally, refresh the table or update the specific row
+                    location.reload(); // Simple reload for now
+                } else {
+                    alert('Failed to update status: ' + (result.message || 'Unknown error'));
+                    // Update CSRF token on failure
+                    if (result.token) {
+                        document.querySelector('input[name="' + csrfTokenName + '"]').value = result.token;
+                    }
+                    location.reload(); // Reload to revert status if update failed
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('An error occurred while updating order status.');
+                location.reload(); // Reload to revert status if update failed
+            }
         }
 
         // Load orders when page loads

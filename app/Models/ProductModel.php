@@ -10,7 +10,7 @@ class ProductModel extends Model
     protected $primaryKey       = 'id';
     protected $allowedFields    = [
         'name', 'cost_price', 'selling_price', 
-        'initial_stock', 'current_stock', 'wastage_qty', 'unit'
+        'initial_stock', 'current_stock', 'wastage_qty', 'unit', 'image'
     ];
 
     protected $useTimestamps = true;

@@ -8,10 +8,10 @@
 <main class="main-content">
     
     <div class="card glass-panel">
-        <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">Customer Orders 📑</h2>
+        <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 0;">Customer Orders 📑</h2>
         <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">View and track all customer transactions and fulfillment status.</p>
 
-        <div class="table-responsive glass-panel">
+        <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
             <table class="premium-table">
                 <thead>
                     <tr>
@@ -29,17 +29,19 @@
                         <tr>
                             <td><strong style="color: #818cf8;"><?= esc($o['transaction_code']) ?></strong></td>
                             <td><?= date('M d, Y h:i A', strtotime($o['created_at'])) ?></td>
-                            <td><strong style="color: #fff;"><?= esc($o['customer_name']) ?: 'Walk-in Customer' ?></strong></td>
+                            <td><strong style="color: #c084fc;"><?= esc($o['customer_name']) ?: 'Walk-in Customer' ?></strong></td>
                             <td><?= esc($o['item_count']) ?> items</td>
                             <td>₱<?= number_format($o['total_amount'], 2) ?></td>
                             <td>
-                                <select onchange="updateStatus(<?= $o['id'] ?>, this.value)" style="padding: 5px; border-radius: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                                <select onchange="updateStatus(<?= $o['id'] ?>, this.value)" style="padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.4); color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem;">
                                     <option value="Pending" <?= $o['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
                                     <option value="Completed" <?= $o['status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
                                 </select>
                             </td>
                             <td class="action-cell">
-                                <button onclick="viewOrderDetails(<?= $o['id'] ?>)" class="btn-edit" style="background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3);">👁️ View Details</button>
+                                <button onclick="viewOrderDetails(<?= $o['id'] ?>)" class="btn-edit" style="background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); padding: 8px 15px; border-radius: 10px; font-size: 0.9rem;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; else: ?>
@@ -54,7 +56,7 @@
 <!-- Order Details Modal -->
 <div id="orderModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
     <div class="glass-panel" style="background: #1e1b4b; padding: 30px; border-radius: 20px; max-width: 600px; width: 90%;">
-        <h3 id="modalTitle" style="margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">Order Details</h3>
+        <h3 id="modalTitle" style="margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; color: #fff;">Order Details</h3>
         
         <table class="premium-table" style="margin-top: 20px;">
             <thead>
@@ -75,7 +77,9 @@
         </div>
 
         <div style="text-align: right; margin-top: 30px;">
-            <button onclick="document.getElementById('orderModal').style.display='none'" class="btn-primary" style="padding: 10px 20px; height: auto;">Close Modal</button>
+            <button onclick="document.getElementById('orderModal').style.display='none'" class="btn-primary" style="padding: 10px 20px; height: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;">
+                <i class="fas fa-times-circle"></i> Close Modal
+            </button>
         </div>
     </div>
 </div>

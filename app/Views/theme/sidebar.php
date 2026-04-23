@@ -3,10 +3,11 @@
     $username = session()->get('username') ?? 'User';
     $is_dashboard = url_is($role.'/dashboard*') || url_is('dashboard*');
     $is_order_items = url_is('admin/orders/items*');
-    $is_orders = url_is('admin/orders*') && ! $is_order_items;
+    $is_orders = url_is('admin/orders*');
     $is_products = url_is('staff/products*') || url_is('admin/products*');
     $is_staff_orders = url_is('staff/orders*');
     $is_sales = url_is('staff/salesHistory*') || url_is('admin/sales*');
+    $is_customer_order_items = url_is('customer/order-items*');
 ?>
 
 <?= $this->include('theme/sidebar_styles') ?>
@@ -37,6 +38,15 @@
                     <span>Dashboard</span>
                 </a>
             </li>
+
+            <?php if ($role === 'customer'): ?>
+                <li>
+                    <a href="<?= site_url('customer/order-items') ?>" class="<?= $is_customer_order_items ? 'active' : '' ?>">
+                        <i class="fas fa-history"></i> 
+                        <span>My Orders</span>
+                    </a>
+                </li>
+            <?php endif; ?>
 
             <?php if ($role === 'admin'): ?>
                 <!-- MANAGEMENT SECTION FOR ADMIN -->

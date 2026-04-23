@@ -38,6 +38,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
     $routes->post('products/store', 'ProductController::store');
+    $routes->get('products/getDetails/(:num)', 'ProductController::getDetails/$1');
+    $routes->post('products/update', 'ProductController::update');
+    $routes->post('products/delete', 'ProductController::delete');
 
     // --- Order Routes ---
     $routes->get('orders', 'Orders::index');
@@ -66,6 +69,7 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
     $routes->get('orders', 'StaffController::orders');
     $routes->get('getOrders', 'StaffController::getOrders');
     $routes->get('getOrderDetail/(:num)', 'StaffController::getOrderDetail/$1');
+    $routes->post('updateOrderStatus', 'StaffController::updateOrderStatus');
     
     // Sales History
     $routes->get('salesHistory', 'StaffController::salesHistory');
@@ -75,4 +79,6 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
 // --- 4. CUSTOMER GROUP ---
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('order-items', 'Dashboard::orderItems');
+    $routes->post('place-order', 'Dashboard::placeOrder');
 });

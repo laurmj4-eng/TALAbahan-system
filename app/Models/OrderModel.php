@@ -17,7 +17,7 @@ class OrderModel extends Model
     protected $useTimestamps    = true;
 
     protected $allowedFields = [
-        'transaction_code', 'customer_name', 'total_amount', 'status', 'notes'
+        'transaction_code', 'customer_name', 'total_amount', 'status', 'notes', 'payment_method'
     ];
 
     protected $validationRules = [

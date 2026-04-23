@@ -8,7 +8,16 @@
 <main class="main-content">
     
     <?php if(session()->getFlashdata('msg')): ?>
-        <div class="alert glass-panel" id="system-alert">✅ <?= session()->getFlashdata('msg') ?></div>
+        <div class="premium-alert success glass-panel" id="system-alert">
+            <i class="fas fa-check-circle"></i>
+            <div><?= session()->getFlashdata('msg') ?></div>
+        </div>
+    <?php endif; ?>
+    <?php if(session()->getFlashdata('error')): ?>
+        <div class="premium-alert error glass-panel" id="system-alert">
+            <i class="fas fa-times-circle"></i>
+            <div><?= session()->getFlashdata('error') ?></div>
+        </div>
     <?php endif; ?>
 
     <!-- USER MANAGEMENT SECTION -->
@@ -57,31 +66,50 @@
 </main>
 
 <!-- EDIT MODAL (Specific to this view) -->
-<div id="editModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:1000; align-items:center; justify-content:center;">
-    <div class="card glass-panel" style="width:100%; max-width:450px;">
-        <button onclick="document.getElementById('editModal').style.display='none'" style="float:right; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
-        <h2>Override Protocol</h2>
-        <form action="<?= site_url('admin/updateUser') ?>" method="post" class="premium-form" style="display:flex; flex-direction:column;">
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="closeModal('editModal')">&times;</button>
+        <h2 class="modal-header">Override Protocol</h2>
+        <form action="<?= site_url('admin/updateUser') ?>" method="post" class="premium-form">
+            <?= csrf_field() ?>
             <input type="hidden" name="id" id="edit_id">
-            <div class="form-group"><label>Node Identity</label><input type="text" name="username" id="edit_username" required></div>
-            <div class="form-group"><label>Transmission Vector</label><input type="email" name="email" id="edit_email" required></div>
-            <div class="form-group"><label>Clearance Array</label>
+            <div class="form-group">
+                <label for="edit_username">Node Identity</label>
+                <input type="text" name="username" id="edit_username" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_email">Transmission Vector</label>
+                <input type="email" name="email" id="edit_email" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_password">New Clearance Key (Optional)</label>
+                <input type="password" name="password" id="edit_password" placeholder="Leave blank to keep current password">
+            </div>
+            <div class="form-group">
+                <label for="edit_role">Clearance Array</label>
                 <select name="role" id="edit_role" required>
-                    <option value="admin">Administrator</option><option value="staff">Staff Command</option><option value="customer">Customer Standard</option>
+                    <option value="admin">Administrator</option>
+                    <option value="staff">Staff Command</option>
+                    <option value="customer">Customer Standard</option>
                 </select>
             </div>
-            <button type="submit" class="btn-primary" style="margin-top: 15px;">Execute Update</button>
+            <button type="submit" class="btn-primary">Execute Update</button>
         </form>
     </div>
 </div>
 
 <script>
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('show');
+    }
+
     function openEditModal(id, username, email, role) {
         document.getElementById('edit_id').value = id;
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_email').value = email;
         document.getElementById('edit_role').value = role;
-        document.getElementById('editModal').style.display = 'flex';
+        document.getElementById('edit_password').value = ''; // Clear password field on open
+        document.getElementById('editModal').classList.add('show');
     }
 </script>
 

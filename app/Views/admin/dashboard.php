@@ -70,6 +70,10 @@
                 <i class="fas fa-file-invoice-dollar color-success"></i>
                 <span>Detailed Sales</span>
             </a>
+            <a onclick="switchTab('orders')" class="premium-action-btn glass-panel">
+                <i class="fas fa-boxes color-info"></i>
+                <span>Order Management</span>
+            </a>
             <a href="<?= site_url('admin/users') ?>" class="premium-action-btn glass-panel">
                 <i class="fas fa-users-cog color-warning"></i>
                 <span>User Management</span>
@@ -87,9 +91,8 @@
         <?= $this->include('admin/sales_history_view') ?>
     </section>
 
-    
-    <!-- order view -->
-    <section id="tab-sales" class="tab-section">
+    <!-- ORDER VIEW TAB -->
+    <section id="tab-orders" class="tab-section">
         <?= $this->include('admin/orderview') ?>
     </section>
 

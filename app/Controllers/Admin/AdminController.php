@@ -5,6 +5,8 @@ namespace App\Controllers\Admin; // Updated namespace for the subfolder
 // Import the BaseController and the UserModel so this file can find them
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Models\OrderModel; // Add OrderModel
+use App\Models\ProductModel; // Add ProductModel
 
 class AdminController extends BaseController
 {
@@ -18,10 +20,71 @@ class AdminController extends BaseController
             return redirect()->to('/login')->with('error', 'Access Denied...');
         }
 
+        $orderModel = new OrderModel();
+        $productModel = new ProductModel();
+
         $data = [
             'title'    => 'Admin Dashboard',
             'username' => session()->get('username'),
+            'cards'    => [
+                'today_sales'      => 0,
+                'today_orders'     => 0,
+                'low_stock_count'  => 0,
+            ],
+            'chart'    => [
+                'labels' => [],
+                'sales'  => [],
+            ],
         ];
+
+        // Get today's sales and order count
+        $today = date('Y-m-d');
+        $data['cards']['today_sales'] = (float) $orderModel
+            ->selectSum('total_amount')
+            ->where('DATE(created_at)', $today)
+            ->first()['total_amount'] ?? 0;
+
+        $data['cards']['today_orders'] = (int) $orderModel
+            ->where('DATE(created_at)', $today)
+            ->countAllResults();
+
+        // Get low stock count
+        $data['cards']['low_stock_count'] = (int) $productModel
+            ->where('current_stock <=', 5)
+            ->countAllResults();
+
+        // Get 7-day sales trend for chart
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
+        $salesTrend = $orderModel
+            ->select('DATE(created_at) as order_date, SUM(total_amount) as daily_sales')
+            ->where('DATE(created_at) >=', $sevenDaysAgo)
+            ->groupBy('order_date')
+            ->orderBy('order_date', 'ASC')
+            ->findAll();
+
+        $chartLabels = [];
+        $chartSales = [];
+        $period = new \DatePeriod(
+            new \DateTime($sevenDaysAgo),
+            new \DateInterval('P1D'),
+            new \DateTime($today . ' +1 day')
+        );
+
+        foreach ($period as $date) {
+            $dateStr = $date->format('Y-m-d');
+            $chartLabels[] = $date->format('M d');
+            $dailySales = 0;
+            foreach ($salesTrend as $trend) {
+                if ($trend['order_date'] === $dateStr) {
+                    $dailySales = (float)$trend['daily_sales'];
+                    break;
+                }
+            }
+            $chartSales[] = $dailySales;
+        }
+
+        $data['chart']['labels'] = $chartLabels;
+        $data['chart']['sales'] = $chartSales;
 
         // Points to app/Views/admin/dashboard.php
         return view('admin/dashboard', $data);

@@ -208,37 +208,53 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 9999;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .modal.show {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            opacity: 1;
         }
 
         .modal-content {
-            background: rgba(30, 27, 75, 0.95);
+            background: rgba(20, 20, 45, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            border-radius: 30px;
             padding: 40px;
-            max-width: 600px;
             width: 90%;
+            max-width: 650px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
             max-height: 90vh;
             overflow-y: auto;
         }
 
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
         .modal-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 30px;
             color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+            background: linear-gradient(to right, #fff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .form-group {
@@ -348,6 +364,7 @@
                 <table id="productsTable">
                     <thead>
                         <tr>
+                            <th>Picture</th>
                             <th>Product Name</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
@@ -357,7 +374,7 @@
                         </tr>
                     </thead>
                     <tbody id="productsBody">
-                        <tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
+                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -417,6 +434,11 @@
                     <input type="number" id="wastageQty" name="wastage_qty" step="0.01" min="0" value="0">
                 </div>
 
+                <div class="form-group">
+                    <label for="image">Product Picture</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn-modal cancel" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn-modal primary">Save Product</button>
@@ -464,12 +486,18 @@
             const tbody = document.getElementById('productsBody');
             
             if (!products || products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
                 return;
             }
 
             tbody.innerHTML = products.map(p => `
                 <tr>
+                    <td>
+                        ${p.image ? 
+                            `<img src="<?= base_url('uploads/products/') ?>/${p.image}" alt="${p.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">` :
+                            `<div style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-image" style="color: rgba(255,255,255,0.2);"></i></div>`
+                        }
+                    </td>
                     <td><strong>${p.name}</strong></td>
                     <td>₱${parseFloat(p.cost_price || 0).toFixed(2)}</td>
                     <td>₱${parseFloat(p.selling_price || 0).toFixed(2)}</td>
@@ -498,6 +526,32 @@
             document.getElementById('productModal').classList.remove('show');
         }
 
+        async function editProduct(productId) {
+            try {
+                const response = await fetch(`<?= site_url('staff/getDetails/') ?>${productId}`);
+                const p = await response.json();
+                
+                if (p.error) {
+                    showAlert(p.error, 'error');
+                    return;
+                }
+
+                document.getElementById('productId').value = p.id;
+                document.getElementById('productName').value = p.name;
+                document.getElementById('unit').value = p.unit;
+                document.getElementById('costPrice').value = p.cost_price;
+                document.getElementById('sellingPrice').value = p.selling_price;
+                document.getElementById('initialStock').value = p.initial_stock;
+                document.getElementById('currentStock').value = p.current_stock;
+                document.getElementById('wastageQty').value = p.wastage_qty;
+
+                document.querySelector('.modal-header').textContent = 'Edit Product';
+                document.getElementById('productModal').classList.add('show');
+            } catch (error) {
+                showAlert('Error fetching product details', 'error');
+            }
+        }
+
         function editStock(productId, productName, currentStock) {
             document.getElementById('stockProductId').value = productId;
             document.getElementById('stockProductName').textContent = productName;
@@ -511,14 +565,19 @@
 
         async function handleProductSubmit(e) {
             e.preventDefault();
-            const formData = new FormData(document.getElementById('productForm'));
-            const data = Object.fromEntries(formData);
+            const productId = document.getElementById('productId').value;
+            const url = productId ? '<?= site_url('staff/updateProduct') ?>' : '<?= site_url('staff/addProduct') ?>';
+            const form = document.getElementById('productForm');
+            const formData = new FormData(form);
+            if (productId) formData.append('id', productId);
 
             try {
-                const response = await fetch('<?= site_url('staff/addProduct') ?>', {
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams(data)
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
 
                 const result = await response.json();

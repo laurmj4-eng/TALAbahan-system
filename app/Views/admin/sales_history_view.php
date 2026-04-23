@@ -1,15 +1,22 @@
-<div class="card glass-panel">
-    <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">Financial Ledger</h2>
+<div class="card glass-panel" style="padding: 40px; border-radius: 30px;">
+    <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 0;">Financial Ledger 📈</h2>
     <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Real-time transaction logs and revenue records.</p>
     
-    <div class="table-responsive glass-panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <input type="text" id="salesSearch" onkeyup="filterSalesTable()" placeholder="Search transactions..." style="padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 300px;">
+        <button onclick="exportSalesToCsv()" class="btn-primary" style="background: #10b981; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-download"></i> Export CSV
+        </button>
+    </div>
+
+    <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
         <table class="premium-table" id="sales-table">
             <thead>
                 <tr>
-                    <th>Transaction Code</th>
-                    <th>Date & Time</th>
-                    <th>Items Purchased</th>
-                    <th>Total Revenue</th>
+                    <th>TRANSACTION CODE</th>
+                    <th>DATE & TIME</th>
+                    <th>ITEMS PURCHASED</th>
+                    <th>TOTAL REVENUE</th>
                 </tr>
             </thead>
             <tbody id="sales-history-body">
@@ -25,7 +32,6 @@
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:rgba(255,255,255,0.4);">Loading financial data...</td></tr>';
         
         try {
-            // UPDATED: Points to the Admin PosController getHistory method
             const response = await fetch('<?= site_url('admin/getHistory') ?>');
             
             if (!response.ok) {
@@ -41,7 +47,6 @@
 
             tbody.innerHTML = '';
             history.forEach(record => {
-                // Format the date nicely
                 const dateObj = new Date(record.created_at);
                 const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
 
@@ -62,6 +67,48 @@
         }
     }
     
-    // Auto-load when page loads
+    function filterSalesTable() {
+        const input = document.getElementById('salesSearch');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('sales-table');
+        const tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) { // Start from 1 to skip header row
+            let found = false;
+            const td = tr[i].getElementsByTagName('td');
+            for (let j = 0; j < td.length; j++) {
+                if (td[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+            tr[i].style.display = found ? '' : 'none';
+        }
+    }
+
+    function exportSalesToCsv() {
+        let csv = [];
+        const rows = document.querySelectorAll('#sales-table tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll('td, th');
+            for (let j = 0; j < cols.length; j++) {
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ');
+                data = data.replace(/"/g, '""');
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(','));
+        }
+
+        const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const downloadLink = document.createElement('a');
+        downloadLink.download = 'sales_history.csv';
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
     document.addEventListener('DOMContentLoaded', loadSalesHistory);
 </script>
