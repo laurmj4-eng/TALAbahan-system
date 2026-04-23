@@ -64,6 +64,8 @@
         }
 
         .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-processing { background: rgba(251, 146, 60, 0.1); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.2); }
+        .status-shipped { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
         .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
         .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
@@ -97,9 +99,7 @@
                         <div class="order-amount">₱<?= number_format($o['total_amount'], 2) ?></div>
                         <div style="margin-top: 10px;">
                             <?php 
-                                $statusClass = 'status-pending';
-                                if ($o['status'] === 'Completed') $statusClass = 'status-completed';
-                                if ($o['status'] === 'Cancelled') $statusClass = 'status-cancelled';
+                                $statusClass = 'status-' . strtolower($o['status']);
                             ?>
                             <span class="status-badge <?= $statusClass ?>"><?= esc($o['status']) ?></span>
                         </div>

@@ -21,7 +21,11 @@ class Orders extends BaseController
         $order      = $orderModel->find($id);
         
         if (!$order) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found']);
+            return $this->response->setJSON([
+                'status' => 'error', 
+                'message' => 'Order not found',
+                'token' => csrf_hash()
+            ]);
         }
 
         $orderItemModel = new OrderItemModel();
@@ -29,7 +33,11 @@ class Orders extends BaseController
         $order['payments'] = [];
         $order['delivery'] = null;
         
-        return $this->response->setJSON(['status' => 'success', 'data' => $order]);
+        return $this->response->setJSON([
+            'status' => 'success', 
+            'data' => $order,
+            'token' => csrf_hash()
+        ]);
     }
 
     /**
@@ -83,18 +91,33 @@ class Orders extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid data']);
         }
 
-        if (! in_array($status, [OrderModel::STATUS_PENDING, OrderModel::STATUS_COMPLETED], true)) {
+        if (! in_array($status, [
+            OrderModel::STATUS_PENDING,
+            OrderModel::STATUS_PROCESSING,
+            OrderModel::STATUS_SHIPPED,
+            OrderModel::STATUS_COMPLETED,
+            OrderModel::STATUS_CANCELLED,
+            OrderModel::STATUS_REFUNDED
+        ], true)) {
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Status must be Pending or Completed only.',
+                'message' => 'Invalid order status.',
             ]);
         }
 
         $model = new OrderModel();
         if ($model->update($id, ['status' => $status])) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Status updated successfully']);
+            return $this->response->setJSON([
+                'status' => 'success', 
+                'message' => 'Status updated successfully',
+                'token' => csrf_hash()
+            ]);
         }
         
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update status']);
+        return $this->response->setJSON([
+            'status' => 'error', 
+            'message' => 'Failed to update status',
+            'token' => csrf_hash()
+        ]);
     }
 }

@@ -86,7 +86,7 @@ class StaffController extends BaseController
     }
 
     /**
-     * View All Products
+     * View All Products (Staff - View Only)
      */
     public function products()
     {
@@ -96,7 +96,7 @@ class StaffController extends BaseController
 
         $productModel = new ProductModel();
         $data = [
-            'title'    => 'Product Management - Staff',
+            'title'    => 'Product Inventory - Staff',
             'username' => session()->get('username'),
             'products' => $productModel->getWithCategory(),
         ];
@@ -105,7 +105,7 @@ class StaffController extends BaseController
     }
 
     /**
-     * Get Products (JSON for modal/table)
+     * Get Products (JSON for table)
      */
     public function getProducts()
     {
@@ -136,136 +136,11 @@ class StaffController extends BaseController
         return $this->response->setJSON($product);
     }
 
-    /**
-     * Add New Product
+    /* 
+     * CRUD ACTIONS REMOVED FOR STAFF ROLE:
+     * addProduct(), updateStock(), updateProduct()
+     * Staff can only view products and their current stock levels.
      */
-    public function addProduct()
-    {
-        if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Access Denied'])->setStatusCode(403);
-        }
-
-        $productModel = new ProductModel();
-
-        $img = $this->request->getFile('image');
-        $imageName = null;
-        if ($img && $img->isValid() && ! $img->hasMoved()) {
-            $imageName = $img->getRandomName();
-            $img->move(ROOTPATH . 'public/uploads/products', $imageName);
-        }
-
-        $data = [
-            'name'           => trim($this->request->getPost('name')),
-            'cost_price'     => (float) $this->request->getPost('cost_price') ?? 0,
-            'selling_price'  => (float) $this->request->getPost('selling_price') ?? 0,
-            'initial_stock'  => (float) $this->request->getPost('initial_stock') ?? 0,
-            'current_stock'  => (float) $this->request->getPost('current_stock') ?? 0,
-            'wastage_qty'    => (float) $this->request->getPost('wastage_qty') ?? 0,
-            'unit'           => trim($this->request->getPost('unit')) ?? 'piece',
-            'image'          => $imageName,
-        ];
-
-        if (!$productModel->insert($data)) {
-            return $this->response->setJSON([
-                'ok'      => false,
-                'message' => implode(', ', $productModel->errors())
-            ]);
-        }
-
-        log_message('info', 'Staff ' . session()->get('username') . ' added product: ' . $data['name']);
-
-        return $this->response->setJSON([
-            'ok'      => true,
-            'message' => 'Product added successfully!',
-            'product_id' => $productModel->getInsertID()
-        ]);
-    }
-
-    /**
-     * Update Product Stock
-     */
-    public function updateStock()
-    {
-        if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Access Denied'])->setStatusCode(403);
-        }
-
-        $productModel = new ProductModel();
-        $productId = (int) $this->request->getPost('product_id');
-        $newStock = (float) $this->request->getPost('current_stock');
-
-        if ($productId <= 0 || $newStock < 0) {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Invalid input']);
-        }
-
-        $product = $productModel->find($productId);
-        if (!$product) {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Product not found']);
-        }
-
-        if (!$productModel->update($productId, ['current_stock' => $newStock])) {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Failed to update stock']);
-        }
-
-        log_message('info', 'Staff ' . session()->get('username') . ' updated stock for product ID ' . $productId);
-
-        return $this->response->setJSON([
-            'ok'      => true,
-            'message' => 'Stock updated successfully!'
-        ]);
-    }
-
-    /**
-     * Update Product Details
-     */
-    public function updateProduct()
-    {
-        if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Access Denied'])->setStatusCode(403);
-        }
-
-        $productModel = new ProductModel();
-        $productId = (int) $this->request->getPost('id');
-        $product = $productModel->find($productId);
-
-        if (!$product) {
-            return $this->response->setJSON(['ok' => false, 'message' => 'Product not found'])->setStatusCode(404);
-        }
-
-        $img = $this->request->getFile('image');
-        $imageName = $product['image'];
-
-        if ($img && $img->isValid() && ! $img->hasMoved()) {
-            // Delete old image if exists
-            if ($imageName && file_exists(ROOTPATH . 'public/uploads/products/' . $imageName)) {
-                unlink(ROOTPATH . 'public/uploads/products/' . $imageName);
-            }
-            $imageName = $img->getRandomName();
-            $img->move(ROOTPATH . 'public/uploads/products', $imageName);
-        }
-
-        $data = [
-            'name'          => trim($this->request->getPost('name')),
-            'cost_price'    => (float) $this->request->getPost('cost_price'),
-            'selling_price' => (float) $this->request->getPost('selling_price'),
-            'unit'          => trim($this->request->getPost('unit')),
-            'image'         => $imageName,
-        ];
-
-        if (!$productModel->update($productId, $data)) {
-            return $this->response->setJSON([
-                'ok'      => false,
-                'message' => implode(', ', $productModel->errors())
-            ]);
-        }
-
-        log_message('info', 'Staff ' . session()->get('username') . ' updated product ID ' . $productId);
-
-        return $this->response->setJSON([
-            'ok'      => true,
-            'message' => 'Product updated successfully!'
-        ]);
-    }
 
     /**
      * Get Orders Overview
@@ -292,23 +167,56 @@ class StaffController extends BaseController
     public function updateOrderStatus()
     {
         if (session()->get('role') !== 'staff' || !$this->request->isAJAX()) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Access Denied',
+                'token'   => csrf_hash()
+            ]);
         }
 
-        $orderModel = new OrderModel();
-        $orderId = $this->request->getPost('id');
-        $newStatus = $this->request->getPost('status');
+        try {
+            $orderModel = new OrderModel();
+            $orderId    = $this->request->getPost('id');
+            $newStatus  = $this->request->getPost('status');
 
-        $order = $orderModel->find($orderId);
-        if (!$order) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found.'])->setStatusCode(404);
+            if (empty($orderId) || empty($newStatus)) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Missing required data',
+                    'token'   => csrf_hash()
+                ]);
+            }
+
+            $order = $orderModel->find($orderId);
+            if (!$order) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Order not found.',
+                    'token'   => csrf_hash()
+                ]);
+            }
+
+            if (!$orderModel->update($orderId, ['status' => $newStatus])) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Database update failed: ' . implode(', ', $orderModel->errors()),
+                    'token'   => csrf_hash()
+                ]);
+            }
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Order status updated to ' . $newStatus,
+                'token'   => csrf_hash()
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'System error: ' . $e->getMessage(),
+                'token'   => csrf_hash()
+            ]);
         }
-
-        if (!$orderModel->update($orderId, ['status' => $newStatus])) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update order status.'])->setStatusCode(500);
-        }
-
-        return $this->response->setJSON(['status' => 'success', 'message' => 'Order status updated.']);
     }
 
     /**
@@ -333,17 +241,32 @@ class StaffController extends BaseController
     public function getOrderDetail($orderId)
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Access Denied',
+                'token'   => csrf_hash()
+            ]);
         }
 
         $orderModel = new OrderModel();
-        $order = $orderModel->getOrderWithItems($orderId);
+        $order      = $orderModel->find($orderId);
 
         if (!$order) {
-            return $this->response->setJSON(['error' => 'Order not found'])->setStatusCode(404);
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Order not found',
+                'token'   => csrf_hash()
+            ]);
         }
 
-        return $this->response->setJSON($order);
+        $orderItemModel = new OrderItemModel();
+        $order['items'] = $orderItemModel->getItemsByOrder($orderId);
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => $order,
+            'token'  => csrf_hash()
+        ]);
     }
 
     /**

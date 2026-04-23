@@ -69,12 +69,6 @@
                             <span>Orders</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="<?= site_url('admin/orders/items') ?>" class="<?= $is_order_items ? 'active' : '' ?>">
-                            <i class="fas fa-receipt"></i> 
-                            <span>Order Items</span>
-                        </a>
-                    </li>
                 </div>
 
                 <!-- QUICK ACCESS SECTION FOR ADMIN -->

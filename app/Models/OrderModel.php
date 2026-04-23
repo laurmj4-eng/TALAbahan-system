@@ -7,8 +7,12 @@ use Exception;
 
 class OrderModel extends Model
 {
-    public const STATUS_PENDING   = 'Pending';
-    public const STATUS_COMPLETED = 'Completed';
+    public const STATUS_PENDING    = 'Pending';
+    public const STATUS_PROCESSING = 'Processing';
+    public const STATUS_SHIPPED    = 'Shipped';
+    public const STATUS_COMPLETED  = 'Completed';
+    public const STATUS_CANCELLED  = 'Cancelled';
+    public const STATUS_REFUNDED   = 'Refunded';
 
     protected $table            = 'orders';
     protected $primaryKey       = 'id';
@@ -23,20 +27,16 @@ class OrderModel extends Model
     protected $validationRules = [
         'customer_name' => 'required|min_length[2]|max_length[120]',
         'total_amount'  => 'required|decimal|greater_than_equal_to[0]',
-        'status'        => 'required|in_list[Pending,Completed]',
+        'status'        => 'required|in_list[Pending,Processing,Shipped,Completed,Cancelled,Refunded]',
     ];
 
     protected $validationMessages = [
         'status' => [
-            'in_list' => 'Order status must be Pending or Completed.',
+            'in_list' => 'Order status must be Pending, Processing, Shipped, Completed, Cancelled, or Refunded.',
         ],
     ];
 
     protected $beforeInsert = ['applyDefaultStatus'];
-
-    // Status constants
-    public const STATUS_CANCELLED = 'Cancelled';
-    public const STATUS_REFUNDED  = 'Refunded';
 
     /**
      * Fetch all orders with the count of items in each order.

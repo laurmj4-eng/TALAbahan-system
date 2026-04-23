@@ -345,10 +345,9 @@
     <!-- MAIN CONTENT -->
     <main class="main-content">
         <div class="header">
-            <h1>📦 Product Management</h1>
+            <h1>📦 Product Inventory</h1>
             <div style="display: flex; gap: 10px;">
                 <a href="<?= site_url('staff/dashboard') ?>" class="btn btn-back">← Back to Dashboard</a>
-                <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
             </div>
         </div>
 
@@ -370,106 +369,23 @@
                             <th>Selling Price</th>
                             <th>Current Stock</th>
                             <th>Unit</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="productsBody">
-                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading products...</td></tr>
                     </tbody>
                 </table>
             </div>
 
             <?php if (empty($products)): ?>
             <div class="empty-state">
-                <p>No products found</p>
-                <button class="btn btn-primary" onclick="openAddModal()">Add First Product</button>
+                <p>No products available</p>
             </div>
             <?php endif; ?>
         </div>
     </main>
 
-    <!-- ADD/EDIT PRODUCT MODAL -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Add New Product</div>
-            <form id="productForm" onsubmit="handleProductSubmit(event)">
-                <input type="hidden" id="productId" value="">
-                
-                <div class="form-group">
-                    <label for="productName">Product Name *</label>
-                    <input type="text" id="productName" name="name" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="unit">Unit *</label>
-                        <input type="text" id="unit" name="unit" required value="piece">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="costPrice">Cost Price (₱) *</label>
-                        <input type="number" id="costPrice" name="cost_price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sellingPrice">Selling Price (₱) *</label>
-                        <input type="number" id="sellingPrice" name="selling_price" step="0.01" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="initialStock">Initial Stock</label>
-                        <input type="number" id="initialStock" name="initial_stock" step="0.01" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="currentStock">Current Stock *</label>
-                        <input type="number" id="currentStock" name="current_stock" step="0.01" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="wastageQty">Wastage Qty</label>
-                    <input type="number" id="wastageQty" name="wastage_qty" step="0.01" min="0" value="0">
-                </div>
-
-                <div class="form-group">
-                    <label for="image">Product Picture</label>
-                    <input type="file" id="image" name="image" accept="image/*">
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-modal cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-modal primary">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- QUICK STOCK UPDATE MODAL -->
-    <div id="stockModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">Update Stock</div>
-            <form id="stockForm" onsubmit="handleStockSubmit(event)">
-                <input type="hidden" id="stockProductId" value="">
-                
-                <div class="form-group">
-                    <label>Product: <strong id="stockProductName"></strong></label>
-                </div>
-
-                <div class="form-group">
-                    <label for="newStock">New Stock Quantity *</label>
-                    <input type="number" id="newStock" name="current_stock" step="0.01" min="0" required>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-modal cancel" onclick="closeStockModal()">Cancel</button>
-                    <button type="submit" class="btn-modal primary">Update Stock</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- CRUD MODALS REMOVED FOR STAFF -->
 
     <script>
         async function loadProducts() {
@@ -486,7 +402,7 @@
             const tbody = document.getElementById('productsBody');
             
             if (!products || products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No products available</td></tr>';
                 return;
             }
 
@@ -505,118 +421,11 @@
                         ${parseFloat(p.current_stock || 0).toFixed(2)}
                     </td>
                     <td>${p.unit || 'piece'}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-sm btn-edit" onclick="editStock(${p.id}, '${p.name}', ${p.current_stock || 0})">Stock</button>
-                            <button class="btn-sm btn-edit" onclick="editProduct(${p.id})">Edit</button>
-                        </div>
-                    </td>
                 </tr>
             `).join('');
         }
 
-        function openAddModal() {
-            document.getElementById('productForm').reset();
-            document.getElementById('productId').value = '';
-            document.getElementById('productModal').classList.add('show');
-            document.querySelector('.modal-header').textContent = 'Add New Product';
-        }
-
-        function closeModal() {
-            document.getElementById('productModal').classList.remove('show');
-        }
-
-        async function editProduct(productId) {
-            try {
-                const response = await fetch(`<?= site_url('staff/getDetails/') ?>${productId}`);
-                const p = await response.json();
-                
-                if (p.error) {
-                    showAlert(p.error, 'error');
-                    return;
-                }
-
-                document.getElementById('productId').value = p.id;
-                document.getElementById('productName').value = p.name;
-                document.getElementById('unit').value = p.unit;
-                document.getElementById('costPrice').value = p.cost_price;
-                document.getElementById('sellingPrice').value = p.selling_price;
-                document.getElementById('initialStock').value = p.initial_stock;
-                document.getElementById('currentStock').value = p.current_stock;
-                document.getElementById('wastageQty').value = p.wastage_qty;
-
-                document.querySelector('.modal-header').textContent = 'Edit Product';
-                document.getElementById('productModal').classList.add('show');
-            } catch (error) {
-                showAlert('Error fetching product details', 'error');
-            }
-        }
-
-        function editStock(productId, productName, currentStock) {
-            document.getElementById('stockProductId').value = productId;
-            document.getElementById('stockProductName').textContent = productName;
-            document.getElementById('newStock').value = currentStock;
-            document.getElementById('stockModal').classList.add('show');
-        }
-
-        function closeStockModal() {
-            document.getElementById('stockModal').classList.remove('show');
-        }
-
-        async function handleProductSubmit(e) {
-            e.preventDefault();
-            const productId = document.getElementById('productId').value;
-            const url = productId ? '<?= site_url('staff/updateProduct') ?>' : '<?= site_url('staff/addProduct') ?>';
-            const form = document.getElementById('productForm');
-            const formData = new FormData(form);
-            if (productId) formData.append('id', productId);
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const result = await response.json();
-                if (result.ok) {
-                    showAlert(result.message, 'success');
-                    closeModal();
-                    loadProducts();
-                } else {
-                    showAlert(result.message, 'error');
-                }
-            } catch (error) {
-                showAlert('Error saving product', 'error');
-            }
-        }
-
-        async function handleStockSubmit(e) {
-            e.preventDefault();
-            const productId = document.getElementById('stockProductId').value;
-            const newStock = document.getElementById('newStock').value;
-
-            try {
-                const response = await fetch('<?= site_url('staff/updateStock') ?>', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `product_id=${productId}&current_stock=${newStock}`
-                });
-
-                const result = await response.json();
-                if (result.ok) {
-                    showAlert(result.message, 'success');
-                    closeStockModal();
-                    loadProducts();
-                } else {
-                    showAlert(result.message, 'error');
-                }
-            } catch (error) {
-                showAlert('Error updating stock', 'error');
-            }
-        }
+        // CRUD FUNCTIONS REMOVED FOR STAFF
 
         function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
