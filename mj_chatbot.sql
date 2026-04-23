@@ -79,6 +79,9 @@ CREATE TABLE `orders` (
   `total_amount` decimal(10,2) DEFAULT 0.00,
   `status` varchar(50) DEFAULT 'Pending',
   `notes` text DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT 'COD',
+  `shipping_barangay` varchar(255) DEFAULT NULL,
+  `shipping_phone` varchar(50) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -115,6 +118,7 @@ CREATE TABLE `products` (
   `current_stock` decimal(10,2) DEFAULT 0.00,
   `wastage_qty` decimal(10,2) DEFAULT 0.00,
   `unit` enum('kg','piece','batch') DEFAULT 'kg',
+  `image` varchar(255) DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -127,6 +131,22 @@ CREATE TABLE `products` (
 
 INSERT INTO `products` (`id`, `name`, `cost_price`, `selling_price`, `initial_stock`, `current_stock`, `wastage_qty`, `unit`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (1, 'bangros', 212.00, 200.00, 2.00, 23.00, 0.00, '', 'active', '2026-04-21 07:37:33', '2026-04-21 09:06:27', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shipping_locations`
+--
+
+CREATE TABLE `shipping_locations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `barangay_name` varchar(255) NOT NULL,
+  `city_municipality` varchar(255) DEFAULT 'Bacolod City',
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 

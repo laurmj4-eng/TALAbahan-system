@@ -8,6 +8,7 @@
     $is_staff_orders = url_is('staff/orders*');
     $is_sales = url_is('staff/salesHistory*') || url_is('admin/sales*');
     $is_customer_order_items = url_is('customer/order-items*');
+    $is_shipping = url_is('admin/shipping*');
 ?>
 
 <?= $this->include('theme/sidebar_styles') ?>
@@ -105,6 +106,12 @@
                         <a href="<?= site_url('admin/users') ?>" class="<?= url_is('admin/users*') ? 'active' : '' ?>">
                             <i class="fas fa-database"></i> 
                             <span>Database</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= site_url('admin/shipping') ?>" class="<?= $is_shipping ? 'active' : '' ?>">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            <span>Shipping</span>
                         </a>
                     </li>
                 </div>

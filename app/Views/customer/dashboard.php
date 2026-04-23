@@ -292,6 +292,18 @@
         .payment-option div p { margin: 5px 0 0 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); }
 
         
+        /* LOCATION STEP STYLES */
+        .location-step { display: none; }
+        .location-step.active { display: block; }
+        .location-input-group { margin-bottom: 20px; }
+        .location-input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: rgba(255,255,255,0.7); }
+        .location-input-group input { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
+        .map-container { width: 100%; height: 200px; border-radius: 15px; background: rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .map-placeholder { text-align: center; color: rgba(255,255,255,0.3); }
+        .btn-location { background: #818cf8; color: #fff; padding: 10px 15px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s; margin-bottom: 15px; }
+        .btn-location:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .location-status { font-size: 0.85rem; color: #fca5a5; margin-bottom: 15px; display: none; }
+        
         .out-of-stock { 
             opacity: 0.5; 
             filter: grayscale(100%); 
@@ -394,8 +406,10 @@
 
         <!-- CHECKOUT MODAL -->
         <div id="checkoutModal" class="modal">
-            <div class="modal-content">
-                <div id="checkoutMain">
+            <div class="modal-content" style="max-width: 550px;">
+                
+                <!-- STEP 1: CART CONFIRMATION -->
+                <div id="checkoutCart" class="location-step active">
                     <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-shopping-basket" style="color: #a855f7;"></i> Confirm Order
                     </h2>
@@ -410,6 +424,58 @@
                             <span id="cartTotal" style="color: #10b981;">₱0.00</span>
                         </div>
                     </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button class="btn-buy" style="background: #444; flex: 1;" onclick="closeCheckoutModal()">Cancel</button>
+                        <button class="btn-buy" style="flex: 2;" onclick="goToLocation()">Next: Set Delivery Address</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: LOCATION & NAME -->
+                <div id="checkoutLocation" class="location-step">
+                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-map-marked-alt" style="color: #a855f7;"></i> Delivery Details
+                    </h2>
+
+                    <div class="location-input-group">
+                        <label>Receiver Name</label>
+                        <input type="text" id="deliveryName" value="<?= esc($username) ?>" required>
+                    </div>
+
+                    <div class="location-input-group">
+                        <label>Contact Number</label>
+                        <input type="text" id="deliveryPhone" placeholder="09XXXXXXXXX" required>
+                    </div>
+
+                    <button class="btn-location" onclick="getLocation()">
+                        <i class="fas fa-location-crosshairs"></i> Get Current Location
+                    </button>
+
+                    <div id="locationError" class="location-status"></div>
+
+                    <div class="map-container" id="mapContainer">
+                        <div class="map-placeholder" id="mapPlaceholder">
+                            <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                            Waiting for location...
+                        </div>
+                    </div>
+
+                    <div class="location-input-group">
+                        <label>Detected Barangay / Area</label>
+                        <input type="text" id="detectedBarangay" readonly placeholder="Detecting...">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button class="btn-buy" style="background: #444; flex: 1;" onclick="backToCart()">Back</button>
+                        <button id="btnConfirmLocation" class="btn-buy" style="flex: 2;" onclick="goToPayment()" disabled>Next: Payment Method</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: PAYMENT METHOD -->
+                <div id="checkoutPayment" class="location-step">
+                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-credit-card" style="color: #a855f7;"></i> Payment Method
+                    </h2>
 
                     <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
                     
@@ -430,12 +496,12 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 30px;">
-                        <button class="btn-buy" style="background: #444; flex: 1;" onclick="closeCheckoutModal()">Cancel</button>
+                        <button class="btn-buy" style="background: #444; flex: 1;" onclick="backToLocation()">Back</button>
                         <button id="btnPlaceOrder" class="btn-buy" style="flex: 2;" onclick="initiateOrder()" disabled>Place Order</button>
                     </div>
                 </div>
 
-                <!-- GCash Mock UI -->
+                <!-- GCash Mock UI (Nested Step) -->
                 <div id="gcashMock" style="display: none; text-align: center;">
                     <h2 style="margin-top: 0; color: #2175f3;">GCash Checkout</h2>
                     <div style="background: #2175f3; padding: 20px; border-radius: 20px; margin: 20px 0;">
@@ -449,9 +515,10 @@
                         <button class="btn-buy" style="background: #2175f3;" onclick="confirmGcashPayment()">
                             <i class="fas fa-check-circle"></i> I have paid
                         </button>
-                        <button class="btn-buy" style="background: transparent; color: #fff; margin-top: 10px;" onclick="cancelGcash()">Cancel</button>
+                        <button class="btn-buy" style="background: #444; margin-top: 10px;" onclick="cancelGcash()">Cancel</button>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -504,11 +571,118 @@
                 alert('Please add some items to your cart first!');
                 return;
             }
+            // Reset steps
+            document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('checkoutCart').classList.add('active');
+            document.getElementById('gcashMock').style.display = 'none';
+            
             document.getElementById('checkoutModal').classList.add('show');
         }
 
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.remove('show');
+        }
+
+        // STEP NAVIGATION
+        function goToLocation() {
+            document.getElementById('checkoutCart').classList.remove('active');
+            document.getElementById('checkoutLocation').classList.add('active');
+        }
+        function backToCart() {
+            document.getElementById('checkoutLocation').classList.remove('active');
+            document.getElementById('checkoutCart').classList.add('active');
+        }
+        function goToPayment() {
+            document.getElementById('checkoutLocation').classList.remove('active');
+            document.getElementById('checkoutPayment').classList.add('active');
+        }
+        function backToLocation() {
+            document.getElementById('checkoutPayment').classList.remove('active');
+            document.getElementById('checkoutLocation').classList.add('active');
+        }
+
+        // GEOLOCATION LOGIC
+        function getLocation() {
+            const status = document.getElementById('locationError');
+            const btn = document.querySelector('.btn-location');
+            const barangayInput = document.getElementById('detectedBarangay');
+            
+            status.style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+
+            if (!navigator.geolocation) {
+                showLocationError("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                // 1. Update Map UI (Mock map for now as no API key provided)
+                document.getElementById('mapPlaceholder').innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #10b981; margin-bottom: 10px; display: block;"></i>
+                        Location Locked!<br>
+                        <small style="color: rgba(255,255,255,0.4)">${lat.toFixed(4)}, ${lon.toFixed(4)}</small>
+                    </div>
+                `;
+
+                // 2. Reverse Geocoding (Using Nominatim - Free OSM API)
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await res.json();
+                    
+                    // Extract barangay/suburb
+                    const barangay = data.address.suburb || data.address.neighbourhood || data.address.village || data.address.quarter || "Unknown Area";
+                    barangayInput.value = barangay;
+
+                    // 3. Validate against Admin Shipping Rules
+                    validateShippingLocation(barangay);
+
+                } catch (err) {
+                    showLocationError("Could not identify your barangay. Please try again.");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Get Current Location';
+                }
+
+            }, (error) => {
+                showLocationError("Permission denied or location unavailable.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Get Current Location';
+            });
+        }
+
+        async function validateShippingLocation(barangay) {
+            try {
+                const response = await fetch('<?= site_url('customer/validate-location') ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: `barangay=${encodeURIComponent(barangay)}&<?= csrf_token() ?>=<?= csrf_hash() ?>`
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('btnConfirmLocation').disabled = false;
+                    document.getElementById('locationError').style.color = '#10b981';
+                    document.getElementById('locationError').innerHTML = '<i class="fas fa-check"></i> We deliver to your area!';
+                    document.getElementById('locationError').style.display = 'block';
+                } else {
+                    document.getElementById('btnConfirmLocation').disabled = true;
+                    showLocationError("Sorry, we don't ship to this location yet.");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function showLocationError(msg) {
+            const status = document.getElementById('locationError');
+            status.style.color = '#fca5a5';
+            status.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+            status.style.display = 'block';
         }
 
         function selectPayment(method) {
@@ -555,7 +729,12 @@
             const formData = new FormData();
             formData.append('order_data', JSON.stringify({
                 items: cart,
-                payment_method: selectedPayment
+                payment_method: selectedPayment,
+                shipping_details: {
+                    name: document.getElementById('deliveryName').value,
+                    phone: document.getElementById('deliveryPhone').value,
+                    barangay: document.getElementById('detectedBarangay').value
+                }
             }));
             formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 

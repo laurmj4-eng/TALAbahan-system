@@ -48,6 +48,13 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->get('orders/items', 'Orders::itemsPage');
     $routes->get('orders/items/(:num)', 'Orders::items/$1');
     $routes->post('orders/updateStatus', 'Orders::updateStatus');
+
+    // --- Shipping Management ---
+    $routes->get('shipping', 'ShippingController::index');
+    $routes->post('shipping/store', 'ShippingController::store');
+    $routes->post('shipping/update', 'ShippingController::update');
+    $routes->post('shipping/delete', 'ShippingController::delete');
+    $routes->get('shipping/getDetails/(:num)', 'ShippingController::getDetails/$1');
 });
 
 // --- 3. STAFF GROUP ---
@@ -81,4 +88,7 @@ $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' 
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('order-items', 'Dashboard::orderItems');
     $routes->post('placeOrder', 'Dashboard::placeOrder');
+    $routes->post('validate-location', 'Dashboard::validateLocation');
+    $routes->get('order-details/(:num)', 'Dashboard::orderDetails/$1');
+    $routes->post('cancel-order', 'Dashboard::cancelOrder');
 });

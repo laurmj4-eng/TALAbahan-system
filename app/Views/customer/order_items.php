@@ -73,6 +73,67 @@
         .order-info p { margin: 5px 0 0 0; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; }
 
         .order-amount { font-size: 1.5rem; font-weight: 800; color: #10b981; }
+
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: rgba(20, 20, 45, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.8rem; font-weight: 800; }
+        .close-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        .item-list { margin-bottom: 25px; }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-name { font-weight: 600; }
+        .item-qty { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; }
+        .item-price { font-weight: 700; color: #10b981; }
+
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-view { background: rgba(129, 140, 248, 0.15); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.2); }
+        .btn-view:hover { background: rgba(129, 140, 248, 0.25); transform: translateY(-2px); }
+        .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-cancel:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -97,11 +158,22 @@
                     
                     <div style="text-align: right;">
                         <div class="order-amount">₱<?= number_format($o['total_amount'], 2) ?></div>
-                        <div style="margin-top: 10px;">
+                        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
                             <?php 
                                 $statusClass = 'status-' . strtolower($o['status']);
                             ?>
                             <span class="status-badge <?= $statusClass ?>"><?= esc($o['status']) ?></span>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-action btn-view" onclick="viewDetails(<?= $o['id'] ?>)">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                                <?php if ($o['status'] === 'Pending'): ?>
+                                    <button class="btn-action btn-cancel" onclick="cancelOrder(<?= $o['id'] ?>)">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -118,5 +190,102 @@
         <?php endif; ?>
     </main>
 
+    <!-- Order Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Order Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <div class="item-list" id="itemList">
+                    <!-- Items will be injected here -->
+                </div>
+                <div style="text-align: right; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 5px;">Total Amount</div>
+                    <div id="modalTotal" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">₱0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeModal() {
+            document.getElementById('detailsModal').classList.remove('show');
+        }
+
+        async function viewDetails(orderId) {
+            try {
+                const response = await fetch(`<?= site_url('customer/order-details/') ?>${orderId}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const order = result.data;
+                    document.getElementById('modalTitle').innerText = `Order ${order.transaction_code}`;
+                    document.getElementById('modalTotal').innerText = `₱${parseFloat(order.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+                    const itemList = document.getElementById('itemList');
+                    itemList.innerHTML = order.items.map(item => `
+                        <div class="item-row">
+                            <div>
+                                <div class="item-name">${item.product_name}</div>
+                                <div class="item-qty">${item.quantity} ${item.unit || ''} @ ₱${parseFloat(item.unit_price).toFixed(2)}</div>
+                            </div>
+                            <div class="item-price">₱${parseFloat(item.subtotal).toFixed(2)}</div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('detailsModal').classList.add('show');
+                } else {
+                    alert(result.message || 'Failed to load details');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Connection error');
+            }
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order? This will return items to stock.')) {
+                return;
+            }
+
+            try {
+                const csrfName = '<?= csrf_token() ?>';
+                const csrfHash = '<?= csrf_hash() ?>';
+
+                const formData = new FormData();
+                formData.append('id', orderId);
+                formData.append(csrfName, csrfHash);
+
+                const response = await fetch('<?= site_url('customer/cancel-order') ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert(result.message || 'Failed to cancel order');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Connection error');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 </html>

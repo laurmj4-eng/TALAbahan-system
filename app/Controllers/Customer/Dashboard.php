@@ -66,6 +66,18 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Cart is empty.'])->setStatusCode(400);
         }
 
+        // Server-side location re-validation
+        $shippingDetails = $orderData['shipping_details'] ?? null;
+        if (!$shippingDetails || empty($shippingDetails['barangay'])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Shipping location required.'])->setStatusCode(400);
+        }
+
+        $shippingModel = new \App\Models\ShippingLocationModel();
+        $isShippable = $shippingModel->where('barangay_name', $shippingDetails['barangay'])->where('is_active', 1)->first();
+        if (!$isShippable) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Sorry, we do not ship to this location.'])->setStatusCode(400);
+        }
+
         $orderModel = new \App\Models\OrderModel();
         $orderItemModel = new \App\Models\OrderItemModel();
         $productModel = new \App\Models\ProductModel();
@@ -119,11 +131,13 @@ class Dashboard extends BaseController
         // 6. Create the main order
         $orderId = $orderModel->insert([
             'transaction_code' => $transactionCode,
-            'customer_name'    => session()->get('username'), // Or actual customer name from user model
+            'customer_name'    => $shippingDetails['name'] ?? session()->get('username'),
             'total_amount'     => $serverCalculatedTotal,
             'status'           => 'Pending',
             'notes'            => 'Customer online order',
             'payment_method'   => $paymentMethod,
+            'shipping_barangay' => $shippingDetails['barangay'],
+            'shipping_phone'    => $shippingDetails['phone']
         ]);
 
         if (!$orderId) {
@@ -148,6 +162,97 @@ class Dashboard extends BaseController
             'message' => ($paymentMethod === 'GCash' ? 'GCash Payment Successful! ' : '') . 'Order placed!', 
             'transaction_code' => $transactionCode
         ]);
+    }
+
+    /**
+     * Validate if the detected barangay is shippable
+     */
+    public function validateLocation()
+    {
+        $barangay = $this->request->getPost('barangay');
+        if (empty($barangay)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No location detected']);
+        }
+
+        $shippingModel = new \App\Models\ShippingLocationModel();
+        
+        // Search for active barangay matching the name
+        $location = $shippingModel->where('barangay_name', $barangay)
+                                 ->where('is_active', 1)
+                                 ->first();
+
+        if ($location) {
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Location not supported']);
+    }
+
+    /**
+     * Fetch order details for the modal
+     */
+    public function orderDetails($orderId)
+    {
+        if (session()->get('role') !== 'customer') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+        }
+
+        $orderModel = new \App\Models\OrderModel();
+        $orderItemModel = new \App\Models\OrderItemModel();
+
+        $order = $orderModel->where('id', $orderId)
+                           ->where('customer_name', session()->get('username'))
+                           ->first();
+
+        if (!$order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        $items = $orderItemModel->where('order_id', $orderId)->findAll();
+        $order['items'] = $items;
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $order]);
+    }
+
+    /**
+     * Cancel a pending order
+     */
+    public function cancelOrder()
+    {
+        if (session()->get('role') !== 'customer' || !$this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+        }
+
+        $orderId = $this->request->getPost('id');
+        $orderModel = new \App\Models\OrderModel();
+        $productModel = new \App\Models\ProductModel();
+        $orderItemModel = new \App\Models\OrderItemModel();
+
+        $order = $orderModel->where('id', $orderId)
+                           ->where('customer_name', session()->get('username'))
+                           ->first();
+
+        if (!$order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        if ($order['status'] !== 'Pending') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Only pending orders can be cancelled.'])->setStatusCode(400);
+        }
+
+        // Return stock before cancelling
+        $items = $orderItemModel->where('order_id', $orderId)->findAll();
+        foreach ($items as $item) {
+            $productModel->update($item['product_id'], [
+                'current_stock' => new \CodeIgniter\Database\RawSql('current_stock + ' . $item['quantity'])
+            ]);
+        }
+
+        if ($orderModel->update($orderId, ['status' => 'Cancelled'])) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Order cancelled successfully.']);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to cancel order.'])->setStatusCode(500);
     }
 
     /**
