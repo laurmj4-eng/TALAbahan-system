@@ -2,77 +2,7 @@
 <?= $this->include('theme/sidebar') ?>
 
 <style>
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.8);
-        backdrop-filter: blur(10px);
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .modal.show {
-        display: flex;
-        opacity: 1;
-    }
-
-    .modal-content {
-        background: rgba(20, 20, 45, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 30px;
-        padding: 40px;
-        width: 90%;
-        max-width: 500px;
-        position: relative;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-        transform: translateY(20px);
-        transition: transform 0.3s ease;
-    }
-
-    .modal.show .modal-content {
-        transform: translateY(0);
-    }
-
-    .modal-close-btn {
-        position: absolute;
-        top: 25px;
-        right: 25px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.6);
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: 0.3s;
-        font-size: 1.5rem;
-        z-index: 10;
-    }
-
-    .modal-header {
-        margin-top: 0;
-        margin-bottom: 30px;
-        font-size: 2rem;
-        font-weight: 800;
-        color: #fff;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 20px;
-        background: linear-gradient(to right, #fff, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
+    /* Custom adjustments for this view */
     .premium-form {
         display: flex;
         flex-direction: column;

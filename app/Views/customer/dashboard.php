@@ -1,42 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title) ?> | Customer Dashboard</title>
-   
-    <!-- Premium Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-   
+<?= $this->include('theme/header') ?>
+
     <style>
-        /* GLOBAL THEME */
-        * { box-sizing: border-box; }
-       
-        body {
-            margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(120deg, #1e1b4b, #3b0764, #0f172a, #082f49);
-            background-size: 300% 300%;
-            animation: gradientBg 15s ease infinite;
-            color: #ffffff; display: flex; height: 100vh; overflow: hidden;
-        }
-       
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-
         /* --- ENHANCED WELCOME BANNER --- */
         .welcome-card { 
             border-radius: 30px; 
@@ -235,32 +199,6 @@
         }
 
         /* --- MODAL (Checkout) --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show { display: flex; }
-
-        .modal-content {
-            background: rgba(20, 20, 45, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 40px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        }
-
         .payment-option {
             display: flex;
             align-items: center;

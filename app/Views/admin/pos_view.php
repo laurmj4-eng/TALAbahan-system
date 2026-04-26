@@ -24,6 +24,21 @@
     
     .btn-checkout { width: 100%; padding: 18px; margin-top: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
     .btn-checkout:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6); }
+
+    /* RESPONSIVE POS */
+    @media (max-width: 1024px) {
+        .pos-container { flex-direction: column; }
+        .pos-cart { position: relative; width: 100%; min-width: 0; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+    
+    @media (max-width: 480px) {
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .pos-item { padding: 15px; }
+        .pos-item .icon { font-size: 2.5rem; }
+        .pos-item .name { font-size: 0.9rem; }
+        .pos-cart { padding: 20px; }
+    }
 </style>
 
 <h2 style="font-size: 2.2rem; margin-bottom: 20px; color: white;">TALAbahan Terminal</h2>

@@ -1,51 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management | Staff</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CSRF Protection -->
-    <meta name="csrf-token" content="<?= csrf_hash() ?>">
-    <meta name="csrf-header" content="<?= csrf_header() ?>">
-    <meta name="csrf-name" content="<?= csrf_token() ?>">
+<?= $this->include('theme/header') ?>
 
     <style>
-        * { box-sizing: border-box; }
-        
-        body { 
-            margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(120deg, #1e1b4b, #3b0764, #0f172a, #082f49);
-            background-size: 300% 300%;
-            animation: gradientBg 15s ease infinite;
-            color: #ffffff; display: flex; height: 100vh; overflow: hidden; 
-        }
-        
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border-radius: 24px;
-        }
-
-        .main-content { 
-            flex: 1; 
-            padding: 40px; 
-            overflow-y: auto; 
-            scroll-behavior: smooth;
-        }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -200,28 +155,6 @@
             transition: 0.3s;
         }
         .btn-view:hover { background: #ffffff; color: #000000; transform: rotate(15deg); }
-
-        /* Modal Styles */
-        .modal {
-            display: none; position: fixed; z-index: 9999;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
-            align-items: center; justify-content: center;
-            opacity: 0; transition: all 0.4s;
-        }
-        .modal.show { display: flex; opacity: 1; }
-
-        .modal-content {
-            background: #111029;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 32px;
-            padding: 40px;
-            width: 90%; max-width: 800px;
-            transform: scale(0.9); transition: 0.4s;
-            max-height: 90vh; overflow-y: auto;
-        }
-        .modal.show .modal-content { transform: scale(1); }
 
         /* Toast Notification */
         .toast {

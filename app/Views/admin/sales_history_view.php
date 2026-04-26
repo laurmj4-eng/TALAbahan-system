@@ -2,12 +2,20 @@
     <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 0;">Financial Ledger 📈</h2>
     <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Real-time transaction logs and revenue records.</p>
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <input type="text" id="salesSearch" onkeyup="filterSalesTable()" placeholder="Search transactions..." style="padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 300px;">
-        <button onclick="exportSalesToCsv()" class="btn-primary" style="background: #10b981; display: flex; align-items: center; gap: 8px;">
+    <div class="sales-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;">
+        <input type="text" id="salesSearch" onkeyup="filterSalesTable()" placeholder="Search transactions..." style="padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 300px; max-width: 100%;">
+        <button onclick="exportSalesToCsv()" class="btn-primary" style="background: #10b981; display: flex; align-items: center; gap: 8px; height: auto; padding: 10px 20px;">
             <i class="fas fa-download"></i> Export CSV
         </button>
     </div>
+
+    <style>
+        @media (max-width: 480px) {
+            .sales-controls { flex-direction: column; align-items: stretch; }
+            #salesSearch { width: 100% !important; }
+            .sales-controls .btn-primary { justify-content: center; }
+        }
+    </style>
 
     <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
         <table class="premium-table" id="sales-table">

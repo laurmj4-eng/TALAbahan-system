@@ -104,17 +104,6 @@
         transition: 0.3s;
     }
     .btn-details:hover { background: #ffffff; color: #000000; transform: scale(1.1); }
-
-    /* Modal Styling */
-    .modal-overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
-        z-index: 1000; justify-content: center; align-items: center;
-    }
-    .modal-content {
-        background: #0f172a; border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 32px; padding: 40px; width: 90%; max-width: 750px;
-    }
 </style>
 
 <main class="main-content">
@@ -195,24 +184,24 @@
 </main>
 
 <!-- Order Details Modal -->
-<div id="orderModal" class="modal-overlay">
+<div id="orderModal" class="modal">
     <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h2 id="modalTitle" style="margin: 0; font-weight: 800;">Order Receipt</h2>
-            <button onclick="document.getElementById('orderModal').style.display='none'" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
-        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('orderModal').classList.remove('show')">&times;</button>
+        <h2 id="modalTitle" class="modal-header">Order Receipt</h2>
         
-        <table class="premium-table" style="margin-top: 0;">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody id="modalItems"></tbody>
-        </table>
+        <div class="table-responsive glass-panel">
+            <table class="premium-table" style="margin-top: 0; min-width: 500px;">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="modalItems"></tbody>
+            </table>
+        </div>
         
         <div style="text-align: right; margin-top: 30px; font-size: 1.5rem; font-weight: 800;">
             Total: <span id="modalTotal" style="color: #4ade80;">₱0.00</span>
@@ -241,7 +230,7 @@ async function viewOrderDetails(orderId) {
                 </tr>
             `).join('');
             
-            document.getElementById('orderModal').style.display = 'flex';
+            document.getElementById('orderModal').classList.add('show');
         }
     } catch (error) { console.error(error); }
 }
