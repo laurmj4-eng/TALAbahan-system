@@ -114,7 +114,7 @@
     <div id="addLocationModal" class="modal">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="closeModal('addLocationModal')">&times;</button>
-            <h2 class="modal-header">Add New Location</h2>
+            <div class="modal-header">Add New Location</div>
             <form id="addLocationForm" onsubmit="submitAdd(event)" class="premium-form">
                 <div class="form-group">
                     <label>Barangay Name</label>
@@ -133,7 +133,7 @@
     <div id="editLocationModal" class="modal">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="closeModal('editLocationModal')">&times;</button>
-            <h2 class="modal-header">Edit Location</h2>
+            <div class="modal-header">Edit Location</div>
             <form id="editLocationForm" onsubmit="submitEdit(event)" class="premium-form">
                 <input type="hidden" name="id" id="editLocationId">
                 <div class="form-group">
@@ -161,7 +161,7 @@
 
 <script>
     function openModal(id) { document.getElementById(id).classList.add('show'); }
-    function closeModal(id) { document.getElementById(id || 'addLocationModal').classList.remove('show'); document.getElementById('editLocationModal').classList.remove('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
     async function submitAdd(e) {
         e.preventDefault();

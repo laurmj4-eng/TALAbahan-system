@@ -107,7 +107,7 @@
     <div id="addProductModal" class="modal">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="closeModal('addProductModal')">&times;</button>
-            <h2 class="modal-header">Add New Product</h2>
+            <div class="modal-header">Add New Product</div>
              <form id="addProductForm" action="<?= site_url('admin/products/store') ?>" method="post" class="premium-form" enctype="multipart/form-data">
                  <?= csrf_field() ?>
                 <div class="form-group">
@@ -148,7 +148,7 @@
     <div id="editProductModal" class="modal">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="closeModal('editProductModal')">&times;</button>
-            <h2 class="modal-header">Edit Product</h2>
+            <div class="modal-header">Edit Product</div>
             <form id="editProductForm" action="<?= site_url('admin/products/update') ?>" method="post" class="premium-form" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" id="editProductId">

@@ -12,8 +12,7 @@
 </head>
 <body>
 
-<!-- TOP RIGHT LOGO -->
-<img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="top-right-logo">
+<!-- TOP RIGHT LOGO (MOVED INSIDE FORM) -->
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -170,6 +169,7 @@
     <!-- ADDED: CSRF Field (Required by CodeIgniter) -->
     <?= csrf_field() ?>
 
+    <img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="form-logo">
     <h2>Sign In to Mj AI</h2>
     
     <input type="email" id="email" name="email" placeholder="Email Address" autocomplete="username" required>

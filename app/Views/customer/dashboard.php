@@ -345,12 +345,13 @@
         <!-- CHECKOUT MODAL -->
         <div id="checkoutModal" class="modal">
             <div class="modal-content" style="max-width: 550px;">
+                <button class="modal-close-btn" onclick="closeCheckoutModal()">&times;</button>
                 
                 <!-- STEP 1: CART CONFIRMATION -->
                 <div id="checkoutCart" class="location-step active">
-                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-shopping-basket" style="color: #a855f7;"></i> Confirm Order
-                    </h2>
+                    <div class="modal-header">
+                        <i class="fas fa-shopping-basket" style="color: #a855f7; margin-right: 10px;"></i> Confirm Order
+                    </div>
                     
                     <div id="cartItemsList" style="margin-bottom: 25px; max-height: 200px; overflow-y: auto;">
                         <!-- Items will be injected here -->
@@ -371,9 +372,9 @@
 
                 <!-- STEP 2: LOCATION & NAME -->
                 <div id="checkoutLocation" class="location-step">
-                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-map-marked-alt" style="color: #a855f7;"></i> Delivery Details
-                    </h2>
+                    <div class="modal-header">
+                        <i class="fas fa-map-marked-alt" style="color: #a855f7; margin-right: 10px;"></i> Delivery Details
+                    </div>
 
                     <div class="location-input-group">
                         <label>Receiver Name</label>
@@ -427,9 +428,9 @@
 
                 <!-- STEP 3: PAYMENT METHOD -->
                 <div id="checkoutPayment" class="location-step">
-                    <h2 style="margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-credit-card" style="color: #a855f7;"></i> Payment Method
-                    </h2>
+                    <div class="modal-header">
+                        <i class="fas fa-credit-card" style="color: #a855f7; margin-right: 10px;"></i> Payment Method
+                    </div>
 
                     <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
                     

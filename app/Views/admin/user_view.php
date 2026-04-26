@@ -69,7 +69,7 @@
 <div id="editModal" class="modal">
     <div class="modal-content">
         <button class="modal-close-btn" onclick="closeModal('editModal')">&times;</button>
-        <h2 class="modal-header">Override Protocol</h2>
+        <div class="modal-header">Override Protocol</div>
         <form action="<?= site_url('admin/updateUser') ?>" method="post" class="premium-form">
             <?= csrf_field() ?>
             <input type="hidden" name="id" id="edit_id">

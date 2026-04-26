@@ -19,93 +19,105 @@ class Auth extends BaseController
 
     public function verify()
     {
-        // 1. Get POST data
-        $email    = strtolower(trim((string)$this->request->getPost('email')));
-        $password = (string)$this->request->getPost('password'); 
-        $remember = $this->request->getPost('remember'); 
-        $name     = trim((string)$this->request->getPost('name'));      
-        $provider = trim((string)$this->request->getPost('provider')); 
-        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+        try {
+            // 1. Get POST data
+            $email    = strtolower(trim((string)$this->request->getPost('email')));
+            $password = (string)$this->request->getPost('password'); 
+            $remember = $this->request->getPost('remember'); 
+            $name     = trim((string)$this->request->getPost('name'));      
+            $provider = trim((string)$this->request->getPost('provider')); 
+            $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
 
-        // 2. Verify reCAPTCHA (Server-side)
-        // LOGIC: Only verify if the provider is NOT google AND the recaptcha response is NOT empty.
-        // If $recaptchaResponse is empty, it means your frontend hidden it because the device is trusted.
-        // NOTE: Skip reCAPTCHA in development since the secret key is not configured.
-        if ($provider !== 'google' && !empty($recaptchaResponse) && ENVIRONMENT !== 'development') {
-            
-            // Get Secret Key from .env for security and to pass GitHub rules
-            $secret = env('RECAPTCHA_SECRET_KEY'); 
-            
-            $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
-            $captchaData = json_decode($verify);
-
-            if (!$captchaData->success) {
-                return $this->response->setJSON([
-                    'status'  => 'error',
-                    'message' => 'reCAPTCHA verification failed. Please try again.',
-                    'token'   => csrf_hash() // Send new token for next attempt
-                ]);
-            }
-        }
-        
-        // 3. Connect to database
-        $userModel = new UserModel();
-        $user = $userModel->where('email', $email)->first();
-
-        // 4. Handle GOOGLE Logins
-        if ($provider === 'google') {
-            if (!$user) {
-                // Generate a unique username
-                $baseUsername = !empty($name) ? $name : explode('@', $email)[0];
-                $username = $baseUsername;
+            // 2. Verify reCAPTCHA (Server-side)
+            if ($provider !== 'google' && !empty($recaptchaResponse) && ENVIRONMENT !== 'development') {
+                $secret = env('RECAPTCHA_SECRET_KEY'); 
+                $verify = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
                 
-                // Keep checking until we find a username that isn't taken
-                $count = 1;
-                while ($userModel->where('username', $username)->first()) {
-                    $username = $baseUsername . $count;
-                    $count++;
+                if ($verify === false) {
+                    throw new \Exception("Could not connect to reCAPTCHA verification service.");
                 }
 
-                $newUserData = [
-                    'username' => $username,
-                    'email'    => $email,
-                    // Keep schema constraint happy; this is never used for Google sign-in.
-                    'password' => bin2hex(random_bytes(16)),
-                    'role'     => 'customer'
-                ];
-                $userModel->insert($newUserData);
-                $user = $userModel->where('email', $email)->first();
+                $captchaData = json_decode($verify);
+                if (!$captchaData || !$captchaData->success) {
+                    return $this->response->setJSON([
+                        'status'  => 'error',
+                        'message' => 'reCAPTCHA verification failed. Please try again.',
+                        'token'   => csrf_hash()
+                    ]);
+                }
             }
-        } 
-        // 5. Handle NORMAL Logins
-        else {
-            if (!$user || !password_verify($password, $user['password'])) {
+            
+            // 3. Connect to database
+            $userModel = new UserModel();
+            $user = $userModel->where('email', $email)->first();
+
+            // 4. Handle GOOGLE Logins
+            if ($provider === 'google') {
+                if (!$user) {
+                    // Generate a unique username
+                    $baseUsername = !empty($name) ? $name : explode('@', $email)[0];
+                    $username = $baseUsername;
+                    
+                    // Keep checking until we find a username that isn't taken
+                    $count = 1;
+                    while ($userModel->where('username', $username)->first()) {
+                        $username = $baseUsername . $count;
+                        $count++;
+                    }
+
+                    $newUserData = [
+                        'username' => $username,
+                        'email'    => $email,
+                        'password' => bin2hex(random_bytes(16)),
+                        'role'     => 'customer'
+                    ];
+                    
+                    if (!$userModel->insert($newUserData)) {
+                        throw new \Exception("Failed to create Google account: " . implode(', ', $userModel->errors()));
+                    }
+                    $user = $userModel->where('email', $email)->first();
+                }
+            } 
+            // 5. Handle NORMAL Logins
+            else {
+                if (!$user || !password_verify($password, $user['password'])) {
+                    return $this->response->setJSON([
+                        'status'  => 'error', 
+                        'message' => 'Invalid Email or Password.',
+                        'token'   => csrf_hash() 
+                    ]);
+                }
+            }
+
+            // 6. Set Session and Redirect
+            if ($user) {
+                $sessionData =[
+                    'user_id'    => $user['id'],
+                    'username'   => $user['username'],
+                    'email'      => $user['email'],
+                    'role'       => strtolower($user['role']),
+                    'isLoggedIn' => true,
+                ];
+                session()->set($sessionData);
+
+                $role = strtolower($user['role']);
+                $redirectUrl = $this->_getRedirectUrl($role);
+
                 return $this->response->setJSON([
-                    'status'  => 'error', 
-                    'message' => 'Invalid Email or Password.',
-                    'token'   => csrf_hash() 
+                    'status'       => 'success', 
+                    'redirect'     => $redirectUrl,
+                    'trust_device' => ($remember === 'true') 
                 ]);
             }
-        }
 
-        // 6. Set Session and Redirect
-        if ($user) {
-            $sessionData =[
-                'user_id'    => $user['id'],
-                'username'   => $user['username'],
-                'email'      => $user['email'],
-                'role'       => strtolower($user['role']),
-                'isLoggedIn' => true,
-            ];
-            session()->set($sessionData);
+            throw new \Exception("User authentication failed.");
 
-            $role = strtolower($user['role']);
-            $redirectUrl = $this->_getRedirectUrl($role);
-
+        } catch (\Exception $e) {
+            log_message('error', '[Auth::verify] ' . $e->getMessage());
             return $this->response->setJSON([
-                'status'       => 'success', 
-                'redirect'     => $redirectUrl,
-                'trust_device' => ($remember === 'true') 
+                'status'  => 'error',
+                'message' => 'System Error: ' . $e->getMessage(),
+                'token'   => csrf_hash()
             ]);
         }
     }

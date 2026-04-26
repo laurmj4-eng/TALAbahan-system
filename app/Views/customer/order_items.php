@@ -125,10 +125,8 @@
     <!-- Order Details Modal -->
     <div id="detailsModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Order Details</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
+            <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header" id="modalTitle">Order Details</div>
             <div id="modalBody">
                 <div class="item-list" id="itemList">
                     <!-- Items will be injected here -->

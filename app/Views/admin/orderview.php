@@ -186,11 +186,11 @@
 <!-- Order Details Modal -->
 <div id="orderModal" class="modal">
     <div class="modal-content">
-        <button class="modal-close-btn" onclick="document.getElementById('orderModal').classList.remove('show')">&times;</button>
-        <h2 id="modalTitle" class="modal-header">Order Receipt</h2>
+        <button class="modal-close-btn" onclick="closeModal('orderModal')">&times;</button>
+        <div id="modalTitle" class="modal-header">Order Receipt</div>
         
         <div class="table-responsive glass-panel">
-            <table class="premium-table" style="margin-top: 0; min-width: 500px;">
+            <table class="premium-table" style="margin-top: 0; min-width: auto;">
                 <thead>
                     <tr>
                         <th>Product</th>
@@ -210,6 +210,10 @@
 </div>
 
 <script>
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
 async function viewOrderDetails(orderId) {
     try {
         const response = await fetch(`<?= site_url('admin/orders/show/') ?>${orderId}`);

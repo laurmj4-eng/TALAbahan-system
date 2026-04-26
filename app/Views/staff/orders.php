@@ -168,6 +168,10 @@
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { border-color: #4ade80; }
         .toast.error { border-color: #f87171; }
+
+        @media (max-width: 600px) {
+            .modal-grid { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -210,34 +214,34 @@
     <!-- Order Detail Modal -->
     <div id="orderModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2 id="modal-txn-title" style="margin: 0;">Order Details</h2>
-                <button onclick="closeModal()" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
+            <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header" id="modal-txn-title">Order Details</div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                <div class="glass-panel" style="padding: 20px;">
+                <div class="glass-panel" style="padding: 20px; border-radius: 16px;">
                     <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; text-transform: uppercase;">Customer</div>
                     <div id="modal-customer" style="font-weight: 700; font-size: 1.2rem; margin-top: 5px;"></div>
                     <div id="modal-date" style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-top: 5px;"></div>
                 </div>
-                <div class="glass-panel" style="padding: 20px;">
+                <div class="glass-panel" style="padding: 20px; border-radius: 16px;">
                     <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; text-transform: uppercase;">Total Amount</div>
                     <div id="modal-amount" style="font-weight: 800; font-size: 1.5rem; color: #4ade80; margin-top: 5px;"></div>
                 </div>
             </div>
 
-            <table class="premium-table" style="margin-top: 0;">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="modal-items"></tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="premium-table" style="margin-top: 0; min-width: auto;">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-items"></tbody>
+                </table>
+            </div>
 
             <div style="text-align: right; margin-top: 30px;">
                 <button class="btn btn-back" onclick="closeModal()">Close</button>
