@@ -22,8 +22,8 @@ class UserModel extends Model
     protected $returnType = 'array';
 
     protected $validationRules = [
-        'username' => 'required|min_length[3]|max_length[50]',
-        'email'    => 'required|valid_email|max_length[100]',
+        'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username]',
+        'email'    => 'required|valid_email|max_length[100]|is_unique[users.email]',
         'password' => 'permit_empty|min_length[6]|max_length[255]',
         'role'     => 'required|in_list[admin,staff,customer]',
     ];

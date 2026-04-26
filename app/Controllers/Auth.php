@@ -33,8 +33,8 @@ class Auth extends BaseController
         // NOTE: Skip reCAPTCHA in development since the secret key is not configured.
         if ($provider !== 'google' && !empty($recaptchaResponse) && ENVIRONMENT !== 'development') {
             
-            // IMPORTANT: Replace this with your ACTUAL Google Secret Key
-            $secret = '6LcVGI0sAAAAAKG...REPLACE_THIS_WITH_YOUR_KEY...'; 
+            // Get Secret Key from .env for security and to pass GitHub rules
+            $secret = env('RECAPTCHA_SECRET_KEY'); 
             
             $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
             $captchaData = json_decode($verify);
@@ -55,7 +55,17 @@ class Auth extends BaseController
         // 4. Handle GOOGLE Logins
         if ($provider === 'google') {
             if (!$user) {
-                $username = !empty($name) ? $name : explode('@', $email)[0];
+                // Generate a unique username
+                $baseUsername = !empty($name) ? $name : explode('@', $email)[0];
+                $username = $baseUsername;
+                
+                // Keep checking until we find a username that isn't taken
+                $count = 1;
+                while ($userModel->where('username', $username)->first()) {
+                    $username = $baseUsername . $count;
+                    $count++;
+                }
+
                 $newUserData = [
                     'username' => $username,
                     'email'    => $email,
@@ -120,7 +130,9 @@ class Auth extends BaseController
         if($userModel->insert($data)) {
             return redirect()->to('/login')->with('success', 'Account created successfully!');
         } else {
-            return redirect()->back()->with('error', 'Registration failed.')->withInput();
+            $errors = $userModel->errors();
+            $errorMessage = !empty($errors) ? implode(' ', $errors) : 'Registration failed.';
+            return redirect()->back()->with('error', $errorMessage)->withInput();
         }
     }
 

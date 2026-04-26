@@ -19,14 +19,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    // Firebase Config (Sensitive data removed for GitHub safety)
     const firebaseConfig = {
-        apiKey: "AIzaSyDSR0dDw5ETDH4SLpPA7BJT9OOgs2zovCw",
-        authDomain: "hahaah-90451.firebaseapp.com",
-        projectId: "hahaah-90451",
-        storageBucket: "hahaah-90451.firebasestorage.app",
-        messagingSenderId: "794371226159",
-        appId: "1:794371226159:web:ed82175cca31d7368864da",
-        measurementId: "G-P161NP90XW"
+        apiKey: "<?= env('FIREBASE_API_KEY') ?>",
+        authDomain: "<?= env('FIREBASE_AUTH_DOMAIN') ?>",
+        projectId: "<?= env('FIREBASE_PROJECT_ID') ?>",
+        storageBucket: "<?= env('FIREBASE_STORAGE_BUCKET') ?>",
+        messagingSenderId: "<?= env('FIREBASE_MESSAGING_SENDER_ID') ?>",
+        appId: "<?= env('FIREBASE_APP_ID') ?>",
+        measurementId: "<?= env('FIREBASE_MEASUREMENT_ID') ?>"
     };
 
     const app = initializeApp(firebaseConfig);
