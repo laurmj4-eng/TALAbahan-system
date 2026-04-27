@@ -1,59 +1,66 @@
 <?php
 
-use CodeIgniter\Boot;
-use Config\Paths;
-
-/*
- *---------------------------------------------------------------
- * CHECK PHP VERSION
- *---------------------------------------------------------------
- */
-
-$minPhpVersion = '7.4'; // If you update this, don't forget to update `spark`.
-if (version_compare(PHP_VERSION, $minPhpVersion, '<')) {
-    $message = sprintf(
-        'Your PHP version must be %s or higher to run CodeIgniter. Current version: %s',
-        $minPhpVersion,
-        PHP_VERSION,
-    );
-
-    header('HTTP/1.1 503 Service Unavailable.', true, 503);
-    echo $message;
-
+// Check PHP version.
+if (version_compare(PHP_VERSION, '8.1', '<')) {
+    printf('Your PHP version is %s, but CodeIgniter 4 requires at least PHP 8.1.', PHP_VERSION);
     exit(1);
 }
 
-/*
- *---------------------------------------------------------------
- * SET THE CURRENT DIRECTORY
- *---------------------------------------------------------------
- */
+// FOR DEBUGGING ONLY - Remove these for production
+// error_reporting(E_ALL);
+// ini_set('display_errors', '1');
 
 // Path to the front controller (this file)
 define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
-
-// Ensure the current directory is pointing to the front controller's directory
-if (getcwd() . DIRECTORY_SEPARATOR !== FCPATH) {
-    chdir(FCPATH);
-}
 
 /*
  *---------------------------------------------------------------
  * BOOTSTRAP THE APPLICATION
  *---------------------------------------------------------------
- * This process sets up the path constants, loads and registers
- * our autoloader, along with Composer's, loads our constants
- * and fires up an environment-specific bootstrapping.
  */
 
-// LOAD OUR PATHS CONFIG FILE
-// This is the line that might need to be changed, depending on your folder structure.
-require FCPATH . '../app/Config/Paths.php';
-// ^^^ Change this line if you move your application folder
+// Universal path detection for app/Config/Paths.php
+if (file_exists(__DIR__ . '/app/Config/Paths.php')) {
+    $pathsPath = __DIR__ . '/app/Config/Paths.php';
+} elseif (file_exists(__DIR__ . '/../app/Config/Paths.php')) {
+    $pathsPath = __DIR__ . '/../app/Config/Paths.php';
+} elseif (file_exists(__DIR__ . '/TALAbahan-system/app/Config/Paths.php')) {
+    $pathsPath = __DIR__ . '/TALAbahan-system/app/Config/Paths.php';
+}
 
-$paths = new Paths();
+if (!isset($pathsPath)) {
+    header('HTTP/1.1 503 Service Unavailable.', true, 503);
+    echo 'Error: Cannot find app/Config/Paths.php.<br>';
+    echo 'Current directory: ' . __DIR__ . '<br>';
+    echo 'Files in current directory:<br>';
+    print_r(scandir(__DIR__));
+    exit(1);
+}
 
-// LOAD THE FRAMEWORK BOOTSTRAP FILE
-require $paths->systemDirectory . '/Boot.php';
+require $pathsPath;
+$paths = new Config\Paths();
 
-exit(Boot::bootWeb($paths));
+// Fix FCPATH for InfinityFree root deployment to ensure assets load correctly
+if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
+    if (!defined('FCPATH')) {
+        define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
+    }
+}
+
+// Ensure .env is found in the same folder as Paths.php
+$paths->envDirectory = dirname($pathsPath, 3);
+
+// For InfinityFree root deployment, force envDirectory to root if needed
+if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
+    $paths->envDirectory = __DIR__;
+}
+
+// Load the framework bootstrapper
+if (!file_exists($paths->systemDirectory . DIRECTORY_SEPARATOR . 'Boot.php')) {
+    echo 'Error: Cannot find ' . $paths->systemDirectory . DIRECTORY_SEPARATOR . 'Boot.php';
+    exit(1);
+}
+require $paths->systemDirectory . DIRECTORY_SEPARATOR . 'Boot.php';
+
+// Launch the application
+exit(CodeIgniter\Boot::bootWeb($paths));

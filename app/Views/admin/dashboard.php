@@ -45,13 +45,20 @@
             <h3>Performance Overview</h3>
         </div>
         
-        <div class="card glass-panel" style="padding: 30px; border-radius: 24px;">
+        <div class="card glass-panel" id="chart-card" style="padding: 30px; border-radius: 24px;">
             <h2 style="font-size:1.5rem; margin-bottom: 8px;">7-Day Sales Trend</h2>
             <p style="color: rgba(255,255,255,0.4); margin-bottom: 24px; font-size: 0.95rem;">Connected to order history for live owner insights.</p>
-            <div style="height: 350px;">
+            <div class="chart-container" style="height: 350px; position: relative;">
                 <canvas id="overviewTrendChart"></canvas>
             </div>
         </div>
+
+        <style>
+            @media (max-width: 576px) {
+                #chart-card { padding: 20px !important; }
+                .chart-container { height: 250px !important; }
+            }
+        </style>
 
         <div class="premium-section-header" style="margin-top: 40px;">
             <i class="fas fa-bolt"></i>

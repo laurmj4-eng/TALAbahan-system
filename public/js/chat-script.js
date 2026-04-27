@@ -16,7 +16,9 @@ let chatHistory = JSON.parse(localStorage.getItem('myChatbotHistory')) || [];
 let isSoundEnabled = true;
 
 // Force connection to Node.js AI Backend
-const BASE_URL = 'http://localhost:3000'; 
+const BASE_URL = window.location.hostname === 'mjtalabahan.page.gd' 
+    ? 'http://mjtalabahan.page.gd' 
+    : 'http://localhost:3000'; 
 
 chatButton.addEventListener('click', () => {
     chatContainer.classList.add('active');

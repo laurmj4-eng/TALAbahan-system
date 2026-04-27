@@ -2,25 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= lang('Errors.pageNotFound') ?></title>
-
     <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
         body {
             height: 100%;
             background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
             color: #777;
             font-weight: 300;
+            margin: 0;
+            padding: 0;
         }
         h1 {
             font-weight: lighter;
@@ -66,12 +58,20 @@
         a:visited {
             color: #dd4814;
         }
+        @media (max-width: 768px) {
+            .wrap {
+                margin: 2rem 10px;
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="wrap">
         <h1>404</h1>
-
         <p>
             <?php if (ENVIRONMENT !== 'production') : ?>
                 <?= nl2br(esc($message)) ?>

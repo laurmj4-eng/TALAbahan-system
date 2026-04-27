@@ -18,6 +18,26 @@ class App extends BaseConfig
      */
     public string $baseURL = '';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Automatic BaseURL Detection
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $host = $_SERVER['HTTP_HOST'];
+            if (strpos($host, 'mjtalabahan.page.gd') !== false) {
+                // On InfinityFree, we use HTTPS
+                $this->baseURL = 'https://' . $host . '/';
+                $this->indexPage = '';
+            } elseif (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
+                $this->baseURL = 'http://' . $host . ':8080/';
+                $this->indexPage = '';
+            }
+        } else {
+            $this->baseURL = 'http://localhost:8080/';
+        }
+    }
+
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
      * If you want to accept multiple Hostnames, set this.
@@ -157,7 +177,7 @@ class App extends BaseConfig
      * secure, the user will be redirected to a secure version of the page
      * and the HTTP Strict Transport Security (HSTS) header will be set.
      */
-    public bool $forceGlobalSecureRequests = false;
+    public bool $forceGlobalSecureRequests = true;
 
     /**
      * --------------------------------------------------------------------------

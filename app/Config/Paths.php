@@ -87,4 +87,24 @@ class Paths
      * value - the directory should not be publicly accessible.
      */
     public string $envDirectory = __DIR__ . '/../../';
+
+    public function __construct()
+    {
+        // Detect if we are on InfinityFree to fix the writable path
+        if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'mjtalabahan.page.gd') !== false) {
+            // Check if we are in the root or in a subdirectory
+            if (strpos(__DIR__, 'TALAbahan-system') !== false) {
+                // If this file is at .../TALAbahan-system/app/Config/Paths.php
+                $this->writableDirectory = realpath(__DIR__ . '/../../writable');
+                $this->systemDirectory   = realpath(__DIR__ . '/../../system');
+                $this->testsDirectory    = realpath(__DIR__ . '/../../tests');
+                $this->envDirectory      = realpath(__DIR__ . '/../../');
+            } else {
+                // If this file is at .../app/Config/Paths.php (root deployment)
+                $this->writableDirectory = realpath(__DIR__ . '/../../writable');
+                $this->systemDirectory   = realpath(__DIR__ . '/../../system');
+                $this->envDirectory      = realpath(__DIR__ . '/../../');
+            }
+        }
+    }
 }

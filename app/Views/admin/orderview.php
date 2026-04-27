@@ -108,7 +108,7 @@
 
 <main class="main-content">
     <div class="card glass-panel" style="padding: 40px; border-radius: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
+        <div class="flex-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
             <div>
                 <h2 style="font-size: 2.2rem; margin-bottom: 0;">Customer Orders 📑 <span class="order-tag">Order</span></h2>
                 <p style="color: rgba(255,255,255,0.6); margin-top: 10px; margin-bottom: 0;">Monitor and oversee seafood fulfillment operations.</p>

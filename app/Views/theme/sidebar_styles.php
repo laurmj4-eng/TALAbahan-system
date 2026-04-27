@@ -5,11 +5,12 @@
         min-width: var(--sidebar-width, 260px);
         display: flex; 
         flex-direction: column; 
-        z-index: 10; 
+        z-index: 1000; 
         border-right: 1px solid rgba(255,255,255,0.08);
         background: rgba(0, 0, 0, 0.3); 
         backdrop-filter: blur(20px);
         height: 100vh;
+        transition: all 0.3s ease;
     }
     
     .sidebar-header { 

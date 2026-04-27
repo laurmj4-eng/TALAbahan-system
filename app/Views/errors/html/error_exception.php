@@ -13,6 +13,13 @@ $errorId = uniqid('error', true);
     <title><?= esc($title) ?></title>
     <style>
         <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem !important; }
+            .header p { font-size: 1rem !important; line-height: 1.6 !important; }
+            .environment { font-size: 0.7rem !important; padding: 10px 5px !important; }
+            .container { padding: 10px !important; }
+            .source { font-size: 0.75rem !important; }
+        }
     </style>
 
     <script>

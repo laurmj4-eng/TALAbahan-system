@@ -1,4 +1,31 @@
+# TALAbahan System - Root .htaccess
+# Optimized for InfinityFree and Root Deployment
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteBase /
+
+    # 1. Force HTTPS (Optional, but recommended for InfinityFree)
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Prevent directory listing
+    Options -Indexes
+
+    # 3. Handle Assets in the public folder
+    # If the request starts with common asset folders, rewrite to public/
+    RewriteRule ^(css|images|js|favicon\.ico|robots\.txt)(.*)$ public/$1$2 [L]
+
+    # 4. Handle the rest via root index.php
+    # If it's not a real file or directory in the root
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Redirect to index.php with a query string (required by some shared hosts)
+    RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # If mod_rewrite is not enabled, we can't do much about clean URLs
+    # but we can at least try to serve index.php
+    DirectoryIndex index.php
 </IfModule>

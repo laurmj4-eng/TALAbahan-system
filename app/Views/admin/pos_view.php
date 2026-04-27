@@ -37,7 +37,12 @@
         .pos-item { padding: 15px; }
         .pos-item .icon { font-size: 2.5rem; }
         .pos-item .name { font-size: 0.9rem; }
-        .pos-cart { padding: 20px; }
+        .pos-cart { 
+            padding: 20px; 
+            margin-bottom: 80px; /* Space for potentially fixed footer if added */
+        }
+        .summary-total { font-size: 1.2rem; }
+        .btn-checkout { padding: 15px; font-size: 1rem; }
     }
 </style>
 

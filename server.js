@@ -12,7 +12,7 @@ if (!process.env.OPENROUTER_API_KEY) {
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: '*',
     methods: ['GET', 'POST']
 })); 
 

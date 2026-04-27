@@ -1,5 +1,8 @@
 body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     
     /* Background Image Additions */
     background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/pic1.jpg'); 
@@ -49,11 +52,24 @@ body {
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Responsive adjustments for mobile */
+/* Responsive adjustments for mobile and tablets */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 40px 30px;
+        width: 85%;
+        max-width: 360px;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+}
+
 @media (max-width: 480px) {
     .login-container {
         padding: 30px 20px;
         border-radius: 16px;
+        width: 92%;
     }
 
     h2 {
@@ -78,6 +94,29 @@ body {
 
     .remember-me-container label {
         font-size: 12px;
+    }
+
+    .g-recaptcha {
+        transform: scale(0.85);
+        -webkit-transform: scale(0.85);
+        transform-origin: 0 0;
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+        display: block;
+    }
+}
+
+/* Landscape orientation for small phones */
+@media (max-height: 500px) and (orientation: landscape) {
+    body {
+        align-items: flex-start;
+        padding: 20px 0;
+        height: auto;
+        min-height: 100vh;
+    }
+    .login-container {
+        margin: 20px auto;
     }
 }
 

@@ -24,6 +24,16 @@ class Cache extends BaseConfig
      */
     public string $handler = 'file';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        // On InfinityFree, we disable file-based caching to avoid permission issues
+        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
+            $this->handler = 'dummy';
+        }
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Backup Handler
