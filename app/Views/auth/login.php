@@ -17,8 +17,9 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-    // Firebase Config (Sensitive data removed for GitHub safety)
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "<?= env('FIREBASE_API_KEY') ?>",
         authDomain: "<?= env('FIREBASE_AUTH_DOMAIN') ?>",
@@ -29,8 +30,23 @@
         measurementId: "<?= env('FIREBASE_MEASUREMENT_ID') ?>"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    let auth = null;
+    let provider = null;
+    let analytics = null;
+
+    // Only initialize if API Key exists to avoid script errors
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            provider = new GoogleAuthProvider();
+            analytics = getAnalytics(app);
+        } catch (error) {
+            console.error("Firebase Initialization Error:", error);
+        }
+    } else {
+        console.warn("Firebase API Key is missing. Google Sign-In will be disabled.");
+    }
 
     const emailInput = document.getElementById('email');
     const captchaBox = document.getElementById('captcha-container');
@@ -75,9 +91,13 @@
 
     // --- 2. GOOGLE SIGN-IN LOGIC ---
     const googleBtn = document.getElementById('googleBtn');
-    const provider = new GoogleAuthProvider();
 
     googleBtn.addEventListener('click', () => {
+        if (!auth || !provider) {
+            alert("Google Sign-In is not configured yet. Please add your Firebase keys to the .env file.");
+            return;
+        }
+
         const originalContent = googleBtn.innerHTML;
         googleBtn.textContent = "Please wait...";
         googleBtn.disabled = true;
@@ -88,8 +108,21 @@
                 verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
             })
             .catch((error) => {
-                console.error(error);
-                alert("Google Sign-In failed or was cancelled.");
+                console.error("Full Error Object:", error);
+                
+                let friendlyMessage = "Google Sign-In failed or was cancelled.";
+                
+                if (error.code === 'auth/operation-not-allowed') {
+                    friendlyMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it under Authentication > Sign-in method.";
+                } else if (error.code === 'auth/popup-blocked') {
+                    friendlyMessage = "The login popup was blocked by your browser. Please allow popups for this site.";
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    friendlyMessage = "This domain (localhost) is not authorized in your Firebase Console. Add it under Authentication > Settings > Authorized domains.";
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    friendlyMessage = "Login cancelled: The popup was closed before finishing.";
+                }
+
+                alert(friendlyMessage + "\n\nError Code: " + error.code);
                 googleBtn.innerHTML = originalContent;
                 googleBtn.disabled = false;
             });
@@ -165,7 +198,7 @@
     }
 </script>
 
-<form id="loginForm" class="login-container">
+<form id="loginForm" class="login-container" method="POST">
     <!-- ADDED: CSRF Field (Required by CodeIgniter) -->
     <?= csrf_field() ?>
 
@@ -182,7 +215,7 @@
     
     <!-- reCAPTCHA Container -->
     <div id="captcha-container" style="margin-bottom: 15px;">
-        <div class="g-recaptcha" data-sitekey="6LcVGI0sAAAAAOJIrADJWMJKDDGALrEHHnCB8c1A"></div>
+        <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>"></div>
     </div>
     
     <button type="submit" id="loginBtn">Login</button>

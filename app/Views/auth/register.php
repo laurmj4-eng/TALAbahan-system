@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('css/style.css') ?>">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -23,6 +24,11 @@
         <input type="text" name="username" placeholder="Username" required>
         <input type="email" name="email" placeholder="Email Address" required>
         <input type="password" name="password" placeholder="Password" required minlength="6">
+        
+        <!-- reCAPTCHA Container -->
+        <div style="margin-bottom: 15px;">
+            <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>"></div>
+        </div>
         
         <button type="submit">Sign Up Now</button>
     </form>

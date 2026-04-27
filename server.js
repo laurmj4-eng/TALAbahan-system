@@ -20,18 +20,24 @@ app.use(express.json());
 
 let pool;
 try {
-    pool = mysql.createPool({ 
+    let poolConfig = { 
         host: process.env.DB_HOST || 'localhost', 
         user: process.env.DB_USER || 'root', 
         password: process.env.DB_PASS || '', 
         database: process.env.DB_NAME || 'mj_chatbot',
         port: process.env.DB_PORT || 3306,
-        ssl: {
+    };
+
+    // Conditionally add SSL configuration based on environment variable
+    if (process.env.DB_SSL === 'true') {
+        poolConfig.ssl = {
             rejectUnauthorized: false
-        }
-    });
+        };
+    }
+
+    pool = mysql.createPool(poolConfig);
     pool.query(`CREATE TABLE IF NOT EXISTS firebase_users_tracking (uid VARCHAR(255) PRIMARY KEY, prompt_count INT DEFAULT 0, last_reset DATE)`);
-    console.log("✅ Database Connected (AivenCloud)");
+    console.log("✅ Database Connected");
 } catch (err) { 
     console.error('❌ SQL Error:', err.message); 
 }

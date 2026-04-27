@@ -29,21 +29,19 @@ class Auth extends BaseController
             $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
 
             // 2. Verify reCAPTCHA (Server-side)
-            if ($provider !== 'google' && !empty($recaptchaResponse) && ENVIRONMENT !== 'development') {
+            if ($provider !== 'google' && !empty($recaptchaResponse)) {
                 $secret = env('RECAPTCHA_SECRET_KEY'); 
                 $verify = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
                 
-                if ($verify === false) {
-                    throw new \Exception("Could not connect to reCAPTCHA verification service.");
-                }
-
-                $captchaData = json_decode($verify);
-                if (!$captchaData || !$captchaData->success) {
-                    return $this->response->setJSON([
-                        'status'  => 'error',
-                        'message' => 'reCAPTCHA verification failed. Please try again.',
-                        'token'   => csrf_hash()
-                    ]);
+                if ($verify !== false) {
+                    $captchaData = json_decode($verify);
+                    if (!$captchaData || !$captchaData->success) {
+                        return $this->response->setJSON([
+                            'status'  => 'error',
+                            'message' => 'reCAPTCHA verification failed. Please try again.',
+                            'token'   => csrf_hash()
+                        ]);
+                    }
                 }
             }
             
@@ -130,6 +128,20 @@ class Auth extends BaseController
 
     public function createAccount()
     {
+        // 1. Verify reCAPTCHA (Server-side)
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+        if (!empty($recaptchaResponse)) {
+            $secret = env('RECAPTCHA_SECRET_KEY');
+            $verify = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
+            
+            if ($verify !== false) {
+                $captchaData = json_decode($verify);
+                if (!$captchaData || !$captchaData->success) {
+                    return redirect()->back()->with('error', 'reCAPTCHA verification failed. Please try again.')->withInput();
+                }
+            }
+        }
+
         $userModel = new UserModel();
 
         $data =[
