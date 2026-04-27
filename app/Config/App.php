@@ -30,7 +30,7 @@ class App extends BaseConfig
                 $this->baseURL = 'https://' . $host . '/';
                 $this->indexPage = '';
             } elseif (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
-                $this->baseURL = 'http://' . $host . ':8080/';
+                $this->baseURL = 'http://localhost:8080/';
                 $this->indexPage = '';
             }
         } else {
@@ -177,7 +177,7 @@ class App extends BaseConfig
      * secure, the user will be redirected to a secure version of the page
      * and the HTTP Strict Transport Security (HSTS) header will be set.
      */
-    public bool $forceGlobalSecureRequests = true;
+    public bool $forceGlobalSecureRequests = false;
 
     /**
      * --------------------------------------------------------------------------
