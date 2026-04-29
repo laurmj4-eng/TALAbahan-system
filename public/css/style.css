@@ -50,55 +50,61 @@ body {
     max-width: 400px;
     text-align: center;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform; /* Optimize for mobile GPU */
 }
 
-/* Responsive adjustments for mobile and tablets */
+/* Performance Optimized Transitions */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Specific Optimizations */
 @media (max-width: 768px) {
-    .login-container {
-        padding: 40px 30px;
-        width: 85%;
-        max-width: 360px;
-    }
-    
-    h2 {
-        font-size: 1.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .login-container {
-        padding: 30px 20px;
-        border-radius: 16px;
-        width: 92%;
+    body {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 100vh !important;
+        padding: 0 !important;
+        background-size: cover !important;
+        background-attachment: fixed !important;
     }
 
+    .login-container {
+        padding: 20px 15px;
+        border-radius: 20px;
+        width: 80% !important; /* Occupies 80% of screen width */
+        max-width: 300px !important; /* Small floating card */
+        margin: 20px auto !important;
+        /* Ensure it floats clearly over background */
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
     h2 {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
     }
 
     .form-logo {
-        width: 140px;
-        margin-bottom: 15px;
+        width: 90px;
+        margin-bottom: 8px;
     }
 
-    input:not([type="checkbox"]) {
-        padding: 12px 15px;
-        font-size: 14px;
-    }
-
-    button {
-        padding: 12px;
-        font-size: 15px;
-    }
-
-    .remember-me-container label {
+    input:not([type="checkbox"]), button {
+        padding: 8px 12px;
+        margin: 5px 0;
         font-size: 12px;
+        min-height: 38px;
     }
 
+    .divider {
+        margin: 8px 0;
+    }
+
+    /* Scale reCAPTCHA to fit perfectly within the 300px container */
     .g-recaptcha {
-        /* Handled by .captcha-wrapper in modern layout */
-        display: block;
+        transform: scale(0.75);
+        transform-origin: center center;
     }
 }
 

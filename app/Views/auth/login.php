@@ -107,6 +107,8 @@
         googleBtn.textContent = "Please wait...";
         googleBtn.disabled = true;
 
+        // Optimize for mobile: check if screen is small and use redirect instead of popup if preferred,
+        // but for now we'll keep popup and ensure it's handled.
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
