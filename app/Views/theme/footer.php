@@ -42,7 +42,7 @@
 
     <script src="<?= base_url('js/chat-script.js') ?>"></script>
     <script>
-      function switchTab(tabId) {
+        function switchTab(tabId) {
             // MAGIC FIX: If on Product view, redirect to dashboard with the tab ID!
             if (!document.getElementById('tab-' + tabId)) {
                 window.location.href = "<?= site_url(session()->get('role').'/dashboard') ?>?tab=" + tabId;

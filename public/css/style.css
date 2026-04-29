@@ -333,3 +333,333 @@ button[type="button"]:not(.google-btn):hover {
     justify-content: center;
     filter: brightness(0.9) contrast(1.1);
 }
+
+/* =========================================
+   GLOBAL MOBILE MODAL OVERRIDES
+   ========================================= */
+@media (max-width: 768px) {
+    .modal-dialog {
+        width: 90% !important;
+        max-width: 310px !important; /* Strict 310px width */
+        margin: 1rem auto !important; /* Centered with 1rem margin */
+        min-width: auto !important;
+    }
+
+    .modal-content {
+        background: rgba(30, 20, 60, 0.98) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+        border-radius: 15px !important; /* Specific 15px radius */
+        overflow: hidden !important;
+        max-height: 80vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .modal-header {
+        padding: 8px 15px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .modal-header h2, .modal-title {
+        font-size: 1rem !important;
+    }
+
+    .modal-body {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 5px !important;
+        padding: 15px 15px 5px 15px !important; /* Tight padding with 5px bottom */
+        overflow-y: auto !important;
+        flex: 1 1 auto !important;
+    }
+
+    /* Force absolute single-column stacking for EVERY div inside modal-body */
+    .modal-body div {
+        display: block !important;
+        width: 100% !important;
+        float: none !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 0 5px 0 !important;
+    }
+
+    .modal-body label {
+        font-size: 10px !important;
+        margin-bottom: 2px !important;
+        font-weight: 500 !important;
+    }
+
+    /* Slim all inputs and controls */
+    .modal-body input,
+    .modal-body select,
+    .modal-body textarea,
+    .modal-body .form-control {
+        width: 100% !important;
+        height: 34px !important;
+        font-size: 12px !important;
+        padding: 5px 10px !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* EMERGENCY MOBILE MODAL FIX - FOOTER OVERRIDES */
+    .modal-footer {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 5px !important; /* Force exact 5px padding */
+        margin: 0 !important; /* Remove margin */
+        min-height: auto !important; /* Remove min-height */
+        border: none !important; /* Remove border */
+        width: 100% !important;
+    }
+
+    .modal-footer button,
+    .modal-footer .btn,
+    .modal-content .btn-primary,
+    .btn-primary[type="submit"] {
+        width: 100% !important;
+        margin: 0 !important;
+        height: 36px !important; /* Strict 36px height */
+        font-size: 12px !important; /* Tiny 12px font */
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Specific override for very small screens */
+@media (max-width: 480px) {
+    .modal-dialog {
+        max-width: 310px !important;
+        width: 90% !important;
+        margin: 20px auto !important;
+    }
+    .modal-footer {
+        padding: 8px !important;
+    }
+    .modal-footer .btn, .btn-primary[type="submit"] {
+         height: 38px !important;
+         font-size: 13px !important;
+     }
+}
+
+/* =========================================
+   USER MANAGEMENT TABLE RESPONSIVE FIX
+   ========================================= */
+@media (max-width: 768px) {
+    /* Target the main container card */
+    .main-content .card, 
+    .main-content .glass-panel {
+        padding: 15px !important; /* Force 15px padding from 40px */
+        border-radius: 15px !important;
+        margin: 10px 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Table Container Responsiveness */
+    .table-responsive {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important; /* Allow horizontal swipe */
+        -webkit-overflow-scrolling: touch;
+        margin: 10px 0 !important;
+        border-radius: 8px !important;
+    }
+
+    /* Shrink Table Content */
+    .premium-table, 
+    .table {
+        width: 100% !important;
+        min-width: 600px; /* Ensure table doesn't collapse too much */
+    }
+
+    .premium-table th, 
+    .table th {
+        font-size: 11px !important;
+        padding: 8px 4px !important;
+        white-space: nowrap !important;
+    }
+
+    .premium-table td, 
+    .table td {
+        font-size: 11px !important;
+        padding: 8px 4px !important;
+    }
+
+    /* Header Actions (Add Button, Search, Filter) */
+    .flex-header, 
+    .d-flex.justify-content-between {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    .flex-header div, 
+    .search-filter-area {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .btn-add, 
+    .btn-primary {
+        width: 100% !important;
+        height: 38px !important;
+        font-size: 13px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    body, .main-content {
+        overflow-x: hidden !important;
+    }
+}
+
+/* =========================================
+   ULTRA-COMPACT ORDER TABLE RESPONSIVE FIX
+   ========================================= */
+@media (max-width: 768px) {
+    /* Reduce card padding to maximize table space */
+    .main-content #order-card-container,
+    .main-content .card.glass-panel {
+        padding: 10px !important; /* Ultra-tight padding */
+    }
+
+    /* Force Table to be compact and fixed layout */
+    .premium-table, 
+    .table {
+        width: 100% !important;
+        table-layout: fixed !important; /* Prevents columns from expanding */
+        border-collapse: collapse !important;
+    }
+
+    /* Shrink Typography and Padding */
+    .premium-table th, .table th,
+    .premium-table td, .table td {
+        font-size: 10px !important; /* Ultra-small font */
+        padding: 4px 2px !important; /* Minimal padding */
+        text-overflow: ellipsis !important;
+        overflow: hidden !important;
+        white-space: nowrap !important; /* Prevent text wrapping */
+    }
+
+    /* Specific Column Sizing for Orders */
+    /* Assuming typical Order table columns: ID, Date, Customer, Total, Status */
+    .premium-table th:nth-child(1), .table td:nth-child(1) { width: 50px !important; } /* Order ID */
+    .premium-table th:nth-child(2), .table td:nth-child(2) { width: 70px !important; } /* Date */
+    
+    /* Order status tags should be smaller */
+    .order-tag, .status-badge {
+        font-size: 8px !important;
+        padding: 2px 4px !important;
+    }
+
+    /* Adjust Action buttons in table */
+    .btn-details, .btn-action {
+        padding: 2px 5px !important;
+        font-size: 9px !important;
+        min-height: auto !important;
+    }
+}
+
+/* =========================================
+   ULTRA-STRICT MOBILE RESPONSIVE OVERRIDES
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. Fix the Menu Button (Mobile Toggle) */
+    .mobile-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        width: 35px !important;
+        height: 35px !important;
+        z-index: 99999 !important;
+        padding: 0 !important;
+        font-size: 1rem !important;
+    }
+
+    /* 2. Force the 2-Column Product Grid */
+    /* Target the container regardless of class names */
+    .main-content .row,
+    .product-container,
+    .products-grid,
+    #product-list {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* 3. Force Small Product Cards */
+    .product-card,
+    .item-card,
+    .main-content div[class*="col-"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        margin: 0 !important;
+        padding: 5px !important;
+        border-radius: 10px !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 4. Force Small Images */
+    .product-card img,
+    .item-card img,
+    .product-image {
+        width: 100% !important;
+        height: 100px !important; /* Shrunk for iPhone/Samsung */
+        object-fit: cover !important;
+        border-radius: 6px !important;
+        margin-bottom: 5px !important;
+    }
+
+    /* 5. Force Small Typography */
+    .product-title, .product-card h3, .card-title {
+        font-size: 12px !important;
+        margin: 2px 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    .product-price, .price-tag, .card-text {
+        font-size: 11px !important;
+        margin-bottom: 5px !important;
+    }
+
+    /* 6. Force Slim Buttons */
+    .btn-add-cart, .btn-primary, .product-card .btn {
+        height: 28px !important; /* Tiny bar height */
+        font-size: 10px !important;
+        padding: 0 !important;
+        border-radius: 4px !important;
+        width: 100% !important;
+    }
+
+    /* 7. Ensure Main Content doesn't overflow */
+    .main-content {
+        padding: 60px 10px 20px 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        overflow-x: hidden !important;
+    }
+}

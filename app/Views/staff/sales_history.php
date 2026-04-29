@@ -1,44 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales History | Staff</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<?= $this->include('theme/header') ?>
+<?= $this->include('theme/sidebar') ?>
+
     <style>
-        * { box-sizing: border-box; }
-        
-        body { 
-            margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(120deg, #1e1b4b, #3b0764, #0f172a, #082f49);
-            background-size: 300% 300%;
-            animation: gradientBg 15s ease infinite;
-            color: #ffffff; display: flex; height: 100vh; overflow: hidden; 
-        }
-        
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            border-radius: 20px;
-        }
-
-        .main-content { 
-            flex: 1; 
-            padding: 40px; 
-            overflow-y: auto; 
-        }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -49,7 +12,7 @@
         h1 { 
             margin: 0; 
             font-weight: 700; 
-            font-size: 2rem; 
+            font-size: 2.2rem; 
             color: #fff; 
         }
 
@@ -161,12 +124,18 @@
             color: rgba(255, 255, 255, 0.6);
             font-size: 0.9rem;
         }
-    </style>
-</head>
-<body>
 
-    <!-- SIDEBAR -->
-    <?= $this->include('theme/sidebar') ?>
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -198,12 +167,17 @@
                         <tr>
                             <th>Transaction Code</th>
                             <th>Date & Time</th>
-                            <th>Items Purchased</th>
-                            <th>Total Revenue</th>
+                            <th>Items</th>
+                            <th>Revenue</th>
                         </tr>
                     </thead>
                     <tbody id="salesBody">
-                        <tr><td colspan="4" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">Loading sales history...</td></tr>
+                        <!-- Loading state -->
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 100px;">
+                                <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: #a855f7;"></i>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -212,63 +186,43 @@
 
     <script>
         async function loadSalesHistory() {
+            const tableBody = document.getElementById('salesBody');
+            
             try {
                 const response = await fetch('<?= site_url('staff/getSalesHistory') ?>');
-                const history = await response.json();
-                renderSalesHistory(history);
-                calculateStats(history);
+                const data = await response.json();
+                
+                // Update stats
+                document.getElementById('totalTxns').innerText = data.total_txns;
+                document.getElementById('totalRevenue').innerText = '₱' + parseFloat(data.total_revenue).toLocaleString(undefined, {minimumFractionDigits: 2});
+                document.getElementById('avgSale').innerText = '₱' + parseFloat(data.avg_sale).toLocaleString(undefined, {minimumFractionDigits: 2});
+                
+                // Render table
+                if (data.sales.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No sales history found.</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                data.sales.forEach(sale => {
+                    const row = `
+                        <tr>
+                            <td class="txn-code">${sale.transaction_code}</td>
+                            <td class="datetime">${new Date(sale.created_at).toLocaleString()}</td>
+                            <td class="items" title="${sale.items}">${sale.items}</td>
+                            <td class="revenue">₱${parseFloat(sale.total_amount).toFixed(2)}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+                
             } catch (error) {
-                console.error('Error loading sales history:', error);
-                document.getElementById('salesBody').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #f87171;">Error loading sales history</td></tr>';
+                console.error('Error fetching sales history:', error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load sales history.</td></tr>';
             }
         }
 
-        function renderSalesHistory(history) {
-            const tbody = document.getElementById('salesBody');
-            
-            if (!history || history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.4);">No sales found</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = history.map(record => {
-                const dateObj = new Date(record.created_at);
-                const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
-
-                return `
-                    <tr>
-                        <td><strong class="txn-code">${record.transaction_code}</strong></td>
-                        <td class="datetime">${formattedDate}</td>
-                        <td class="items" title="${record.items_summary || 'N/A'}">${record.items_summary || 'N/A'}</td>
-                        <td class="revenue">₱${parseFloat(record.total_amount || 0).toFixed(2)}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function calculateStats(history) {
-            if (!history || history.length === 0) {
-                document.getElementById('totalTxns').textContent = '0';
-                document.getElementById('totalRevenue').textContent = '₱0.00';
-                document.getElementById('avgSale').textContent = '₱0.00';
-                return;
-            }
-
-            const totalTxns = history.length;
-            const totalRevenue = history.reduce((sum, h) => sum + parseFloat(h.total_amount || 0), 0);
-            const avgSale = totalTxns > 0 ? totalRevenue / totalTxns : 0;
-
-            document.getElementById('totalTxns').textContent = totalTxns;
-            document.getElementById('totalRevenue').textContent = '₱' + totalRevenue.toFixed(2);
-            document.getElementById('avgSale').textContent = '₱' + avgSale.toFixed(2);
-        }
-
-        // Load sales history when page loads
-        document.addEventListener('DOMContentLoaded', loadSalesHistory);
-
-        // Auto-refresh sales history every 60 seconds
-        setInterval(loadSalesHistory, 60000);
+        window.onload = loadSalesHistory;
     </script>
 
-</body>
-</html>
+<?= $this->include('theme/footer') ?>

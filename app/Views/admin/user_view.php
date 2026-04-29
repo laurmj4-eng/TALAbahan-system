@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var array $users
+ */
+?>
 <!-- 1. Include Shared Header -->
 <?= $this->include('theme/header') ?>
 
@@ -26,6 +31,7 @@
         <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Append, modify, or terminate entity access securely.</p>
         
         <form action="<?= site_url('admin/saveUser') ?>" method="post" class="premium-form">
+            <?= csrf_field() ?>
             <div class="form-group"><label>ID</label><input type="text" name="username" placeholder="Username..." required></div>
             <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="Your Gmail" required></div>
             <div class="form-group"><label>Password</label><input type="password" name="password" placeholder="••••••••" required></div>
@@ -42,7 +48,7 @@
 
         <div class="table-responsive glass-panel">
             <table class="premium-table">
-                <thead><tr><th>ID<th>Email Address</th><th>Role</th><th class="action-cell"> Edit/Delete</th></tr></thead>
+                <thead><tr><th>ID</th><th>Email Address</th><th>Role</th><th class="action-cell"> Edit/Delete</th></tr></thead>
                 <tbody>
                     <?php if(!empty($users)): foreach($users as $user): ?>
                     <tr>
@@ -113,5 +119,4 @@
     }
 </script>
 
-<!-- 3. Include Shared Footer -->
 <?= $this->include('theme/footer') ?>

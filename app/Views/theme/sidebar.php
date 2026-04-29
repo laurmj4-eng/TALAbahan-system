@@ -13,7 +13,10 @@
 
 <?= $this->include('theme/sidebar_styles') ?>
 
-<aside class="sidebar glass-panel">
+<!-- OVERLAY FOR MOBILE -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar glass-panel" id="sidebar">
     <!-- HEADER -->
     <div class="sidebar-header">
         <div class="logo-container">

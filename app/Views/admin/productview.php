@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var array $products
+ */
+?>
 <!-- 1. Include Shared Header (CSS/Theme) -->
 <?= $this->include('theme/header') ?>
 
@@ -6,9 +11,11 @@
 
 <style>
     /* Custom adjustments for this view */
-    .modal .premium-form {
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
+    @media (min-width: 769px) {
+        .modal .premium-form {
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
     }
 
     .modal .form-group {
@@ -74,8 +81,8 @@
                                 <?php endif; ?>
                             </td>
                             <td><strong style="color: #fff;"><?= esc($p['name']) ?></strong></td>
-                            <td>₱<?= number_format($p['cost_price'], 2) ?></td>
-                            <td>₱<?= number_format($p['selling_price'], 2) ?></td>
+                            <td>&#8369;<?= number_format($p['cost_price'], 2) ?></td>
+                            <td>&#8369;<?= number_format($p['selling_price'], 2) ?></td>
                             <td><?= esc($p['current_stock']) ?> <?= esc($p['unit']) ?></td>
                             <td>
                                 <?php if ($p['current_stock'] > 5): ?>
@@ -187,9 +194,6 @@
     </div>
 </main>
 
-<!-- 4. Include Shared Footer (Chatbot + Navigation Logic) -->
-<?= $this->include('theme/footer') ?>
-
 <script>
     function closeModal(modalId) {
         document.getElementById(modalId).classList.remove('show');
@@ -284,9 +288,9 @@
             return;
         }
 
-        // CSRF Token Info from CodeIgniter
-        const csrfTokenName = '<?= csrf_token() ?>';
-        const csrfHash = document.querySelector('input[name="' + csrfTokenName + '"]').value;
+        // CSRF Token Info from Meta Tags in header.php
+        const csrfTokenName = document.querySelector('meta[name="csrf-name"]').getAttribute('content');
+        const csrfHash = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         const formData = new FormData();
         formData.append(csrfTokenName, csrfHash);
@@ -308,7 +312,8 @@
             } else {
                 alert('Failed to delete product: ' + (result.message || 'Unknown error'));
                 if (result.token) {
-                    document.querySelector('input[name="' + csrfTokenName + '"]').value = result.token;
+                    // Update meta tag for subsequent requests
+                    document.querySelector('meta[name="csrf-token"]').setAttribute('content', result.token);
                 }
             }
         } catch (error) {
@@ -317,3 +322,4 @@
         }
     }
 </script>
+<?= $this->include('theme/footer') ?>

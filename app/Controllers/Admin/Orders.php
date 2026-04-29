@@ -12,7 +12,7 @@ class Orders extends BaseController
     {
         $model = new OrderModel();
         $data['orders'] = $model->getOrdersWithItemCount();
-        return view('admin/orderview', $data);
+        return view('admin/orders_standalone', $data);
     }
 
     public function show($id)

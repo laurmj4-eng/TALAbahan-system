@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var array $cards
+ * @var array $chart
+ * @var string $username
+ */
+?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
 
@@ -21,7 +28,7 @@
             <div class="premium-stat-card glass-panel">
                 <div class="premium-stat-icon bg-success color-success"><i class="fas fa-coins"></i></div>
                 <div class="premium-stat-label">Today's Sales</div>
-                <div class="premium-stat-value color-success">₱<?= number_format((float)($cards['today_sales'] ?? 0), 2) ?></div>
+                <div class="premium-stat-value color-success">&#8369;<?= number_format((float)($cards['today_sales'] ?? 0), 2) ?></div>
                 <div class="premium-stat-desc">Total revenue generated today</div>
             </div>
             
@@ -36,7 +43,7 @@
                 <div class="premium-stat-icon bg-premium color-premium"><i class="fas fa-layer-group"></i></div>
                 <div class="premium-stat-label">Low Stock Items</div>
                 <div class="premium-stat-value color-premium"><?= (int)($cards['low_stock_count'] ?? 0) ?></div>
-                <div class="premium-stat-desc">Products with ≤ 5 units left</div>
+                <div class="premium-stat-desc">Products with &le; 5 units left</div>
             </div>
         </div>
 
@@ -105,7 +112,6 @@
 
 </main>
 
-<?= $this->include('theme/footer') ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 (() => {
@@ -153,3 +159,5 @@
     });
 })();
 </script>
+
+<?= $this->include('theme/footer') ?>

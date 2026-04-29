@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var array $locations
+ */
+?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
 
@@ -157,8 +162,6 @@
     </div>
 </main>
 
-<?= $this->include('theme/footer') ?>
-
 <script>
     function openModal(id) { document.getElementById(id).classList.add('show'); }
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -204,3 +207,5 @@
         if(result.status === 'success') location.reload(); else alert(result.message);
     }
 </script>
+
+<?= $this->include('theme/footer') ?>

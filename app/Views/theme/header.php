@@ -26,7 +26,7 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 2000;
+            z-index: 100000; /* Higher than sidebar (99999) */
             background: rgba(168, 85, 247, 0.8);
             color: white;
             border: none;
@@ -39,6 +39,24 @@
             font-size: 1.2rem;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* SIDEBAR OVERLAY */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 99998 !important; /* High z-index behind sidebar */
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block !important;
         }
 
         /* FULL GLASSMORPHISM THEME */
@@ -489,20 +507,8 @@
 
         @media (max-width: 1024px) {
             :root { --sidebar-width: 0px; }
-            .sidebar {
-                position: fixed;
-                left: -260px;
-                top: 0;
-                width: 260px !important;
-                min-width: 260px !important;
-                height: 100vh;
-                transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                z-index: 20000; /* Higher than chatbot */
-                box-shadow: 20px 0 50px rgba(0,0,0,0.5);
-            }
-            .sidebar.show { left: 0; }
             .mobile-toggle { display: flex; }
-            .main-content { padding: 80px 20px 20px 20px; }
+            .main-content { padding: 80px 20px 20px 20px; width: 100% !important; margin: 0 !important; }
             .premium-title { font-size: 2.2rem; }
             .premium-stat-value { font-size: 2.2rem; }
             
@@ -514,10 +520,77 @@
         }
 
         @media (max-width: 768px) {
-            .premium-cards-grid { grid-template-columns: 1fr 1fr; }
+            /* GLOBAL MODAL RESPONSIVENESS - FLOATING CARD LOOK */
+            .modal-dialog { 
+                width: 85% !important; 
+                max-width: 320px !important;
+                min-width: auto !important;
+                margin: 20px auto !important; 
+                display: flex !important;
+                align-items: center !important;
+                min-height: calc(100% - 40px) !important;
+            }
+
+            .modal-content {
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 20px !important;
+                background: rgba(30, 20, 60, 0.98) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+                overflow: hidden !important;
+            }
+
+            .modal-header {
+                padding: 15px !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            }
+
+            .modal-header h2, .modal-title {
+                font-size: 1.2rem !important;
+                margin: 0 !important;
+            }
+
+            /* Better stacking for modal forms */
+            .modal-content .premium-form {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+
+            .modal-content .form-group {
+                width: 100% !important;
+                margin-bottom: 15px !important;
+            }
+
+            .modal-content input, 
+            .modal-content select, 
+            .modal-content textarea { 
+                width: 100% !important; 
+            }
+
+            /* Stacked footer buttons */
+            .modal-footer, .modal-actions {
+                padding: 15px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+
+            .modal-footer button, 
+            .modal-actions button,
+            .modal-content .btn-primary {
+                width: 100% !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                margin: 0 !important;
+            }
+
+            .premium-cards-grid { grid-template-columns: 1fr; } /* Stack vertically */
             .premium-info-section { grid-template-columns: 1fr; }
-            .premium-quick-actions { grid-template-columns: 1fr 1fr; }
-            .modal-header { font-size: 1.8rem; }
+            .premium-quick-actions { grid-template-columns: 1fr; } /* Stack vertically */
+            .modal-header { font-size: 1.6rem !important; }
             .premium-title { font-size: 2rem; }
             
             /* Better table handling for mobile */
@@ -525,6 +598,8 @@
                 margin: 0 -20px;
                 padding: 0 20px;
                 width: calc(100% + 40px);
+                overflow-x: auto; /* Ensure horizontal swipe */
+                -webkit-overflow-scrolling: touch;
             }
         }
 
@@ -577,19 +652,25 @@
 
     <script>
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
             const icon = document.querySelector('.mobile-toggle i');
-            sidebar.classList.toggle('show');
-            if (sidebar.classList.contains('show')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+            
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
+                
+                if (icon) {
+                    if (sidebar.classList.contains('active')) {
+                        icon.classList.replace('fa-bars', 'fa-times');
+                    } else {
+                        icon.classList.replace('fa-times', 'fa-bars');
+                    }
+                }
             }
         }
     </script>
-    
+
     <?php /* Global pagination cleanup: remove white bullets and style links */ ?>
     <style>
         nav[aria-label="Page navigation"] { margin-top: 14px; }

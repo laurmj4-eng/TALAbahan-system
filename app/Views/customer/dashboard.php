@@ -1,4 +1,5 @@
 <?= $this->include('theme/header') ?>
+<?= $this->include('theme/sidebar') ?>
 
     <style>
         /* --- ENHANCED WELCOME BANNER --- */
@@ -263,12 +264,17 @@
             letter-spacing: 1px;
             border: 2px solid rgba(255,255,255,0.3);
         }
-    </style>
-</head>
-<body>
 
-    <!-- SIDEBAR -->
-    <?= $this->include('theme/sidebar') ?>
+        @media (max-width: 768px) {
+            .welcome-card { padding: 25px; flex-direction: column; align-items: flex-start; text-align: left; }
+            .welcome-text h1 { font-size: 1.8rem; }
+            .welcome-icon { font-size: 4rem; opacity: 0.05; top: 20px; transform: rotate(10deg); }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+            .product-name { font-size: 0.95rem; height: 2.6rem; }
+            .product-price { font-size: 1.1rem; }
+            .cart-float { width: 60px; height: 60px; bottom: 20px; right: 20px; font-size: 1.5rem; }
+        }
+    </style>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -293,7 +299,7 @@
 
         <!-- STOREFRONT SECTION -->
         <div class="store-header">
-            <h2 style="margin: 0; color: #fff; font-size: 1.8rem;">💎 Available Seafood</h2>
+            <h2 style="margin: 0; color: #fff; font-size: 1.8rem; margin-bottom: 20px;">💎 Available Seafood</h2>
         </div>
 
         <div class="product-grid">
@@ -500,170 +506,154 @@
 
         function updateCartUI() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cartCount').textContent = count;
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('cartTotal').textContent = `₱${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-
-            const list = document.getElementById('cartItemsList');
-            if (cart.length === 0) {
-                list.innerHTML = '<p style="text-align:center; opacity: 0.5;">Your cart is empty</p>';
-            } else {
-                list.innerHTML = cart.map(item => `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px;">
-                        <div>
-                            <div style="font-weight: 700;">${item.name}</div>
-                            <div style="font-size: 0.8rem; opacity: 0.5;">₱${item.price} x ${item.quantity}</div>
-                        </div>
-                        <div style="font-weight: 700; color: #10b981;">₱${(item.price * item.quantity).toFixed(2)}</div>
-                    </div>
-                `).join('');
-            }
+            document.getElementById('cartCount').innerText = count;
         }
 
         function openCheckoutModal() {
             if (cart.length === 0) {
-                alert('Please add some items to your cart first!');
+                alert('Your cart is empty!');
                 return;
             }
-            // Reset steps
-            document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
-            document.getElementById('checkoutCart').classList.add('active');
-            document.getElementById('gcashMock').style.display = 'none';
-            
+            renderCartItems();
             document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('checkoutCart').classList.add('active');
         }
 
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.remove('show');
+            // Reset steps
+            document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('checkoutCart').classList.add('active');
         }
 
-        // STEP NAVIGATION
+        function renderCartItems() {
+            const list = document.getElementById('cartItemsList');
+            let total = 0;
+            list.innerHTML = '';
+            
+            cart.forEach(item => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+                list.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 700; color: #fff;">${item.name}</div>
+                            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">₱${item.price.toFixed(2)} x ${item.quantity}</div>
+                        </div>
+                        <div style="font-weight: 800; color: #818cf8;">₱${subtotal.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('cartTotal').innerText = '₱' + total.toFixed(2);
+        }
+
         function goToLocation() {
             document.getElementById('checkoutCart').classList.remove('active');
             document.getElementById('checkoutLocation').classList.add('active');
         }
+
         function backToCart() {
             document.getElementById('checkoutLocation').classList.remove('active');
             document.getElementById('checkoutCart').classList.add('active');
         }
-        function goToPayment() {
-            document.getElementById('checkoutLocation').classList.remove('active');
-            document.getElementById('checkoutPayment').classList.add('active');
-        }
-        function backToLocation() {
-            document.getElementById('checkoutPayment').classList.remove('active');
-            document.getElementById('checkoutLocation').classList.add('active');
-        }
 
-        // GEOLOCATION LOGIC
         function toggleManualSelect() {
             const group = document.getElementById('manualBarangayGroup');
             group.style.display = group.style.display === 'none' ? 'block' : 'none';
         }
 
         function handleManualSelect(val) {
-            if (val) {
-                // Clear previous errors immediately
-                const status = document.getElementById('locationError');
-                status.style.display = 'none';
-                
+            if(val) {
                 document.getElementById('detectedBarangay').value = val;
-                validateShippingLocation(val);
+                validateBarangay(val);
             }
         }
 
-        function getLocation() {
+        async function getLocation() {
             const status = document.getElementById('locationError');
-            const btn = document.querySelector('.btn-location');
-            const barangayInput = document.getElementById('detectedBarangay');
+            const placeholder = document.getElementById('mapPlaceholder');
+            const detectedInput = document.getElementById('detectedBarangay');
             
             status.style.display = 'none';
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+            placeholder.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Detecting Location...</p>';
 
             if (!navigator.geolocation) {
-                showLocationError("Geolocation is not supported by your browser.");
+                status.innerText = "Geolocation not supported by your browser.";
+                status.style.display = 'block';
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-
-                // 1. Update Map UI (Mock map for now as no API key provided)
-                document.getElementById('mapPlaceholder').innerHTML = `
-                    <div style="text-align: center;">
-                        <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #10b981; margin-bottom: 10px; display: block;"></i>
-                        Location Locked!<br>
-                        <small style="color: rgba(255,255,255,0.4)">${lat.toFixed(4)}, ${lon.toFixed(4)}</small>
-                    </div>
-                `;
-
-                // 2. Reverse Geocoding (Using Nominatim - Free OSM API)
+                
+                placeholder.innerHTML = `<p style="font-size: 0.8rem; color: #86efac;">GPS LOCK: ${lat.toFixed(4)}, ${lon.toFixed(4)}</p>`;
+                
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                    const data = await res.json();
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const data = await response.json();
+                    const addr = data.address;
+                    const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
                     
-                    // Extract barangay/suburb
-                    const barangay = data.address.suburb || data.address.neighbourhood || data.address.village || data.address.quarter || "Unknown Area";
-                    barangayInput.value = barangay;
-
-                    // 3. Validate against Admin Shipping Rules
-                    validateShippingLocation(barangay);
-
-                } catch (err) {
-                    showLocationError("Could not identify your barangay. Please try again.");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Get Current Location';
+                    if(bgy) {
+                        detectedInput.value = bgy;
+                        validateBarangay(bgy);
+                    } else {
+                        status.innerText = "Could not pinpoint Barangay. Please select manually.";
+                        status.style.display = 'block';
+                    }
+                } catch (e) {
+                    status.innerText = "Reverse Geocoding failed. Select manually.";
+                    status.style.display = 'block';
                 }
-
-            }, (error) => {
-                showLocationError("Permission denied or location unavailable.");
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Get Current Location';
+            }, (err) => {
+                status.innerText = "Permission Denied or Timeout.";
+                status.style.display = 'block';
             });
         }
 
-        async function validateShippingLocation(barangay) {
+        async function validateBarangay(bgy) {
+            const btn = document.getElementById('btnConfirmLocation');
+            const status = document.getElementById('locationError');
+            
             try {
                 const response = await fetch('<?= site_url('customer/validate-location') ?>', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: `barangay=${encodeURIComponent(barangay)}&<?= csrf_token() ?>=<?= csrf_hash() ?>`
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `barangay=${encodeURIComponent(bgy)}`
                 });
                 const result = await response.json();
-
-                if (result.status === 'success') {
-                    document.getElementById('btnConfirmLocation').disabled = false;
-                    document.getElementById('locationError').style.color = '#10b981';
-                    document.getElementById('locationError').innerHTML = '<i class="fas fa-check"></i> We deliver to your area!';
-                    document.getElementById('locationError').style.display = 'block';
+                
+                if(result.valid) {
+                    btn.disabled = false;
+                    status.style.display = 'none';
+                    document.getElementById('detectedBarangay').style.borderColor = '#10b981';
                 } else {
-                    document.getElementById('btnConfirmLocation').disabled = true;
-                    showLocationError("Sorry, we don't ship to this location yet.");
+                    btn.disabled = true;
+                    status.innerText = "Sorry, we don't deliver to this location yet.";
+                    status.style.display = 'block';
+                    document.getElementById('detectedBarangay').style.borderColor = '#ef4444';
                 }
             } catch (e) {
                 console.error(e);
             }
         }
 
-        function showLocationError(msg) {
-            const status = document.getElementById('locationError');
-            status.style.color = '#fca5a5';
-            status.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
-            status.style.display = 'block';
+        function goToPayment() {
+            document.getElementById('checkoutLocation').classList.remove('active');
+            document.getElementById('checkoutPayment').classList.add('active');
+        }
+
+        function backToLocation() {
+            document.getElementById('checkoutPayment').classList.remove('active');
+            document.getElementById('checkoutLocation').classList.add('active');
         }
 
         function selectPayment(method) {
             selectedPayment = method;
-            document.getElementById('payCOD').classList.remove('selected');
-            document.getElementById('payGCash').classList.remove('selected');
-            
-            if (method === 'COD') document.getElementById('payCOD').classList.add('selected');
-            else document.getElementById('payGCash').classList.add('selected');
-
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('pay' + method).classList.add('selected');
             document.getElementById('btnPlaceOrder').disabled = false;
         }
 
@@ -676,72 +666,44 @@
             }
         }
 
+        function confirmGcashPayment() {
+            alert('GCash Payment Simulated Successfully!');
+            placeOrder();
+        }
+
         function cancelGcash() {
             document.getElementById('gcashMock').style.display = 'none';
             document.getElementById('checkoutPayment').style.display = 'block';
         }
 
-        function confirmGcashPayment() {
-            placeOrder();
-        }
-
         async function placeOrder() {
-            const btn = document.getElementById('btnPlaceOrder');
-            const gcashBtn = document.querySelector('#gcashMock .btn-buy');
-            
-            if (selectedPayment === 'GCash') {
-                gcashBtn.disabled = true;
-                gcashBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Payment...';
-            } else {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            }
-
-            const formData = new FormData();
-            formData.append('order_data', JSON.stringify({
+            const data = {
                 items: cart,
                 payment_method: selectedPayment,
-                shipping_details: {
-                    name: document.getElementById('deliveryName').value,
-                    phone: document.getElementById('deliveryPhone').value,
-                    barangay: document.getElementById('detectedBarangay').value
-                }
-            }));
-            formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+                receiver_name: document.getElementById('deliveryName').value,
+                receiver_phone: document.getElementById('deliveryPhone').value,
+                delivery_address: document.getElementById('detectedBarangay').value
+            };
 
             try {
                 const response = await fetch('<?= site_url('customer/placeOrder') ?>', {
                     method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
-
                 const result = await response.json();
-                if (result.status === 'success') {
-                    alert(result.message + '\nTransaction Code: ' + result.transaction_code);
+                
+                if(result.status === 'success') {
+                    alert('Order Placed Successfully! Code: ' + result.txn);
                     cart = [];
-                    updateCartUI();
-                    closeCheckoutModal();
-                    location.reload(); 
+                    window.location.href = '<?= site_url('customer/order-items') ?>';
                 } else {
                     alert('Error: ' + result.message);
-                    resetOrderButtons();
                 }
-            } catch (error) {
-                alert('An error occurred. Please try again.');
-                resetOrderButtons();
+            } catch (e) {
+                alert('Connection Error. Try again.');
             }
-        }
-
-        function resetOrderButtons() {
-            const btn = document.getElementById('btnPlaceOrder');
-            const gcashBtn = document.querySelector('#gcashMock .btn-buy');
-            btn.disabled = false;
-            btn.textContent = 'Place Order';
-            gcashBtn.disabled = false;
-            gcashBtn.innerHTML = '<i class="fas fa-check-circle"></i> I have paid';
         }
     </script>
 
-</body>
-</html>
+<?= $this->include('theme/footer') ?>

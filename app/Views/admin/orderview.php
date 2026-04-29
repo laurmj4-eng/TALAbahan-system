@@ -1,22 +1,9 @@
-<!-- 1. Include Shared Header (CSS/Theme) -->
-<?= $this->include('theme/header') ?>
-
-<!-- 2. Include Shared Sidebar -->
-<?= $this->include('theme/sidebar') ?>
-
-<!-- CSRF Protection Metadata -->
-<meta name="csrf-token" content="<?= csrf_hash() ?>">
-<meta name="csrf-header" content="<?= csrf_header() ?>">
-<meta name="csrf-name" content="<?= csrf_token() ?>">
-
+<?php
+/**
+ * @var array $orders
+ */
+?>
 <style>
-    .main-content { 
-        flex: 1; 
-        padding: 40px; 
-        overflow-y: auto; 
-        scroll-behavior: smooth;
-    }
-
     .order-tag {
         background: rgba(168, 85, 247, 0.2);
         color: #a855f7;
@@ -42,6 +29,27 @@
         font-weight: 700;
         font-size: 0.8rem;
         border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Responsive adjustments for Order Card */
+    #order-card-container {
+        padding: 40px; 
+        border-radius: 30px;
+    }
+
+    @media (max-width: 768px) {
+        #order-card-container {
+            padding: 20px;
+            border-radius: 20px;
+        }
+        .order-view-title {
+            font-size: 1.6rem !important;
+        }
+        .order-tag {
+            display: block;
+            margin: 10px 0 0 0;
+            width: fit-content;
+        }
     }
 
     .badge-payment {
@@ -106,29 +114,29 @@
     .btn-details:hover { background: #ffffff; color: #000000; transform: scale(1.1); }
 </style>
 
-<main class="main-content">
-    <div class="card glass-panel" style="padding: 40px; border-radius: 30px;">
-        <div class="flex-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
-            <div>
-                <h2 style="font-size: 2.2rem; margin-bottom: 0;">Customer Orders 📑 <span class="order-tag">Order</span></h2>
-                <p style="color: rgba(255,255,255,0.6); margin-top: 10px; margin-bottom: 0;">Monitor and oversee seafood fulfillment operations.</p>
-            </div>
+<div class="card glass-panel" id="order-card-container">
+    <div class="flex-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
+        <div>
+            <h2 class="order-view-title">Customer Orders &#128209; <span class="order-tag">Order</span></h2>
+            <p style="color: rgba(255,255,255,0.6); margin-top: 10px; margin-bottom: 0;">Monitor and oversee seafood fulfillment operations.</p>
         </div>
+    </div>
 
-        <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
-            <table class="premium-table">
-            <thead>
-                <tr>
-                    <th>Order Info</th>
-                    <th>Customer</th>
-                    <th>Payment</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($orders)): foreach ($orders as $o): 
+    <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
+        <table class="premium-table">
+        <thead>
+            <tr>
+                <th>Order Info</th>
+                <th>Customer</th>
+                <th>Payment</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($orders)): ?>
+                <?php foreach ($orders as $o): 
                     $status = $o['status'] ?? 'Pending';
                     $actionBtn = '';
                     if ($status === 'Pending') {
@@ -155,7 +163,7 @@
                                 <?= esc($o['payment_method']) ?: 'COD' ?>
                             </span>
                         </td>
-                        <td><span style="font-weight: 800; color: #4ade80; font-size: 1.1rem;">₱<?= number_format($o['total_amount'], 2) ?></span></td>
+                        <td><span style="font-weight: 800; color: #4ade80; font-size: 1.1rem;">&#8369;<?= number_format($o['total_amount'], 2) ?></span></td>
                         <td>
                             <select onchange="updateStatus(<?= $o['id'] ?>, this.value, this)" class="status-select <?= strtolower($o['status']) ?>">
                                 <option value="Pending" <?= $o['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
@@ -174,14 +182,14 @@
                             </div>
                         </td>
                     </tr>
-                <?php endforeach; else: ?>
-                    <tr><td colspan="6" style="text-align: center; color: rgba(255,255,255,0.2); padding: 100px;">No orders found.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-        </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="6" style="text-align: center; color: rgba(255,255,255,0.2); padding: 100px;">No orders found.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
     </div>
-</main>
+</div>
 
 <!-- Order Details Modal -->
 <div id="orderModal" class="modal">
@@ -204,88 +212,80 @@
         </div>
         
         <div style="text-align: right; margin-top: 30px; font-size: 1.5rem; font-weight: 800;">
-            Total: <span id="modalTotal" style="color: #4ade80;">₱0.00</span>
+            Total: <span id="modalTotal" style="color: #4ade80;">&#8369;0.00</span>
         </div>
     </div>
 </div>
 
 <script>
-function closeModal(id) {
-    document.getElementById(id).classList.remove('show');
-}
-
-async function viewOrderDetails(orderId) {
+async function viewOrderDetails(id) {
     try {
-        const response = await fetch(`<?= site_url('admin/orders/show/') ?>${orderId}`);
+        const response = await fetch(`<?= site_url('admin/orders/show/') ?>${id}`);
         const result = await response.json();
         
         if (result.status === 'success') {
             const order = result.data;
-            document.getElementById('modalTitle').innerText = `Receipt: ${order.transaction_code}`;
-            document.getElementById('modalTotal').innerText = `₱${parseFloat(order.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('modalTitle').innerText = 'Receipt: ' + order.transaction_code;
             
             const tbody = document.getElementById('modalItems');
-            tbody.innerHTML = order.items.map(item => `
-                <tr>
-                    <td><div style="font-weight:700;">${item.product_name}</div></td>
-                    <td>${item.quantity} ${item.unit ?? ''}</td>
-                    <td>₱${parseFloat(item.unit_price).toFixed(2)}</td>
-                    <td><span style="font-weight:700;">₱${parseFloat(item.subtotal).toFixed(2)}</span></td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = '';
             
+            order.items.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.product_name}</td>
+                        <td>${item.quantity}</td>
+                        <td>&#8369;${parseFloat(item.price).toFixed(2)}</td>
+                        <td>&#8369;${(item.quantity * item.price).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('modalTotal').innerText = '&#8369;' + parseFloat(order.total_amount).toFixed(2);
             document.getElementById('orderModal').classList.add('show');
+        } else {
+            alert(result.message);
         }
-    } catch (error) { console.error(error); }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to load order details');
+    }
 }
 
-async function updateStatus(orderId, newStatus, element) {
-    const btn = element.closest('button') || element;
-    const originalHTML = btn.innerHTML;
+async function updateStatus(id, status, element) {
+    const originalStatus = element.value;
     
+    if (!confirm(`Update order to ${status}?`)) {
+        element.value = originalStatus;
+        return;
+    }
+
     try {
-        if (btn.tagName === 'BUTTON') {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-        }
-
-        const csrfName = document.querySelector('meta[name="csrf-name"]').content;
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        const csrfHeader = document.querySelector('meta[name="csrf-header"]').content;
-
         const formData = new FormData();
-        formData.append('id', orderId);
-        formData.append('status', newStatus);
-        formData.append(csrfName, csrfToken);
+        formData.append('id', id);
+        formData.append('status', status);
+        formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
-        const response = await fetch(`<?= site_url('admin/orders/updateStatus') ?>`, {
+        const response = await fetch('<?= site_url('admin/orders/updateStatus') ?>', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                [csrfHeader]: csrfToken
+                'X-Requested-With': 'XMLHttpRequest'
             }
         });
         
         const result = await response.json();
-        if (result.token) {
-            document.querySelectorAll('meta[name="csrf-token"]').forEach(m => m.content = result.token);
-        }
-
+        
         if (result.status === 'success') {
             location.reload();
         } else {
-            alert(result.message || 'Update failed');
-            if (btn.tagName === 'BUTTON') {
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            }
+            alert(result.message);
+            element.value = originalStatus;
         }
-    } catch (error) {
-        console.error(error);
-        alert('Connection error or session expired.');
+    } catch (e) {
+        console.error(e);
+        alert('Failed to update status');
+        element.value = originalStatus;
     }
 }
 </script>
-
-<?= $this->include('theme/footer') ?>
