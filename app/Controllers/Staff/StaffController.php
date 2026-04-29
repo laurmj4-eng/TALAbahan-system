@@ -110,11 +110,11 @@ class StaffController extends BaseController
     public function getProducts()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
-        return $this->response->setJSON($productModel->getWithCategory());
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Products fetched.', 'data' => $productModel->getWithCategory(), 'token' => csrf_hash()]);
     }
 
     /**
@@ -123,17 +123,17 @@ class StaffController extends BaseController
     public function getDetails($productId)
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
         $product = $productModel->find($productId);
 
         if (!$product) {
-            return $this->response->setJSON(['error' => 'Product not found'])->setStatusCode(404);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Product not found', 'token' => csrf_hash()])->setStatusCode(404);
         }
 
-        return $this->response->setJSON($product);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Product fetched.', 'data' => $product, 'token' => csrf_hash()]);
     }
 
     /* 
@@ -176,15 +176,31 @@ class StaffController extends BaseController
 
         try {
             $orderModel = new OrderModel();
-            $orderId    = $this->request->getPost('id');
-            $newStatus  = $this->request->getPost('status');
+            $orderId    = (int) $this->request->getPost('id');
+            $newStatus  = trim((string) $this->request->getPost('status'));
 
             if (empty($orderId) || empty($newStatus)) {
                 return $this->response->setJSON([
                     'status'  => 'error',
                     'message' => 'Missing required data',
                     'token'   => csrf_hash()
-                ]);
+                ])->setStatusCode(400);
+            }
+
+            $allowedStatuses = [
+                OrderModel::STATUS_PENDING,
+                OrderModel::STATUS_PROCESSING,
+                OrderModel::STATUS_SHIPPED,
+                OrderModel::STATUS_COMPLETED,
+                OrderModel::STATUS_CANCELLED,
+                OrderModel::STATUS_REFUNDED,
+            ];
+            if (! in_array($newStatus, $allowedStatuses, true)) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Invalid order status.',
+                    'token'   => csrf_hash(),
+                ])->setStatusCode(400);
             }
 
             $order = $orderModel->find($orderId);
@@ -193,16 +209,30 @@ class StaffController extends BaseController
                     'status'  => 'error',
                     'message' => 'Order not found.',
                     'token'   => csrf_hash()
-                ]);
+                ])->setStatusCode(404);
             }
 
+            $db = db_connect();
+            $db->transBegin();
+
             if (!$orderModel->update($orderId, ['status' => $newStatus])) {
+                $db->transRollback();
                 return $this->response->setJSON([
                     'status'  => 'error',
                     'message' => 'Database update failed: ' . implode(', ', $orderModel->errors()),
                     'token'   => csrf_hash()
-                ]);
+                ])->setStatusCode(500);
             }
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Database update failed.',
+                    'token'   => csrf_hash(),
+                ])->setStatusCode(500);
+            }
+            $db->transCommit();
 
             return $this->response->setJSON([
                 'status'  => 'success',
@@ -215,7 +245,7 @@ class StaffController extends BaseController
                 'status'  => 'error',
                 'message' => 'System error: ' . $e->getMessage(),
                 'token'   => csrf_hash()
-            ]);
+            ])->setStatusCode(500);
         }
     }
 
@@ -225,14 +255,12 @@ class StaffController extends BaseController
     public function getOrders()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $orderModel = new OrderModel();
-        $page = (int) $this->request->getGet('page') ?? 1;
-        
         $orders = $orderModel->getOrdersWithItemCount();
-        return $this->response->setJSON($orders);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Orders fetched.', 'data' => $orders, 'token' => csrf_hash()]);
     }
 
     /**
@@ -294,13 +322,13 @@ class StaffController extends BaseController
     public function getSalesHistory()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $salesModel = new SalesModel();
         $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
         
-        return $this->response->setJSON($history ?? []);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Sales history fetched.', 'data' => $history ?? [], 'token' => csrf_hash()]);
     }
 
     /**
@@ -309,13 +337,13 @@ class StaffController extends BaseController
     public function getLowStockProducts()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
         $lowStock = $productModel->getLowStockProducts(10);
 
-        return $this->response->setJSON($lowStock);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Low-stock products fetched.', 'data' => $lowStock, 'token' => csrf_hash()]);
     }
 
     /**
@@ -324,13 +352,13 @@ class StaffController extends BaseController
     public function getBestSellers()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
         $bestSellers = $productModel->getBestSellers(10);
 
-        return $this->response->setJSON($bestSellers);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Best sellers fetched.', 'data' => $bestSellers, 'token' => csrf_hash()]);
     }
 
     /**
@@ -339,12 +367,12 @@ class StaffController extends BaseController
     public function getInventorySummary()
     {
         if (session()->get('role') !== 'staff') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
         $inventory = $productModel->getDailyInventory();
 
-        return $this->response->setJSON($inventory);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Inventory summary fetched.', 'data' => $inventory, 'token' => csrf_hash()]);
     }
 }

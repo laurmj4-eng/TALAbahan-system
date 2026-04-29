@@ -644,8 +644,6 @@
         .premium-table th, .premium-table td { padding: 12px 10px; font-size: 0.85rem; }
         .modal-content { scrollbar-width: thin; scrollbar-color: rgba(168, 85, 247, 0.5) transparent; }
     </style>
-</head>
-<body>
     <button class="mobile-toggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>

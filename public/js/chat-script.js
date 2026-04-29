@@ -1,6 +1,7 @@
 let activeSessionUID = localStorage.getItem('mj_user_uid');
 if (!activeSessionUID) {
-    activeSessionUID = 'user_' + Math.random().toString(36).substr(2, 9);
+    activeSessionUID = `user_${Math.random().toString(36).slice(2, 11)}`;
+    localStorage.setItem('mj_user_uid', activeSessionUID);
 }
 
 const chatButton = document.getElementById('chat-button');
@@ -15,14 +16,22 @@ const toggleSoundBtn = document.getElementById('toggle-sound');
 let chatHistory = JSON.parse(localStorage.getItem('myChatbotHistory')) || [];
 let isSoundEnabled = true;
 
-// Force connection to Node.js AI Backend
-const BASE_URL = window.location.hostname === 'mjtalabahan.page.gd' 
-    ? 'http://mjtalabahan.page.gd' 
-    : 'http://localhost:3000'; 
+const inferBaseUrl = () => {
+    if (window.CHAT_API_BASE_URL) return window.CHAT_API_BASE_URL;
+    if (window.location.hostname === 'mjtalabahan.page.gd') {
+        return `${window.location.protocol}//mjtalabahan.page.gd`;
+    }
+    return 'http://localhost:3000';
+};
+const BASE_URL = inferBaseUrl();
+
+if (!chatButton || !chatContainer || !closeChat || !chatInput || !sendBtn || !chatMessages || !modelSelect || !toggleSoundBtn) {
+    console.warn('Chat UI elements are missing from the page.');
+} else {
 
 chatButton.addEventListener('click', () => {
     chatContainer.classList.add('active');
-    setTimeout(() => chatInput.focus(), 300); 
+    setTimeout(() => chatInput.focus(), 300);
 });
 closeChat.addEventListener('click', () => chatContainer.classList.remove('active'));
 
@@ -184,18 +193,26 @@ function handleSend() {
 sendBtn.addEventListener('click', handleSend);
 chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
 
-document.getElementById('download-chat').addEventListener('click', () => {
-    if(chatHistory.length === 0) return alert("No history!"); 
+const downloadChatBtn = document.getElementById('download-chat');
+downloadChatBtn?.addEventListener('click', () => {
+    if (chatHistory.length === 0) return alert("No history!");
     let textToSave = "--- Chat History ---\n\n";
     chatHistory.forEach(msg => { textToSave += `[${msg.timestamp}] ${msg.role.toUpperCase()}: ${msg.content}\n\n`; });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([textToSave], { type: 'text/plain' }));
-    a.download = 'Mj_Chat_History.txt'; a.click();
+    a.download = 'Mj_Chat_History.txt';
+    a.click();
 });
 
-document.getElementById('clear-chat').addEventListener('click', () => {
-    if(confirm("Clear conversation history?")) { chatHistory = []; saveHistory(); loadHistoryUI(); }
+const clearChatBtn = document.getElementById('clear-chat');
+clearChatBtn?.addEventListener('click', () => {
+    if (confirm("Clear conversation history?")) {
+        chatHistory = [];
+        saveHistory();
+        loadHistoryUI();
+    }
 });
 
 // START THE UI
 loadHistoryUI();
+}

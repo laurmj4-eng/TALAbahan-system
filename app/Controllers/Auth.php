@@ -40,7 +40,7 @@ class Auth extends BaseController
                             'status'  => 'error',
                             'message' => 'reCAPTCHA verification failed. Please try again.',
                             'token'   => csrf_hash()
-                        ]);
+                        ])->setStatusCode(400);
                     }
                 }
             }
@@ -83,7 +83,7 @@ class Auth extends BaseController
                         'status'  => 'error', 
                         'message' => 'Invalid Email or Password.',
                         'token'   => csrf_hash() 
-                    ]);
+                    ])->setStatusCode(401);
                 }
             }
 
@@ -103,9 +103,14 @@ class Auth extends BaseController
 
                 return $this->response->setJSON([
                     'status'       => 'success', 
+                    'message'      => 'Login successful.',
+                    'data'         => [
+                        'redirect'     => $redirectUrl,
+                        'trust_device' => ($remember === 'true'),
+                    ],
                     'redirect'     => $redirectUrl,
                     'trust_device' => ($remember === 'true') 
-                ]);
+                ])->setStatusCode(200);
             }
 
             throw new \Exception("User authentication failed.");
@@ -116,7 +121,7 @@ class Auth extends BaseController
                 'status'  => 'error',
                 'message' => 'System Error: ' . $e->getMessage(),
                 'token'   => csrf_hash()
-            ]);
+            ])->setStatusCode(500);
         }
     }
 

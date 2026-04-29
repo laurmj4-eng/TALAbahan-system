@@ -65,9 +65,6 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
     // Product Management
     $routes->get('products', 'StaffController::products');
     $routes->get('getProducts', 'StaffController::getProducts');
-    $routes->post('addProduct', 'StaffController::addProduct');
-    $routes->post('updateProduct', 'StaffController::updateProduct');
-    $routes->post('updateStock', 'StaffController::updateStock');
     $routes->get('getLowStockProducts', 'StaffController::getLowStockProducts');
     $routes->get('getBestSellers', 'StaffController::getBestSellers');
     $routes->get('getInventorySummary', 'StaffController::getInventorySummary');

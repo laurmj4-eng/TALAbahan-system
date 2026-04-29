@@ -259,9 +259,6 @@
             margin-bottom: 20px;
         }
     </style>
-</head>
-<body>
-
     <!-- SIDEBAR -->
     <?= $this->include('theme/sidebar') ?>
 

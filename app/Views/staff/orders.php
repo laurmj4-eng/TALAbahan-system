@@ -173,9 +173,6 @@
             .modal-grid { grid-template-columns: 1fr !important; }
         }
     </style>
-</head>
-<body>
-
     <!-- SIDEBAR -->
     <?= $this->include('theme/sidebar') ?>
 

@@ -11,6 +11,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
+            overflow: hidden;
         }
 
         .order-card:hover {
@@ -33,10 +35,34 @@
         .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
         .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-        .order-info h3 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+        .order-info {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+        .order-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
         .order-info p { margin: 5px 0 0 0; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; }
 
         .order-amount { font-size: 1.5rem; font-weight: 800; color: #10b981; }
+        .order-right { text-align: right; min-width: 140px; }
+        .order-actions-wrap {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
 
         .item-list { margin-bottom: 25px; }
         .item-row {
@@ -66,10 +92,55 @@
         .btn-view:hover { background: rgba(129, 140, 248, 0.25); transform: translateY(-2px); }
         .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
         .btn-cancel:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
-    </style>
-</head>
-<body>
 
+        @media (max-width: 768px) {
+            .order-card {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 18px;
+                border-radius: 16px;
+            }
+            .order-card:hover {
+                transform: none;
+            }
+            .order-right {
+                text-align: left;
+                min-width: 0;
+                width: 100%;
+            }
+            .order-amount {
+                font-size: 1.35rem;
+            }
+            .order-actions-wrap {
+                align-items: stretch;
+            }
+            .order-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+            .order-actions .btn-action {
+                flex: 1 1 0;
+                min-width: 0;
+                justify-content: center;
+                padding: 10px 12px;
+            }
+            .status-badge {
+                width: fit-content;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .order-actions {
+                flex-direction: column;
+            }
+            .order-actions .btn-action {
+                width: 100%;
+            }
+            .main-content h1 {
+                font-size: 2rem !important;
+            }
+        }
+    </style>
     <!-- SIDEBAR -->
     <?= $this->include('theme/sidebar') ?>
 
@@ -88,15 +159,15 @@
                         <p><i class="fas fa-wallet"></i> <?= esc($o['payment_method']) ?></p>
                     </div>
                     
-                    <div style="text-align: right;">
+                    <div class="order-right">
                         <div class="order-amount">₱<?= number_format($o['total_amount'], 2) ?></div>
-                        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                        <div class="order-actions-wrap">
                             <?php 
                                 $statusClass = 'status-' . strtolower($o['status']);
                             ?>
                             <span class="status-badge <?= $statusClass ?>"><?= esc($o['status']) ?></span>
                             
-                            <div style="display: flex; gap: 10px;">
+                            <div class="order-actions">
                                 <button class="btn-action btn-view" onclick="viewDetails(<?= $o['id'] ?>)">
                                     <i class="fas fa-eye"></i> Details
                                 </button>

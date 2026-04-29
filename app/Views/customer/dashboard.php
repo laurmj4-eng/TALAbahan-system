@@ -158,6 +158,20 @@
             box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
         }
 
+        .btn-add-cart {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(129, 140, 248, 0.12);
+            color: #c7d2fe;
+            border: 1px solid rgba(129, 140, 248, 0.35);
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .btn-add-cart:hover { background: rgba(129, 140, 248, 0.2); }
+
         /* --- CART FLOATING BUTTON --- */
         .cart-float {
             position: fixed;
@@ -200,6 +214,29 @@
         }
 
         /* --- MODAL (Checkout) --- */
+        .checkout-sheet {
+            align-items: flex-end !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            z-index: 10020;
+        }
+        .checkout-sheet-content {
+            width: min(680px, 100%);
+            max-width: 680px !important;
+            border-radius: 24px 24px 0 0;
+            background: rgba(20, 15, 45, 0.98);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-bottom: none;
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.45);
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: sheetUp 0.28s ease;
+        }
+        @keyframes sheetUp {
+            from { transform: translateY(20px); opacity: 0.2; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         .payment-option {
             display: flex;
             align-items: center;
@@ -232,8 +269,54 @@
 
         
         /* LOCATION STEP STYLES */
-        .location-step { display: none; }
-        .location-step.active { display: block; }
+        .location-step {
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .location-step.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .step-actions {
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(20,15,45,0.98), rgba(20,15,45,0.86));
+            padding-top: 12px;
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+        }
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        .qty-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(129,140,248,0.18);
+            color: #c7d2fe;
+            font-weight: 800;
+            cursor: pointer;
+            line-height: 24px;
+        }
+        .qty-btn:hover { background: rgba(129,140,248,0.35); }
         .location-input-group { margin-bottom: 20px; }
         .location-input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: rgba(255,255,255,0.7); }
         .location-input-group input { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
@@ -273,6 +356,17 @@
             .product-name { font-size: 0.95rem; height: 2.6rem; }
             .product-price { font-size: 1.1rem; }
             .cart-float { width: 60px; height: 60px; bottom: 20px; right: 20px; font-size: 1.5rem; }
+            .checkout-sheet-content {
+                width: 100%;
+                max-width: none !important;
+                border-radius: 20px 20px 0 0;
+                max-height: 92vh;
+                padding: 18px !important;
+            }
+            .modal-header {
+                font-size: 1.35rem !important;
+                margin-bottom: 14px !important;
+            }
         }
     </style>
 
@@ -323,7 +417,10 @@
                             </div>
                             
                             <?php if ($p['current_stock'] > 0): ?>
-                                <button class="btn-buy" onclick="addToCart(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>)">
+                                <button class="btn-buy" onclick="buyNow(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>)">
+                                    <i class="fas fa-bolt"></i> Buy Now
+                                </button>
+                                <button class="btn-add-cart" onclick="addToCart(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>)">
                                     <i class="fas fa-cart-plus"></i> Add to Cart
                                 </button>
                             <?php else: ?>
@@ -349,8 +446,8 @@
         </div>
 
         <!-- CHECKOUT MODAL -->
-        <div id="checkoutModal" class="modal">
-            <div class="modal-content" style="max-width: 550px;">
+        <div id="checkoutModal" class="modal checkout-sheet">
+            <div class="modal-content checkout-sheet-content">
                 <button class="modal-close-btn" onclick="closeCheckoutModal()">&times;</button>
                 
                 <!-- STEP 1: CART CONFIRMATION -->
@@ -364,15 +461,23 @@
                     </div>
 
                     <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 25px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
+                            <span>Subtotal:</span>
+                            <span id="cartSubtotal">₱0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color:#fbbf24; margin-bottom:8px;">
+                            <span>Auto Voucher:</span>
+                            <span id="cartVoucher">-₱0.00</span>
+                        </div>
                         <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
                             <span>Total Amount:</span>
                             <span id="cartTotal" style="color: #10b981;">₱0.00</span>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <div class="step-actions">
                         <button class="btn-buy" style="background: #444; flex: 1;" onclick="closeCheckoutModal()">Cancel</button>
-                        <button class="btn-buy" style="flex: 2;" onclick="goToLocation()">Next: Set Delivery Address</button>
+                        <button class="btn-buy" style="flex: 2;" onclick="goToLocation()">Buy Now</button>
                     </div>
                 </div>
 
@@ -426,7 +531,7 @@
                         <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <div class="step-actions">
                         <button class="btn-buy" style="background: #444; flex: 1;" onclick="backToCart()">Back</button>
                         <button id="btnConfirmLocation" class="btn-buy" style="flex: 2;" onclick="goToPayment()" disabled>Next: Payment Method</button>
                     </div>
@@ -456,7 +561,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <div class="step-actions">
                         <button class="btn-buy" style="background: #444; flex: 1;" onclick="backToLocation()">Back</button>
                         <button id="btnPlaceOrder" class="btn-buy" style="flex: 2;" onclick="initiateOrder()" disabled>Place Order</button>
                     </div>
@@ -492,6 +597,7 @@
     <script>
         let cart = [];
         let selectedPayment = null;
+        let autoVoucher = 0;
 
         function addToCart(id, name, price) {
             const index = cart.findIndex(item => item.id === id);
@@ -501,12 +607,32 @@
                 cart.push({ id, name, price, quantity: 1 });
             }
             updateCartUI();
-            alert(`${name} added to cart!`);
+        }
+
+        function buyNow(id, name, price) {
+            cart = [{ id, name, price, quantity: 1 }];
+            updateCartUI();
+            openCheckoutModal();
         }
 
         function updateCartUI() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cartCount').innerText = count;
+        }
+
+        function updateQty(id, delta) {
+            const idx = cart.findIndex(item => item.id === id);
+            if (idx === -1) return;
+            cart[idx].quantity += delta;
+            if (cart[idx].quantity <= 0) {
+                cart.splice(idx, 1);
+            }
+            updateCartUI();
+            if (cart.length === 0) {
+                closeCheckoutModal();
+                return;
+            }
+            renderCartItems();
         }
 
         function openCheckoutModal() {
@@ -517,6 +643,7 @@
             renderCartItems();
             document.getElementById('checkoutModal').classList.add('show');
             document.getElementById('checkoutCart').classList.add('active');
+            preloadCheckoutDefaults();
         }
 
         function closeCheckoutModal() {
@@ -528,24 +655,50 @@
 
         function renderCartItems() {
             const list = document.getElementById('cartItemsList');
-            let total = 0;
+            let subtotal = 0;
             list.innerHTML = '';
             
             cart.forEach(item => {
-                const subtotal = item.price * item.quantity;
-                total += subtotal;
+                const lineSubtotal = item.price * item.quantity;
+                subtotal += lineSubtotal;
                 list.innerHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 8px;">
+                    <div class="cart-item-row">
                         <div>
                             <div style="font-weight: 700; color: #fff;">${item.name}</div>
-                            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">₱${item.price.toFixed(2)} x ${item.quantity}</div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                                <span style="font-size:0.9rem; color: rgba(255,255,255,0.75);">${item.quantity}</span>
+                                <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                                <span style="font-size:0.85rem; color: rgba(255,255,255,0.5); margin-left: 8px;">₱${item.price.toFixed(2)} each</span>
+                            </div>
                         </div>
-                        <div style="font-weight: 800; color: #818cf8;">₱${subtotal.toFixed(2)}</div>
+                        <div style="font-weight: 800; color: #818cf8;">₱${lineSubtotal.toFixed(2)}</div>
                     </div>
                 `;
             });
-            
+
+            autoVoucher = subtotal >= 1000 ? Math.min(120, subtotal * 0.08) : (subtotal >= 500 ? 40 : 0);
+            const total = Math.max(0, subtotal - autoVoucher);
+            document.getElementById('cartSubtotal').innerText = '₱' + subtotal.toFixed(2);
+            document.getElementById('cartVoucher').innerText = '-₱' + autoVoucher.toFixed(2);
             document.getElementById('cartTotal').innerText = '₱' + total.toFixed(2);
+        }
+
+        function preloadCheckoutDefaults() {
+            const savedPhone = localStorage.getItem('quick_checkout_phone');
+            const savedBarangay = localStorage.getItem('quick_checkout_barangay');
+            const savedPayment = localStorage.getItem('quick_checkout_payment');
+
+            if (savedPhone) document.getElementById('deliveryPhone').value = savedPhone;
+            if (savedBarangay) {
+                document.getElementById('detectedBarangay').value = savedBarangay;
+                validateBarangay(savedBarangay);
+            }
+            if (savedPayment && ['COD', 'GCash'].includes(savedPayment)) {
+                selectPayment(savedPayment);
+            } else {
+                selectPayment('COD');
+            }
         }
 
         function goToLocation() {
@@ -618,14 +771,20 @@
             const status = document.getElementById('locationError');
             
             try {
+                const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const payload = new URLSearchParams();
+                payload.append('barangay', bgy);
+                if (csrfName && csrfToken) payload.append(csrfName, csrfToken);
+
                 const response = await fetch('<?= site_url('customer/validate-location') ?>', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `barangay=${encodeURIComponent(bgy)}`
+                    body: payload.toString()
                 });
                 const result = await response.json();
                 
-                if(result.valid) {
+                if(result.status === 'success') {
                     btn.disabled = false;
                     status.style.display = 'none';
                     document.getElementById('detectedBarangay').style.borderColor = '#10b981';
@@ -655,6 +814,7 @@
             document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
             document.getElementById('pay' + method).classList.add('selected');
             document.getElementById('btnPlaceOrder').disabled = false;
+            localStorage.setItem('quick_checkout_payment', method);
         }
 
         function initiateOrder() {
@@ -677,25 +837,44 @@
         }
 
         async function placeOrder() {
-            const data = {
-                items: cart,
-                payment_method: selectedPayment,
-                receiver_name: document.getElementById('deliveryName').value,
-                receiver_phone: document.getElementById('deliveryPhone').value,
-                delivery_address: document.getElementById('detectedBarangay').value
+            const name = document.getElementById('deliveryName').value.trim();
+            const phone = document.getElementById('deliveryPhone').value.trim();
+            const barangay = document.getElementById('detectedBarangay').value.trim();
+
+            const orderData = {
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity
+                })),
+                payment_method: selectedPayment || 'COD',
+                shipping_details: {
+                    name: name || 'Customer',
+                    phone: phone,
+                    barangay: barangay
+                }
             };
 
             try {
+                const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const formData = new FormData();
+                formData.append('order_data', JSON.stringify(orderData));
+                if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
+
                 const response = await fetch('<?= site_url('customer/placeOrder') ?>', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
                 });
                 const result = await response.json();
                 
                 if(result.status === 'success') {
-                    alert('Order Placed Successfully! Code: ' + result.txn);
+                    localStorage.setItem('quick_checkout_phone', phone);
+                    localStorage.setItem('quick_checkout_barangay', barangay);
+                    alert('Order placed successfully! Code: ' + (result.transaction_code || 'N/A'));
                     cart = [];
+                    updateCartUI();
                     window.location.href = '<?= site_url('customer/order-items') ?>';
                 } else {
                     alert('Error: ' + result.message);

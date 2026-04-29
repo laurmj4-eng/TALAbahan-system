@@ -25,8 +25,8 @@ class ShippingController extends BaseController
 
     public function store()
     {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied']);
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $model = new ShippingLocationModel();
@@ -37,20 +37,28 @@ class ShippingController extends BaseController
         ];
 
         if ($model->insert($data)) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Location added!']);
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Location added!',
+                'data'    => ['id' => (int) $model->getInsertID()],
+                'token'   => csrf_hash(),
+            ])->setStatusCode(201);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to add location']);
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to add location', 'token' => csrf_hash()])->setStatusCode(400);
     }
 
     public function update()
     {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied']);
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $model = new ShippingLocationModel();
-        $id = $this->request->getPost('id');
+        $id = (int) $this->request->getPost('id');
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid location ID', 'token' => csrf_hash()])->setStatusCode(400);
+        }
         $data = [
             'barangay_name'     => $this->request->getPost('barangay_name'),
             'city_municipality' => $this->request->getPost('city_municipality'),
@@ -58,32 +66,42 @@ class ShippingController extends BaseController
         ];
 
         if ($model->update($id, $data)) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Location updated!']);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Location updated!', 'data' => ['id' => $id], 'token' => csrf_hash()])->setStatusCode(200);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update location']);
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update location', 'token' => csrf_hash()])->setStatusCode(400);
     }
 
     public function delete()
     {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied']);
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $model = new ShippingLocationModel();
-        $id = $this->request->getPost('id');
-
-        if ($model->delete($id)) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Location deleted!']);
+        $id = (int) $this->request->getPost('id');
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid location ID', 'token' => csrf_hash()])->setStatusCode(400);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete location']);
+        if ($model->delete($id)) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Location deleted!', 'data' => ['id' => $id], 'token' => csrf_hash()])->setStatusCode(200);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete location', 'token' => csrf_hash()])->setStatusCode(400);
     }
 
     public function getDetails($id)
     {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
         $model = new ShippingLocationModel();
-        $location = $model->find($id);
-        return $this->response->setJSON($location);
+        $location = $model->find((int) $id);
+        if (! $location) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Location not found', 'token' => csrf_hash()])->setStatusCode(404);
+        }
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Location fetched.', 'data' => $location, 'token' => csrf_hash()]);
     }
 }

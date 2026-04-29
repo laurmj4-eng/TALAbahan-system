@@ -29,13 +29,20 @@ class ProductController extends BaseController
      */
     public function store()
     {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
         $model = new ProductModel();
+        $db = db_connect();
         
         $img = $this->request->getFile('image');
         $imageName = null;
         if ($img && $img->isValid() && ! $img->hasMoved()) {
             $imageName = $img->getRandomName();
-            $img->move(ROOTPATH . 'public/uploads/products', $imageName);
+            if (! $img->move(ROOTPATH . 'public/uploads/products', $imageName)) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to upload image'])->setStatusCode(500);
+            }
         }
 
         $data = [
@@ -48,12 +55,20 @@ class ProductController extends BaseController
             'image'         => $imageName,
         ];
 
+        $db->transBegin();
         if (! $model->save($data)) {
+            $db->transRollback();
             if ($this->request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => implode(' ', $model->errors())]);
+                return $this->response->setJSON(['status' => 'error', 'message' => implode(' ', $model->errors())])->setStatusCode(400);
             }
             return redirect()->back()->with('error', implode(' ', $model->errors()))->withInput();
         }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to save product'])->setStatusCode(500);
+        }
+        $db->transCommit();
         
         if ($this->request->isAJAX()) {
             return $this->response->setJSON(['status' => 'success', 'message' => 'Seafood stock added successfully!']);
@@ -69,17 +84,17 @@ class ProductController extends BaseController
     public function getDetails($productId)
     {
         if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['error' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $productModel = new ProductModel();
         $product = $productModel->find($productId);
 
         if (!$product) {
-            return $this->response->setJSON(['error' => 'Product not found'])->setStatusCode(404);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Product not found', 'token' => csrf_hash()])->setStatusCode(404);
         }
 
-        return $this->response->setJSON($product);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Product fetched.', 'data' => $product, 'token' => csrf_hash()]);
     }
 
     /**
@@ -92,6 +107,7 @@ class ProductController extends BaseController
         }
 
         $productModel = new ProductModel();
+        $db = db_connect();
         $productId = (int) $this->request->getPost('id');
         $product = $productModel->find($productId);
 
@@ -108,7 +124,12 @@ class ProductController extends BaseController
                 unlink(ROOTPATH . 'public/uploads/products/' . $imageName);
             }
             $imageName = $img->getRandomName();
-            $img->move(ROOTPATH . 'public/uploads/products', $imageName);
+            if (! $img->move(ROOTPATH . 'public/uploads/products', $imageName)) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Failed to upload new image.'
+                ])->setStatusCode(500);
+            }
         }
 
         $data = [
@@ -120,12 +141,23 @@ class ProductController extends BaseController
             'image'         => $imageName,
         ];
 
+        $db->transBegin();
         if (!$productModel->update($productId, $data)) {
+            $db->transRollback();
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => implode(', ', $productModel->errors())
-            ]);
+            ])->setStatusCode(400);
         }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Database update failed.'
+            ])->setStatusCode(500);
+        }
+        $db->transCommit();
 
         log_message('info', 'Admin ' . session()->get('username') . ' updated product ID ' . $productId);
 
@@ -145,14 +177,40 @@ class ProductController extends BaseController
         }
 
         $productModel = new ProductModel();
+        $db = db_connect();
         $productId = (int) $this->request->getPost('id');
+        if ($productId <= 0) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid product ID.'
+            ])->setStatusCode(400);
+        }
 
+        $product = $productModel->find($productId);
+        if (! $product) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Product not found.'
+            ])->setStatusCode(404);
+        }
+
+        $db->transBegin();
         if (!$productModel->delete($productId)) {
+            $db->transRollback();
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Failed to delete product.'
-            ]);
+            ])->setStatusCode(500);
         }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Database delete failed.'
+            ])->setStatusCode(500);
+        }
+        $db->transCommit();
 
         log_message('info', 'Admin ' . session()->get('username') . ' deleted product ID ' . $productId);
 

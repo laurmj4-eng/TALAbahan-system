@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const mysql = require('mysql2/promise'); 
+const mysql = require('mysql2/promise');
 
 if (!process.env.OPENROUTER_API_KEY) {
     console.error("❌ ERROR: OPENROUTER_API_KEY missing in .env!");
@@ -11,16 +11,18 @@ if (!process.env.OPENROUTER_API_KEY) {
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.use(cors({
-    origin: '*',
+    origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST']
-})); 
+}));
 
 app.use(express.json());
 
 let pool;
-try {
-    let poolConfig = { 
+let isDbAvailable = false;
+async function initDatabase() {
+    const poolConfig = {
         host: process.env.DB_HOST || 'localhost', 
         user: process.env.DB_USER || 'root', 
         password: process.env.DB_PASS || '', 
@@ -36,10 +38,8 @@ try {
     }
 
     pool = mysql.createPool(poolConfig);
-    pool.query(`CREATE TABLE IF NOT EXISTS firebase_users_tracking (uid VARCHAR(255) PRIMARY KEY, prompt_count INT DEFAULT 0, last_reset DATE)`);
-    console.log("Database connected");
-} catch (err) { 
-    console.error('❌ SQL Error:', err.message); 
+    await pool.query('CREATE TABLE IF NOT EXISTS firebase_users_tracking (uid VARCHAR(255) PRIMARY KEY, prompt_count INT DEFAULT 0, last_reset DATE)');
+    console.log('Database connected');
 }
 
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 15 });
@@ -56,17 +56,27 @@ app.post('/api/chat', async (req, res) => {
     if (!history || !Array.isArray(history) || history.length === 0) return res.status(400).json({ error: "Invalid input." });
 
     try {
-        const todayStr = new Date().toISOString().slice(0, 10);
-        let [rows] = await pool.query('SELECT prompt_count, last_reset FROM firebase_users_tracking WHERE uid = ?', [uid]);
         let dbPromptsCount = 0;
-        
-        if (rows.length === 0) {
-            await pool.query('INSERT INTO firebase_users_tracking (uid, prompt_count, last_reset) VALUES (?, 0, CURDATE())', [uid]);
-        } else {
-            if (new Date(rows[0].last_reset).toISOString().slice(0, 10) !== todayStr) {
-                await pool.query('UPDATE firebase_users_tracking SET prompt_count = 0, last_reset = CURDATE() WHERE uid = ?', [uid]);
-            } else {
-                dbPromptsCount = rows[0].prompt_count;
+
+        // If DB is down, keep chat service running and skip daily-limit tracking.
+        if (isDbAvailable && pool) {
+            try {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                let [rows] = await pool.query('SELECT prompt_count, last_reset FROM firebase_users_tracking WHERE uid = ?', [uid]);
+
+                if (rows.length === 0) {
+                    await pool.query('INSERT INTO firebase_users_tracking (uid, prompt_count, last_reset) VALUES (?, 0, CURDATE())', [uid]);
+                } else {
+                    if (new Date(rows[0].last_reset).toISOString().slice(0, 10) !== todayStr) {
+                        await pool.query('UPDATE firebase_users_tracking SET prompt_count = 0, last_reset = CURDATE() WHERE uid = ?', [uid]);
+                    } else {
+                        dbPromptsCount = rows[0].prompt_count;
+                    }
+                }
+            } catch (dbError) {
+                console.warn(`⚠️ Database tracking temporarily unavailable: ${dbError.message}`);
+                isDbAvailable = false;
+                pool = null;
             }
         }
         
@@ -110,12 +120,20 @@ app.post('/api/chat', async (req, res) => {
         });
 
         if (!openRouterResponse.ok) {
-            const errorData = await openRouterResponse.json();
+            const errorData = await openRouterResponse.json().catch(() => ({ message: 'Unknown OpenRouter error' }));
             console.error("❌ OpenRouter Error Details:", errorData); 
             throw new Error(`${openRouterResponse.status}`); 
         }
 
-        await pool.query('UPDATE firebase_users_tracking SET prompt_count = prompt_count + 1 WHERE uid = ?', [uid]);
+        if (isDbAvailable && pool) {
+            try {
+                await pool.query('UPDATE firebase_users_tracking SET prompt_count = prompt_count + 1 WHERE uid = ?', [uid]);
+            } catch (dbError) {
+                console.warn(`⚠️ Failed to update prompt counter: ${dbError.message}`);
+                isDbAvailable = false;
+                pool = null;
+            }
+        }
         res.setHeader('Content-Type', 'text/event-stream');
 
         const reader = openRouterResponse.body.getReader();
@@ -161,7 +179,21 @@ app.post('/api/chat', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log("AI backend is connected");
-    console.log("http://localhost:8080/");
-});
+
+async function startServer() {
+    try {
+        await initDatabase();
+        isDbAvailable = true;
+    } catch (err) {
+        isDbAvailable = false;
+        pool = null;
+        console.warn(`⚠️ SQL unavailable (${err.message}). Starting in no-DB mode.`);
+    }
+
+    app.listen(PORT, () => {
+        console.log('✅ Success go to localhost:8080');
+        console.log(`AI backend listening on port ${PORT}`);
+    });
+}
+
+startServer();

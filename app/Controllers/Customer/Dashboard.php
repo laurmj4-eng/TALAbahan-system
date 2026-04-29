@@ -83,6 +83,7 @@ class Dashboard extends BaseController
         $orderModel = new \App\Models\OrderModel();
         $orderItemModel = new \App\Models\OrderItemModel();
         $productModel = new \App\Models\ProductModel();
+        $db = db_connect();
 
         // Generate a unique transaction code
         $transactionCode = 'ORD-' . strtoupper(uniqid());
@@ -93,25 +94,33 @@ class Dashboard extends BaseController
         $errors = [];
 
         foreach ($orderData['items'] as $item) {
-            $product = $productModel->find($item['id']);
+            $productId = (int) ($item['id'] ?? 0);
+            $quantity = (int) ($item['quantity'] ?? 0);
+
+            if ($productId <= 0 || $quantity <= 0) {
+                $errors[] = 'Invalid product or quantity detected in cart.';
+                continue;
+            }
+
+            $product = $productModel->find($productId);
             if (!$product) {
                 $errors[] = "Product '{$item['name']}' not found.";
                 continue;
             }
-            if ($product['current_stock'] < $item['quantity']) {
-                $errors[] = "Not enough stock for '{$item['name']}'. Available: {$product['current_stock']}, Requested: {$item['quantity']}.";
+            if ((float) $product['current_stock'] < $quantity) {
+                $errors[] = "Not enough stock for '{$item['name']}'. Available: {$product['current_stock']}, Requested: {$quantity}.";
                 continue;
             }
 
-            $itemPrice = $product['selling_price'];
-            $itemSubtotal = $itemPrice * $item['quantity'];
+            $itemPrice = (float) $product['selling_price'];
+            $itemSubtotal = $itemPrice * $quantity;
             $serverCalculatedTotal += $itemSubtotal;
 
             $itemsToSave[] = [
-                'product_id'   => $item['id'],
+                'product_id'   => $productId,
                 'product_name' => $product['name'],
                 'unit'         => $product['unit'],
-                'quantity'     => $item['quantity'],
+                'quantity'     => $quantity,
                 'unit_price'   => $itemPrice,
                 'subtotal'     => $itemSubtotal,
             ];
@@ -130,34 +139,61 @@ class Dashboard extends BaseController
             }
         }
 
-        // 6. Create the main order
-        $orderId = $orderModel->insert([
-            'transaction_code' => $transactionCode,
-            'customer_name'    => $shippingDetails['name'] ?? session()->get('username'),
-            'total_amount'     => $serverCalculatedTotal,
-            'status'           => 'Pending',
-            'notes'            => 'Customer online order',
-            'payment_method'   => $paymentMethod,
-            'shipping_barangay' => $shippingDetails['barangay'],
-            'shipping_phone'    => $shippingDetails['phone']
-        ]);
+        $db->transBegin();
+        try {
+            // 6. Create the main order
+            $orderId = $orderModel->insert([
+                'transaction_code' => $transactionCode,
+                'customer_name'    => $shippingDetails['name'] ?? session()->get('username'),
+                'total_amount'     => $serverCalculatedTotal,
+                'status'           => 'Pending',
+                'notes'            => 'Customer online order',
+                'payment_method'   => $paymentMethod,
+                'shipping_barangay' => $shippingDetails['barangay'],
+                'shipping_phone'    => $shippingDetails['phone']
+            ]);
 
-        if (!$orderId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to create order.'])->setStatusCode(500);
+            if (!$orderId) {
+                throw new \RuntimeException('Failed to create order.');
+            }
+
+            // 7. Save order items and update stock atomically.
+            foreach ($itemsToSave as $item) {
+                $item['order_id'] = $orderId;
+                if (! $orderItemModel->insert($item)) {
+                    throw new \RuntimeException('Failed to save order line items.');
+                }
+
+                // Atomic decrement guarded by available stock.
+                $builder = $db->table('products');
+                $builder->set('current_stock', 'current_stock - ' . (int) $item['quantity'], false);
+                $builder->where('id', (int) $item['product_id']);
+                $builder->where('current_stock >=', (int) $item['quantity']);
+                $builder->update();
+
+                if ($db->affectedRows() !== 1) {
+                    throw new \RuntimeException("Stock changed before checkout for {$item['product_name']}. Please try again.");
+                }
+            }
+
+            // 8. Record sales history
+            $salesModel = new \App\Models\SalesModel();
+            if (! $salesModel->recordFromOrder($transactionCode, array_column($itemsToSave, 'product_name'), (float) $serverCalculatedTotal)) {
+                throw new \RuntimeException('Failed to record sales history.');
+            }
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return $this->response
+                ->setJSON(['status' => 'error', 'message' => $e->getMessage()])
+                ->setStatusCode(500);
         }
 
-        // 7. Save order items and update product stock
-        foreach ($itemsToSave as $item) {
-            $item['order_id'] = $orderId;
-            $orderItemModel->insert($item);
-
-            // Deduct stock
-            $productModel->update($item['product_id'], ['current_stock' => new \CodeIgniter\Database\RawSql('current_stock - ' . $item['quantity'])]);
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order transaction failed.'])->setStatusCode(500);
         }
 
-        // 8. Record sales history (optional, if different from orders)
-        $salesModel = new \App\Models\SalesModel();
-        $salesModel->recordFromOrder($transactionCode, array_column($itemsToSave, 'product_name'), $serverCalculatedTotal);
+        $db->transCommit();
 
         return $this->response->setJSON([
             'status' => 'success', 
@@ -234,8 +270,8 @@ class Dashboard extends BaseController
 
         $orderId = $this->request->getPost('id');
         $orderModel = new \App\Models\OrderModel();
-        $productModel = new \App\Models\ProductModel();
         $orderItemModel = new \App\Models\OrderItemModel();
+        $db = db_connect();
 
         $order = $orderModel->where('id', $orderId)
                            ->where('customer_name', session()->get('username'))
@@ -249,19 +285,38 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Only pending orders can be cancelled.'])->setStatusCode(400);
         }
 
-        // Return stock before cancelling
-        $items = $orderItemModel->where('order_id', $orderId)->findAll();
-        foreach ($items as $item) {
-            $productModel->update($item['product_id'], [
-                'current_stock' => new \CodeIgniter\Database\RawSql('current_stock + ' . $item['quantity'])
-            ]);
+        $db->transBegin();
+        try {
+            // Return stock before cancelling
+            $items = $orderItemModel->where('order_id', $orderId)->findAll();
+            foreach ($items as $item) {
+                $builder = $db->table('products');
+                $builder->set('current_stock', 'current_stock + ' . (int) $item['quantity'], false);
+                $builder->where('id', (int) $item['product_id']);
+                $builder->update();
+
+                if ($db->affectedRows() !== 1) {
+                    throw new \RuntimeException("Failed to restore stock for product ID {$item['product_id']}.");
+                }
+            }
+
+            if (! $orderModel->update($orderId, ['status' => 'Cancelled'])) {
+                throw new \RuntimeException('Failed to cancel order.');
+            }
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return $this->response
+                ->setJSON(['status' => 'error', 'message' => $e->getMessage()])
+                ->setStatusCode(500);
         }
 
-        if ($orderModel->update($orderId, ['status' => 'Cancelled'])) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Order cancelled successfully.']);
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Cancellation transaction failed.'])->setStatusCode(500);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to cancel order.'])->setStatusCode(500);
+        $db->transCommit();
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Order cancelled successfully.']);
     }
 
     /**

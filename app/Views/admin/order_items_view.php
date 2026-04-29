@@ -26,10 +26,10 @@
                             <tr>
                                 <td><strong style="color:#818cf8;"><?= esc($item['transaction_code'] ?? '-') ?></strong></td>
                                 <td><?= esc($item['customer_name'] ?? 'Walk-in Customer') ?></td>
-                                <td><?= esc($item['product_name']) ?></td>
-                                <td><?= esc($item['quantity']) ?> <?= esc($item['unit'] ?? '') ?></td>
-                                <td>₱<?= number_format((float) $item['unit_price'], 2) ?></td>
-                                <td>₱<?= number_format((float) $item['subtotal'], 2) ?></td>
+                                <td><?= esc($item['product_name'] ?? '-') ?></td>
+                                <td><?= esc($item['quantity'] ?? 0) ?> <?= esc($item['unit'] ?? '') ?></td>
+                                <td>₱<?= number_format((float) ($item['unit_price'] ?? 0), 2) ?></td>
+                                <td>₱<?= number_format((float) ($item['subtotal'] ?? 0), 2) ?></td>
                                 <td><?= esc($item['status'] ?? '-') ?></td>
                                 <td><?= ! empty($item['created_at']) ? date('M d, Y h:i A', strtotime($item['created_at'])) : '-' ?></td>
                             </tr>

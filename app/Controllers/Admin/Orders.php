@@ -84,11 +84,23 @@ class Orders extends BaseController
 
     public function updateStatus()
     {
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Access denied.',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(403);
+        }
+
         $id     = (int) $this->request->getPost('id');
         $status = trim((string) $this->request->getPost('status'));
         
         if (!$id || !$status) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid data']);
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid data',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(400);
         }
 
         if (! in_array($status, [
@@ -102,22 +114,46 @@ class Orders extends BaseController
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Invalid order status.',
-            ]);
+                'token'   => csrf_hash(),
+            ])->setStatusCode(400);
         }
 
         $model = new OrderModel();
+        $order = $model->find($id);
+        if (! $order) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Order not found',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(404);
+        }
+
+        $db = db_connect();
+        $db->transBegin();
+
         if ($model->update($id, ['status' => $status])) {
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Failed to update status',
+                    'token'   => csrf_hash(),
+                ])->setStatusCode(500);
+            }
+            $db->transCommit();
             return $this->response->setJSON([
                 'status' => 'success', 
                 'message' => 'Status updated successfully',
                 'token' => csrf_hash()
             ]);
         }
+
+        $db->transRollback();
         
         return $this->response->setJSON([
             'status' => 'error', 
             'message' => 'Failed to update status',
             'token' => csrf_hash()
-        ]);
+        ])->setStatusCode(500);
     }
 }
