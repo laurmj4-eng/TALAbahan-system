@@ -37,7 +37,7 @@ try {
 
     pool = mysql.createPool(poolConfig);
     pool.query(`CREATE TABLE IF NOT EXISTS firebase_users_tracking (uid VARCHAR(255) PRIMARY KEY, prompt_count INT DEFAULT 0, last_reset DATE)`);
-    console.log("✅ Database Connected");
+    console.log("Database connected");
 } catch (err) { 
     console.error('❌ SQL Error:', err.message); 
 }
@@ -161,4 +161,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 AI Backend running on Port ${PORT}`));
+app.listen(PORT, () => {
+    console.log("AI backend is connected");
+    console.log("http://localhost:8080/");
+});
