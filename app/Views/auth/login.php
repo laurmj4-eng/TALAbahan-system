@@ -54,14 +54,18 @@
     // CSRF Token Info from CodeIgniter
     const csrfTokenName = '<?= csrf_token() ?>';
 
+    const recaptchaWidget = captchaBox.querySelector('.g-recaptcha');
+
     emailInput.addEventListener('input', () => {
         const typedEmail = emailInput.value.trim().toLowerCase();
         let trustedEmails = JSON.parse(localStorage.getItem('mj_trusted_emails')) || [];
 
         if (trustedEmails.includes(typedEmail)) {
-            captchaBox.style.display = 'none'; 
+            recaptchaWidget.style.visibility = 'hidden';
+            recaptchaWidget.style.opacity = '0';
         } else {
-            captchaBox.style.display = 'block'; 
+            recaptchaWidget.style.visibility = 'visible';
+            recaptchaWidget.style.opacity = '1';
         }
     });
 
@@ -75,7 +79,8 @@
         const loginBtn = document.getElementById('loginBtn');
 
         let recaptchaResponse = "";
-        if (captchaBox.style.display !== 'none') {
+        const recaptchaWidget = captchaBox.querySelector('.g-recaptcha');
+        if (recaptchaWidget.style.visibility !== 'hidden') {
             recaptchaResponse = grecaptcha.getResponse();
             if (recaptchaResponse.length === 0) {
                 alert("Please complete the reCAPTCHA to verify you are human.");
@@ -214,8 +219,8 @@
     </div>
     
     <!-- reCAPTCHA Container -->
-    <div id="captcha-container" style="margin-bottom: 15px;">
-        <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>"></div>
+    <div id="captcha-container" style="margin-bottom: 15px; display: flex; justify-content: center; height: 80px; overflow: hidden;">
+        <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" style="transition: opacity 0.3s ease;"></div>
     </div>
     
     <button type="submit" id="loginBtn">Login</button>

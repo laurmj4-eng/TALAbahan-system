@@ -97,13 +97,23 @@ body {
     }
 
     .g-recaptcha {
-        transform: scale(0.85);
-        -webkit-transform: scale(0.85);
-        transform-origin: 0 0;
-        margin-left: auto;
-        margin-right: auto;
-        width: fit-content;
+        /* Handled by .captcha-wrapper in modern layout */
         display: block;
+    }
+}
+
+/* =========================================
+   RECAPTCHA RESPONSIVE
+   ========================================= */
+.g-recaptcha {
+    margin: 0 auto;
+    width: fit-content;
+}
+
+@media (max-width: 480px) {
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: center center;
     }
 }
 

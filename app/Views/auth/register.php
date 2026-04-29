@@ -12,10 +12,8 @@
 </head>
 <body>
 
-<!-- TOP RIGHT LOGO -->
-<img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="top-right-logo">
-
 <div class="login-container">
+    <img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="form-logo">
     <h2>Create Account</h2>
     
     <form action="<?= site_url('auth/create_account') ?>" method="post">
@@ -26,8 +24,8 @@
         <input type="password" name="password" placeholder="Password" required minlength="6">
         
         <!-- reCAPTCHA Container -->
-        <div style="margin-bottom: 15px;">
-            <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>"></div>
+        <div style="margin-bottom: 20px; display: flex !important; justify-content: center !important; width: 100% !important; min-height: 80px;">
+            <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" style="margin: 0 auto !important; display: block !important;"></div>
         </div>
         
         <button type="submit">Sign Up Now</button>
