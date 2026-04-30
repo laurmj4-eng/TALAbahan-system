@@ -257,8 +257,12 @@
         async function loadOrders() {
             try {
                 const response = await fetch('<?= site_url('staff/getOrders') ?>');
-                const orders = await response.json();
-                renderOrders(orders);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    renderOrders(result.data);
+                } else {
+                    showToast('Failed to load orders: ' + (result.message || 'Unknown error'), 'error');
+                }
             } catch (error) {
                 showToast('Failed to load orders', 'error');
             }

@@ -41,18 +41,17 @@ require $pathsPath;
 $paths = new Config\Paths();
 
 // Fix FCPATH for InfinityFree root deployment to ensure assets load correctly
-if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
-    if (!defined('FCPATH')) {
-        define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
-    }
+if (!defined('FCPATH')) {
+    define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
-// Ensure .env is found in the same folder as Paths.php
-$paths->envDirectory = dirname($pathsPath, 3);
-
-// For InfinityFree root deployment, force envDirectory to root if needed
-if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
+// Ensure .env is found in the root directory
+// For InfinityFree: htdocs/.env
+// For Local: TALAbahan-system/.env
+if (file_exists(__DIR__ . '/.env')) {
     $paths->envDirectory = __DIR__;
+} elseif (file_exists(__DIR__ . '/../.env')) {
+    $paths->envDirectory = dirname(__DIR__);
 }
 
 // Load the framework bootstrapper

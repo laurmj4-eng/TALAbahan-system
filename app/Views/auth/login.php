@@ -192,7 +192,11 @@
         })
         .catch(err => {
             console.error("Verification Error:", err);
-            alert("System Error: Could not verify user.");
+            let errorMsg = "System Error: Could not verify user.";
+            if (err.message) {
+                errorMsg += "\n\nDetails: " + err.message;
+            }
+            alert(errorMsg);
             
             if (originalButtonText.includes('<svg')) {
                 buttonElement.innerHTML = originalButtonText;
