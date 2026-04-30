@@ -37,3 +37,24 @@ Once the terminal indicates the server is running, open your web browser and nav
 
 5. User admin: admin12345@gmail.com
     user pass: admin12345
+
+## Order Lifecycle Scheduler
+
+Use this command to run automatic order lifecycle updates:
+
+```bash
+php spark orders:run-lifecycle
+```
+
+Recommended environment values in `.env`:
+
+```bash
+orderLifecycle.paymentTimeoutMinutes = 30
+orderLifecycle.autoCompleteDays = 3
+orderLifecycle.refundWindowDays = 7
+```
+
+Windows Task Scheduler example:
+- Program/script: `php`
+- Arguments: `spark orders:run-lifecycle`
+- Start in: your project root

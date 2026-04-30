@@ -92,6 +92,14 @@
         .btn-view:hover { background: rgba(129, 140, 248, 0.25); transform: translateY(-2px); }
         .btn-cancel { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
         .btn-cancel:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
+        .btn-pay { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.35); }
+        .btn-pay:hover { background: rgba(59,130,246,0.3); transform: translateY(-2px); }
+        .btn-track { background: rgba(14,165,233,0.2); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.35); }
+        .btn-track:hover { background: rgba(14,165,233,0.3); transform: translateY(-2px); }
+        .btn-review { background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
+        .btn-refund { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.35); }
+        .modal-stage { margin-bottom: 12px; color: rgba(255,255,255,0.75); font-size: 0.9rem; }
+        .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 
         @media (max-width: 768px) {
             .order-card {
@@ -171,7 +179,7 @@
                                 <button class="btn-action btn-view" onclick="viewDetails(<?= $o['id'] ?>)">
                                     <i class="fas fa-eye"></i> Details
                                 </button>
-                                <?php if ($o['status'] === 'Pending'): ?>
+                                <?php if ($o['status'] === 'Processing'): ?>
                                     <button class="btn-action btn-cancel" onclick="cancelOrder(<?= $o['id'] ?>)">
                                         <i class="fas fa-times"></i> Cancel
                                     </button>
@@ -199,9 +207,16 @@
             <button class="modal-close-btn" onclick="closeModal()">&times;</button>
             <div class="modal-header" id="modalTitle">Order Details</div>
             <div id="modalBody">
+                <div class="modal-stage" id="modalStage"></div>
                 <div class="item-list" id="itemList">
                     <!-- Items will be injected here -->
                 </div>
+                <div id="trackingBox" style="display:none; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 12px;">
+                    <div><strong>Courier:</strong> <span id="trackingCourier">-</span></div>
+                    <div><strong>Tracking #:</strong> <span id="trackingNumber">-</span></div>
+                </div>
+                <div id="trackingEvents" style="display:none; font-size:0.85rem; color:rgba(255,255,255,0.75); margin-bottom:10px;"></div>
+                <div class="modal-actions" id="modalActions"></div>
                 <div style="text-align: right; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 5px;">Total Amount</div>
                     <div id="modalTotal" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">₱0.00</div>
@@ -215,6 +230,17 @@
             document.getElementById('detailsModal').classList.remove('show');
         }
 
+        function lifecycleLabel(key) {
+            const map = {
+                to_pay: 'To Pay',
+                to_ship: 'To Ship (Remorse Window)',
+                in_transit: 'To Receive / In Transit',
+                completed: 'Completed',
+                closed: 'Closed'
+            };
+            return map[key] || 'Order';
+        }
+
         async function viewDetails(orderId) {
             try {
                 const response = await fetch(`<?= site_url('customer/order-details/') ?>${orderId}`);
@@ -222,8 +248,10 @@
 
                 if (result.status === 'success') {
                     const order = result.data;
+                    const lifecycle = order.lifecycle || { actions: {} };
                     document.getElementById('modalTitle').innerText = `Order ${order.transaction_code}`;
                     document.getElementById('modalTotal').innerText = `₱${parseFloat(order.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                    document.getElementById('modalStage').innerText = `Stage: ${lifecycleLabel(lifecycle.stage_key)} | Status: ${order.status}`;
 
                     const itemList = document.getElementById('itemList');
                     itemList.innerHTML = order.items.map(item => `
@@ -236,6 +264,26 @@
                         </div>
                     `).join('');
 
+                    const actions = document.getElementById('modalActions');
+                    actions.innerHTML = '';
+                    if (lifecycle.actions?.can_pay_now) {
+                        actions.innerHTML += `<button class="btn-action btn-pay" onclick="payNow(${order.id})"><i class="fas fa-credit-card"></i> Pay Now</button>`;
+                    }
+                    if (lifecycle.actions?.can_cancel) {
+                        actions.innerHTML += `<button class="btn-action btn-cancel" onclick="cancelOrder(${order.id})"><i class="fas fa-times"></i> Cancel Order</button>`;
+                    }
+                    if (lifecycle.actions?.can_track) {
+                        actions.innerHTML += `<button class="btn-action btn-track" onclick="trackOrder(${order.id})"><i class="fas fa-truck"></i> Track</button>`;
+                    }
+                    if (lifecycle.actions?.can_review) {
+                        actions.innerHTML += `<button class="btn-action btn-review" onclick="writeReview(${order.id})"><i class="fas fa-star"></i> Write Review</button>`;
+                    }
+                    if (lifecycle.actions?.can_refund_request) {
+                        actions.innerHTML += `<button class="btn-action btn-refund" onclick="requestRefund(${order.id})"><i class="fas fa-undo"></i> Return/Refund</button>`;
+                    }
+
+                    document.getElementById('trackingBox').style.display = 'none';
+                    document.getElementById('trackingEvents').style.display = 'none';
                     document.getElementById('detailsModal').classList.add('show');
                 } else {
                     alert(result.message || 'Failed to load details');
@@ -244,6 +292,79 @@
                 console.error(error);
                 alert('Connection error');
             }
+        }
+
+        async function payNow(orderId) {
+            const formData = new FormData();
+            formData.append('id', orderId);
+            formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+            const response = await fetch('<?= site_url('customer/pay-now') ?>', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message || 'Request finished.');
+            if (result.status === 'success') location.reload();
+        }
+
+        async function trackOrder(orderId) {
+            const response = await fetch(`<?= site_url('customer/tracking/') ?>${orderId}`);
+            const result = await response.json();
+            if (result.status !== 'success') {
+                alert(result.message || 'Tracking unavailable.');
+                return;
+            }
+
+            const data = result.data;
+            document.getElementById('trackingCourier').innerText = data.courier_name || '-';
+            document.getElementById('trackingNumber').innerText = data.tracking_number || '-';
+            document.getElementById('trackingBox').style.display = 'block';
+
+            const events = data.events || [];
+            const eventBox = document.getElementById('trackingEvents');
+            if (events.length === 0) {
+                eventBox.innerText = 'No live tracking updates yet.';
+            } else {
+                eventBox.innerHTML = events.map(e => `• ${e.label} (${e.at})`).join('<br>');
+            }
+            eventBox.style.display = 'block';
+        }
+
+        async function writeReview(orderId) {
+            const rating = prompt('Rate your order from 1 to 5 stars:', '5');
+            if (!rating) return;
+            const comment = prompt('Optional review comment:', '') || '';
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('rating', rating);
+            formData.append('comment', comment);
+            formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+            const response = await fetch('<?= site_url('customer/review') ?>', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message || 'Request finished.');
+            if (result.status === 'success') location.reload();
+        }
+
+        async function requestRefund(orderId) {
+            const reason = prompt('Please enter your refund reason:');
+            if (!reason) return;
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('reason', reason);
+            formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+            const response = await fetch('<?= site_url('customer/refund-request') ?>', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message || 'Request finished.');
+            if (result.status === 'success') location.reload();
         }
 
         async function cancelOrder(orderId) {

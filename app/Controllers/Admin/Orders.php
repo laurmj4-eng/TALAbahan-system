@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\CodComplianceModel;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
+use App\Models\RefundRequestModel;
 
 class Orders extends BaseController
 {
@@ -132,7 +133,18 @@ class Orders extends BaseController
         $db = db_connect();
         $db->transBegin();
 
-        if ($model->update($id, ['status' => $status])) {
+        $updateData = ['status' => $status];
+        if ($status === OrderModel::STATUS_SHIPPED && empty($order['shipped_at'])) {
+            $updateData['shipped_at'] = date('Y-m-d H:i:s');
+        }
+        if ($status === OrderModel::STATUS_COMPLETED) {
+            $updateData['delivered_at'] = date('Y-m-d H:i:s');
+            if (($order['payment_method'] ?? 'COD') === 'COD') {
+                $updateData['payment_status'] = 'paid';
+            }
+        }
+
+        if ($model->update($id, $updateData)) {
             if (
                 $status === OrderModel::STATUS_CANCELLED
                 && strtoupper((string) ($order['payment_method'] ?? '')) === 'COD'
@@ -165,5 +177,86 @@ class Orders extends BaseController
             'message' => 'Failed to update status',
             'token' => csrf_hash()
         ])->setStatusCode(500);
+    }
+
+    public function updateTracking()
+    {
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied.'])->setStatusCode(403);
+        }
+
+        $id = (int) $this->request->getPost('id');
+        $trackingNumber = trim((string) $this->request->getPost('tracking_number'));
+        $courierName = trim((string) $this->request->getPost('courier_name'));
+
+        if ($id <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid order ID.'])->setStatusCode(400);
+        }
+
+        $orderModel = new OrderModel();
+        $order = $orderModel->find($id);
+        if (! $order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found.'])->setStatusCode(404);
+        }
+
+        $data = [
+            'tracking_number' => $trackingNumber === '' ? null : $trackingNumber,
+            'courier_name' => $courierName === '' ? null : $courierName,
+        ];
+        if (($data['tracking_number'] || $data['courier_name']) && $order['status'] === OrderModel::STATUS_PROCESSING) {
+            $data['status'] = OrderModel::STATUS_SHIPPED;
+            $data['shipped_at'] = date('Y-m-d H:i:s');
+        }
+
+        if (! $orderModel->update($id, $data)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update tracking.'])->setStatusCode(400);
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Tracking details updated.',
+            'token' => csrf_hash(),
+        ]);
+    }
+
+    public function refunds()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $refundModel = new RefundRequestModel();
+        $rows = $refundModel->orderBy('created_at', 'DESC')->findAll();
+        return $this->response->setJSON(['status' => 'success', 'data' => $rows]);
+    }
+
+    public function updateRefundStatus()
+    {
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $id = (int) $this->request->getPost('id');
+        $status = trim((string) $this->request->getPost('status'));
+        if ($id <= 0 || ! in_array($status, ['Pending', 'Under Review', 'Approved', 'Rejected'], true)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid request.'])->setStatusCode(400);
+        }
+
+        $refundModel = new RefundRequestModel();
+        $refund = $refundModel->find($id);
+        if (! $refund) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Refund request not found.'])->setStatusCode(404);
+        }
+
+        if (! $refundModel->update($id, ['status' => $status])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update refund status.'])->setStatusCode(400);
+        }
+
+        if ($status === 'Approved') {
+            $orderModel = new OrderModel();
+            $orderModel->update((int) $refund['order_id'], ['status' => OrderModel::STATUS_REFUNDED]);
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Refund status updated.']);
     }
 }

@@ -6,9 +6,11 @@ use App\Controllers\BaseController;
 use App\Models\CodComplianceModel;
 use App\Models\OrderItemModel;
 use App\Models\OrderModel;
+use App\Models\OrderReviewModel;
 use App\Models\PaymentAttemptModel;
 use App\Models\ProductModel;
 use App\Models\ProductPaymentConstraintModel;
+use App\Models\RefundRequestModel;
 use App\Models\SalesModel;
 use App\Models\ShippingLocationModel;
 use App\Models\VoucherModel;
@@ -17,6 +19,8 @@ use App\Models\VoucherRedemptionModel;
 class Dashboard extends BaseController
 {
     private const ALLOWED_PAYMENT_METHODS = ['COD', 'GCASH'];
+    private const REMORSE_WINDOW_MINUTES = 60;
+    private const REFUND_WINDOW_DAYS = 7;
 
     public function index()
     {
@@ -427,6 +431,7 @@ class Dashboard extends BaseController
 
         $items = $orderItemModel->where('order_id', $orderId)->findAll();
         $order['items'] = $items;
+        $order['lifecycle'] = $this->buildLifecycleState($order);
 
         return $this->response->setJSON(['status' => 'success', 'data' => $order]);
     }
@@ -453,8 +458,12 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
         }
 
-        if ($order['status'] !== 'Pending') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Only pending orders can be cancelled.'])->setStatusCode(400);
+        $lifecycle = $this->buildLifecycleState($order);
+        if (! ($lifecycle['actions']['can_cancel'] ?? false)) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Cancellation window has closed. Please contact seller support.',
+            ])->setStatusCode(400);
         }
 
         $db->transBegin();
@@ -472,7 +481,11 @@ class Dashboard extends BaseController
                 }
             }
 
-            if (! $orderModel->update($orderId, ['status' => 'Cancelled'])) {
+            $cancelReason = trim((string) $this->request->getPost('reason'));
+            if (! $orderModel->update($orderId, [
+                'status' => 'Cancelled',
+                'cancel_reason' => $cancelReason === '' ? 'Cancelled by customer' : $cancelReason,
+            ])) {
                 throw new \RuntimeException('Failed to cancel order.');
             }
         } catch (\Throwable $e) {
@@ -487,6 +500,232 @@ class Dashboard extends BaseController
 
         $db->transCommit();
         return $this->response->setJSON(['status' => 'success', 'message' => 'Order cancelled successfully.']);
+    }
+
+    public function payNow()
+    {
+        if (session()->get('role') !== 'customer' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+        }
+
+        $orderId = (int) $this->request->getPost('id');
+        $orderModel = new OrderModel();
+        $paymentAttemptModel = new PaymentAttemptModel();
+
+        $order = $orderModel->where('id', $orderId)
+            ->where('customer_name', session()->get('username'))
+            ->first();
+        if (! $order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        $lifecycle = $this->buildLifecycleState($order);
+        if (! ($lifecycle['actions']['can_pay_now'] ?? false)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order is not eligible for Pay Now.'])->setStatusCode(400);
+        }
+
+        $paymentResult = $this->simulateGcashPayment((float) ($order['final_amount'] ?? $order['total_amount']), (string) $order['transaction_code']);
+        if (! $paymentResult['success']) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Payment failed.'])->setStatusCode(400);
+        }
+
+        $updated = $orderModel->update($orderId, [
+            'payment_status' => 'paid',
+            'payment_method' => 'GCASH',
+            'payment_provider' => 'GCASH',
+            'payment_ref' => $paymentResult['transaction_id'] ?? null,
+        ]);
+        if (! $updated) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update payment status.'])->setStatusCode(500);
+        }
+
+        $paymentAttemptModel->insert([
+            'order_id' => $orderId,
+            'payment_method' => 'GCASH',
+            'provider' => 'GCASH',
+            'amount' => (float) ($order['final_amount'] ?? $order['total_amount']),
+            'status' => 'success',
+            'reference' => $paymentResult['transaction_id'] ?? null,
+            'message' => 'Manual Pay Now completed by customer.',
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Payment completed successfully.']);
+    }
+
+    public function tracking($orderId)
+    {
+        if (session()->get('role') !== 'customer') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $orderModel = new OrderModel();
+        $order = $orderModel->where('id', (int) $orderId)
+            ->where('customer_name', session()->get('username'))
+            ->first();
+        if (! $order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        $events = [];
+        if (! empty($order['shipped_at'])) {
+            $events[] = ['label' => 'Picked up by courier', 'at' => $order['shipped_at']];
+            $events[] = ['label' => 'Arrived at sorting facility', 'at' => $order['shipped_at']];
+            $events[] = ['label' => 'Out for delivery', 'at' => $order['shipped_at']];
+        }
+        if (! empty($order['delivered_at'])) {
+            $events[] = ['label' => 'Delivered', 'at' => $order['delivered_at']];
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data' => [
+                'tracking_number' => $order['tracking_number'] ?? null,
+                'courier_name' => $order['courier_name'] ?? null,
+                'events' => $events,
+            ],
+        ]);
+    }
+
+    public function submitReview()
+    {
+        if (session()->get('role') !== 'customer' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $orderId = (int) $this->request->getPost('order_id');
+        $rating = (int) $this->request->getPost('rating');
+        $comment = trim((string) $this->request->getPost('comment'));
+
+        if ($orderId <= 0 || $rating < 1 || $rating > 5) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid review payload.'])->setStatusCode(400);
+        }
+
+        $orderModel = new OrderModel();
+        $reviewModel = new OrderReviewModel();
+        $order = $orderModel->where('id', $orderId)
+            ->where('customer_name', session()->get('username'))
+            ->first();
+        if (! $order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        $lifecycle = $this->buildLifecycleState($order);
+        if (! ($lifecycle['actions']['can_review'] ?? false)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Review is not available for this order.'])->setStatusCode(400);
+        }
+
+        if ($reviewModel->where('order_id', $orderId)->first()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Review already submitted for this order.'])->setStatusCode(409);
+        }
+
+        $reviewModel->insert([
+            'order_id' => $orderId,
+            'customer_name' => (string) session()->get('username'),
+            'rating' => $rating,
+            'comment' => $comment === '' ? null : $comment,
+            'media_paths' => null,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Review submitted.']);
+    }
+
+    public function submitRefundRequest()
+    {
+        if (session()->get('role') !== 'customer' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $orderId = (int) $this->request->getPost('order_id');
+        $reason = trim((string) $this->request->getPost('reason'));
+        if ($orderId <= 0 || $reason === '') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Refund reason is required.'])->setStatusCode(400);
+        }
+
+        $orderModel = new OrderModel();
+        $refundModel = new RefundRequestModel();
+        $order = $orderModel->where('id', $orderId)
+            ->where('customer_name', session()->get('username'))
+            ->first();
+        if (! $order) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
+        }
+
+        $lifecycle = $this->buildLifecycleState($order);
+        if (! ($lifecycle['actions']['can_refund_request'] ?? false)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Refund request window has closed.'])->setStatusCode(400);
+        }
+
+        $existing = $refundModel->where('order_id', $orderId)
+            ->whereIn('status', ['Pending', 'Under Review'])
+            ->first();
+        if ($existing) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'A refund request is already open for this order.'])->setStatusCode(409);
+        }
+
+        $refundModel->insert([
+            'order_id' => $orderId,
+            'customer_name' => (string) session()->get('username'),
+            'reason' => $reason,
+            'status' => 'Pending',
+            'evidence_paths' => null,
+        ]);
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Refund request submitted.']);
+    }
+
+    private function buildLifecycleState(array $order): array
+    {
+        $status = (string) ($order['status'] ?? OrderModel::STATUS_PENDING);
+        $paymentMethod = strtoupper((string) ($order['payment_method'] ?? 'COD'));
+        $paymentStatus = strtolower((string) ($order['payment_status'] ?? 'unpaid'));
+        $createdAt = strtotime((string) ($order['created_at'] ?? 'now')) ?: time();
+        $now = time();
+
+        $cancelDeadlineTs = strtotime('+' . self::REMORSE_WINDOW_MINUTES . ' minutes', $createdAt);
+        $paymentTimeoutMinutes = (int) (env('orderLifecycle.paymentTimeoutMinutes') ?: 30);
+        $paymentDeadlineTs = strtotime("+{$paymentTimeoutMinutes} minutes", $createdAt);
+        $refundWindowDays = (int) (env('orderLifecycle.refundWindowDays') ?: self::REFUND_WINDOW_DAYS);
+        $completedAtTs = ! empty($order['delivered_at']) ? strtotime((string) $order['delivered_at']) : ($status === OrderModel::STATUS_COMPLETED ? strtotime((string) ($order['updated_at'] ?? $order['created_at'])) : null);
+        $refundDeadlineTs = $completedAtTs ? strtotime("+{$refundWindowDays} days", $completedAtTs) : null;
+
+        $reviewModel = new OrderReviewModel();
+        $refundModel = new RefundRequestModel();
+        $hasReview = $reviewModel->where('order_id', (int) $order['id'])->first() !== null;
+        $hasOpenRefund = $refundModel->where('order_id', (int) $order['id'])
+            ->whereIn('status', ['Pending', 'Under Review'])
+            ->first() !== null;
+
+        $stageKey = 'closed';
+        if ($status === OrderModel::STATUS_PENDING && in_array($paymentStatus, ['unpaid', 'failed', 'pending_confirmation'], true)) {
+            $stageKey = 'to_pay';
+        } elseif ($status === OrderModel::STATUS_PROCESSING) {
+            $stageKey = 'to_ship';
+        } elseif ($status === OrderModel::STATUS_SHIPPED) {
+            $stageKey = 'in_transit';
+        } elseif ($status === OrderModel::STATUS_COMPLETED) {
+            $stageKey = 'completed';
+        }
+
+        return [
+            'stage_key' => $stageKey,
+            'payment_deadline_at' => date('Y-m-d H:i:s', $paymentDeadlineTs),
+            'cancel_deadline_at' => date('Y-m-d H:i:s', $cancelDeadlineTs),
+            'refund_deadline_at' => $refundDeadlineTs ? date('Y-m-d H:i:s', $refundDeadlineTs) : null,
+            'actions' => [
+                'can_pay_now' => $status === OrderModel::STATUS_PENDING
+                    && $paymentMethod !== 'COD'
+                    && in_array($paymentStatus, ['unpaid', 'failed', 'pending_confirmation'], true),
+                'can_cancel' => $status === OrderModel::STATUS_PROCESSING && $now <= $cancelDeadlineTs,
+                'can_track' => $status === OrderModel::STATUS_SHIPPED && trim((string) ($order['tracking_number'] ?? '')) !== '',
+                'can_review' => $status === OrderModel::STATUS_COMPLETED && ! $hasReview,
+                'can_refund_request' => $status === OrderModel::STATUS_COMPLETED
+                    && ! $hasOpenRefund
+                    && ($refundDeadlineTs === null || $now <= $refundDeadlineTs),
+                'can_contact_seller' => in_array($status, [OrderModel::STATUS_PROCESSING, OrderModel::STATUS_SHIPPED], true),
+            ],
+        ];
     }
 
     /**

@@ -129,6 +129,7 @@
                 <th>Order Info</th>
                 <th>Customer</th>
                 <th>Payment</th>
+                <th>Tracking</th>
                 <th>Total</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -163,6 +164,14 @@
                                 <?= esc($o['payment_method']) ?: 'COD' ?>
                             </span>
                         </td>
+                        <td>
+                            <div style="font-size:0.8rem; color:rgba(255,255,255,0.7);">
+                                <?= esc($o['courier_name'] ?? '-') ?>
+                            </div>
+                            <div style="font-size:0.75rem; color:rgba(255,255,255,0.45);">
+                                <?= esc($o['tracking_number'] ?? '-') ?>
+                            </div>
+                        </td>
                         <td><span style="font-weight: 800; color: #4ade80; font-size: 1.1rem;">&#8369;<?= number_format($o['total_amount'], 2) ?></span></td>
                         <td>
                             <select onchange="updateStatus(<?= $o['id'] ?>, this.value, this)" class="status-select <?= strtolower($o['status']) ?>">
@@ -176,6 +185,9 @@
                         <td>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <?= $actionBtn ?>
+                                <button class="btn-details" onclick="editTracking(<?= $o['id'] ?>)" title="Update Tracking">
+                                    <i class="fas fa-truck"></i>
+                                </button>
                                 <button onclick="viewOrderDetails(<?= $o['id'] ?>)" class="btn-details" title="View Items">
                                     <i class="fas fa-receipt"></i>
                                 </button>
@@ -184,7 +196,7 @@
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
-                <tr><td colspan="6" style="text-align: center; color: rgba(255,255,255,0.2); padding: 100px;">No orders found.</td></tr>
+                <tr><td colspan="7" style="text-align: center; color: rgba(255,255,255,0.2); padding: 100px;">No orders found.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
@@ -235,8 +247,8 @@ async function viewOrderDetails(id) {
                     <tr>
                         <td>${item.product_name}</td>
                         <td>${item.quantity}</td>
-                        <td>&#8369;${parseFloat(item.price).toFixed(2)}</td>
-                        <td>&#8369;${(item.quantity * item.price).toFixed(2)}</td>
+                        <td>&#8369;${parseFloat(item.unit_price).toFixed(2)}</td>
+                        <td>&#8369;${parseFloat(item.subtotal).toFixed(2)}</td>
                     </tr>
                 `;
             });
@@ -286,6 +298,38 @@ async function updateStatus(id, status, element) {
         console.error(e);
         alert('Failed to update status');
         element.value = originalStatus;
+    }
+}
+
+async function editTracking(id) {
+    const courier = prompt('Courier name (e.g. J&T, LBC):');
+    if (courier === null) return;
+    const tracking = prompt('Tracking number:');
+    if (tracking === null) return;
+
+    try {
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('courier_name', courier);
+        formData.append('tracking_number', tracking);
+        formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        const response = await fetch('<?= site_url('admin/orders/updateTracking') ?>', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            location.reload();
+        } else {
+            alert(result.message || 'Failed to update tracking');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Failed to update tracking');
     }
 }
 </script>

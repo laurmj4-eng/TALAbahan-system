@@ -35,6 +35,11 @@ class OrderModel extends Model
         'payment_ref',
         'payment_provider',
         'applied_vouchers',
+        'tracking_number',
+        'courier_name',
+        'shipped_at',
+        'delivered_at',
+        'cancel_reason',
         'shipping_barangay',
         'shipping_phone',
     ];
