@@ -465,8 +465,12 @@
                             <span>Subtotal:</span>
                             <span id="cartSubtotal">₱0.00</span>
                         </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
+                            <span>Shipping Fee:</span>
+                            <span id="cartShippingFee">₱0.00</span>
+                        </div>
                         <div style="display:flex; justify-content:space-between; font-size:0.95rem; color:#fbbf24; margin-bottom:8px;">
-                            <span>Auto Voucher:</span>
+                            <span>Voucher Discount:</span>
                             <span id="cartVoucher">-₱0.00</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
@@ -553,11 +557,39 @@
                         </div>
                     </div>
 
-                    <div class="payment-option" onclick="selectPayment('GCash')" id="payGCash">
+                    <div class="payment-option" onclick="selectPayment('GCASH')" id="payGCASH">
                         <i class="fas fa-mobile-alt"></i>
                         <div>
                             <h4>GCash</h4>
                             <p>Pay via GCash transfer</p>
+                        </div>
+                    </div>
+
+                    <div class="location-input-group" style="margin-top: 8px;">
+                        <label>Voucher Code (Optional)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="voucherCode" placeholder="Enter platform/shop voucher code" style="flex: 1;">
+                            <button class="btn-location" style="margin-bottom: 0;" onclick="refreshQuote()">Apply</button>
+                        </div>
+                        <small id="voucherHint" style="display:block; margin-top: 8px; color: rgba(255,255,255,0.5);">Available vouchers are auto-applied if eligible.</small>
+                    </div>
+
+                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:15px; padding-top:12px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span style="color:rgba(255,255,255,0.7);">Subtotal</span>
+                            <span id="paySubtotal">₱0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span style="color:rgba(255,255,255,0.7);">Shipping</span>
+                            <span id="payShipping">₱0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span style="color:#fbbf24;">Voucher</span>
+                            <span id="payVoucher">-₱0.00</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800;">
+                            <span>Total</span>
+                            <span id="payTotal" style="color:#10b981;">₱0.00</span>
                         </div>
                     </div>
 
@@ -597,7 +629,7 @@
     <script>
         let cart = [];
         let selectedPayment = null;
-        let autoVoucher = 0;
+        let checkoutQuote = null;
 
         function addToCart(id, name, price) {
             const index = cart.findIndex(item => item.id === id);
@@ -677,10 +709,12 @@
                 `;
             });
 
-            autoVoucher = subtotal >= 1000 ? Math.min(120, subtotal * 0.08) : (subtotal >= 500 ? 40 : 0);
-            const total = Math.max(0, subtotal - autoVoucher);
+            const shipping = checkoutQuote?.shipping_fee ?? 0;
+            const voucherDiscount = checkoutQuote?.voucher_discount ?? 0;
+            const total = checkoutQuote?.final_total ?? Math.max(0, subtotal + shipping - voucherDiscount);
             document.getElementById('cartSubtotal').innerText = '₱' + subtotal.toFixed(2);
-            document.getElementById('cartVoucher').innerText = '-₱' + autoVoucher.toFixed(2);
+            document.getElementById('cartShippingFee').innerText = '₱' + Number(shipping).toFixed(2);
+            document.getElementById('cartVoucher').innerText = '-₱' + Number(voucherDiscount).toFixed(2);
             document.getElementById('cartTotal').innerText = '₱' + total.toFixed(2);
         }
 
@@ -688,14 +722,15 @@
             const savedPhone = localStorage.getItem('quick_checkout_phone');
             const savedBarangay = localStorage.getItem('quick_checkout_barangay');
             const savedPayment = localStorage.getItem('quick_checkout_payment');
+            const normalizedPayment = savedPayment && savedPayment.toUpperCase() === 'GCASH' ? 'GCASH' : savedPayment;
 
             if (savedPhone) document.getElementById('deliveryPhone').value = savedPhone;
             if (savedBarangay) {
                 document.getElementById('detectedBarangay').value = savedBarangay;
                 validateBarangay(savedBarangay);
             }
-            if (savedPayment && ['COD', 'GCash'].includes(savedPayment)) {
-                selectPayment(savedPayment);
+            if (normalizedPayment && ['COD', 'GCASH'].includes(normalizedPayment)) {
+                selectPayment(normalizedPayment);
             } else {
                 selectPayment('COD');
             }
@@ -799,7 +834,9 @@
             }
         }
 
-        function goToPayment() {
+        async function goToPayment() {
+            const quoteOk = await refreshQuote();
+            if (!quoteOk) return;
             document.getElementById('checkoutLocation').classList.remove('active');
             document.getElementById('checkoutPayment').classList.add('active');
         }
@@ -818,7 +855,7 @@
         }
 
         function initiateOrder() {
-            if (selectedPayment === 'GCash') {
+            if (selectedPayment === 'GCASH') {
                 document.getElementById('checkoutPayment').style.display = 'none';
                 document.getElementById('gcashMock').style.display = 'block';
             } else {
@@ -836,10 +873,69 @@
             document.getElementById('checkoutPayment').style.display = 'block';
         }
 
+        async function refreshQuote() {
+            const result = await requestCheckoutQuote();
+            if (!result || result.status !== 'success') {
+                checkoutQuote = null;
+                alert((result && result.message) ? result.message : 'Unable to validate checkout details.');
+                return false;
+            }
+
+            checkoutQuote = result.data;
+            document.getElementById('paySubtotal').innerText = '₱' + Number(checkoutQuote.subtotal || 0).toFixed(2);
+            document.getElementById('payShipping').innerText = '₱' + Number(checkoutQuote.shipping_fee || 0).toFixed(2);
+            document.getElementById('payVoucher').innerText = '-₱' + Number(checkoutQuote.voucher_discount || 0).toFixed(2);
+            document.getElementById('payTotal').innerText = '₱' + Number(checkoutQuote.final_total || 0).toFixed(2);
+            document.getElementById('voucherHint').innerText = checkoutQuote.applied_vouchers?.length
+                ? 'Applied: ' + checkoutQuote.applied_vouchers.map(v => `${v.code} (-₱${Number(v.discount).toFixed(2)})`).join(', ')
+                : 'No eligible vouchers applied for this checkout.';
+            renderCartItems();
+            return true;
+        }
+
+        async function requestCheckoutQuote() {
+            const name = document.getElementById('deliveryName').value.trim();
+            const phone = document.getElementById('deliveryPhone').value.trim();
+            const barangay = document.getElementById('detectedBarangay').value.trim();
+            const voucherCode = document.getElementById('voucherCode').value.trim();
+            const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+            const payload = {
+                items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+                payment_method: selectedPayment || 'COD',
+                voucher_code: voucherCode,
+                shipping_details: {
+                    name: name || 'Customer',
+                    phone,
+                    barangay
+                }
+            };
+
+            const formData = new FormData();
+            formData.append('order_data', JSON.stringify(payload));
+            if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
+
+            try {
+                const response = await fetch('<?= site_url('customer/precheckout') ?>', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                return await response.json();
+            } catch (error) {
+                return { status: 'error', message: 'Connection error while validating checkout.' };
+            }
+        }
+
         async function placeOrder() {
             const name = document.getElementById('deliveryName').value.trim();
             const phone = document.getElementById('deliveryPhone').value.trim();
             const barangay = document.getElementById('detectedBarangay').value.trim();
+            const voucherCode = document.getElementById('voucherCode').value.trim();
+
+            const quoteOk = await refreshQuote();
+            if (!quoteOk) return;
 
             const orderData = {
                 items: cart.map(item => ({
@@ -848,6 +944,7 @@
                     quantity: item.quantity
                 })),
                 payment_method: selectedPayment || 'COD',
+                voucher_code: voucherCode,
                 shipping_details: {
                     name: name || 'Customer',
                     phone: phone,

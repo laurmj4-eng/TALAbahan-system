@@ -9,6 +9,7 @@
     $is_sales = url_is('staff/salesHistory*') || url_is('admin/sales*');
     $is_customer_order_items = url_is('customer/order-items*');
     $is_shipping = url_is('admin/shipping*');
+    $is_vouchers = url_is('admin/vouchers*');
 ?>
 
 <?= $this->include('theme/sidebar_styles') ?>
@@ -115,6 +116,12 @@
                         <a href="<?= site_url('admin/shipping') ?>" class="<?= $is_shipping ? 'active' : '' ?>">
                             <i class="fas fa-map-marker-alt"></i> 
                             <span>Shipping</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= site_url('admin/vouchers') ?>" class="<?= $is_vouchers ? 'active' : '' ?>">
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>Vouchers</span>
                         </a>
                     </li>
                 </div>

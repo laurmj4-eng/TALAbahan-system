@@ -21,7 +21,22 @@ class OrderModel extends Model
     protected $useTimestamps    = true;
 
     protected $allowedFields = [
-        'transaction_code', 'customer_name', 'total_amount', 'status', 'notes', 'payment_method', 'shipping_barangay', 'shipping_phone'
+        'transaction_code',
+        'customer_name',
+        'total_amount',
+        'subtotal_amount',
+        'shipping_fee',
+        'voucher_discount',
+        'final_amount',
+        'status',
+        'notes',
+        'payment_method',
+        'payment_status',
+        'payment_ref',
+        'payment_provider',
+        'applied_vouchers',
+        'shipping_barangay',
+        'shipping_phone',
     ];
 
     protected $validationRules = [

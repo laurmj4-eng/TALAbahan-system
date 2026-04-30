@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\CodComplianceModel;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
 
@@ -132,6 +133,15 @@ class Orders extends BaseController
         $db->transBegin();
 
         if ($model->update($id, ['status' => $status])) {
+            if (
+                $status === OrderModel::STATUS_CANCELLED
+                && strtoupper((string) ($order['payment_method'] ?? '')) === 'COD'
+                && trim((string) ($order['customer_name'] ?? '')) !== ''
+            ) {
+                $codComplianceModel = new CodComplianceModel();
+                $codComplianceModel->markFailedCod((string) ($order['customer_name'] ?? ''));
+            }
+
             if ($db->transStatus() === false) {
                 $db->transRollback();
                 return $this->response->setJSON([

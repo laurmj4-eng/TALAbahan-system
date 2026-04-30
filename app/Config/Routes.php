@@ -55,6 +55,11 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->post('shipping/update', 'ShippingController::update');
     $routes->post('shipping/delete', 'ShippingController::delete');
     $routes->get('shipping/getDetails/(:num)', 'ShippingController::getDetails/$1');
+
+    // --- Voucher Management ---
+    $routes->get('vouchers', 'VoucherController::index');
+    $routes->post('vouchers/store', 'VoucherController::store');
+    $routes->post('vouchers/toggle', 'VoucherController::toggle');
 });
 
 // --- 3. STAFF GROUP ---
@@ -84,6 +89,7 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('order-items', 'Dashboard::orderItems');
+    $routes->post('precheckout', 'Dashboard::preCheckout');
     $routes->post('placeOrder', 'Dashboard::placeOrder');
     $routes->post('validate-location', 'Dashboard::validateLocation');
     $routes->get('order-details/(:num)', 'Dashboard::orderDetails/$1');
