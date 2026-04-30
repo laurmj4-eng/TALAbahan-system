@@ -226,7 +226,14 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
     }
     .chat-button-container { 
         bottom: 20px; 
-        right: 20px; 
+        left: 20px; 
+        right: auto;
+        z-index: 1000;
+    }
+    #chat-button {
+        width: 55px !important;
+        height: 55px !important;
+        background-size: 65% !important;
     }
     #chat-header {
         border-radius: 0;
