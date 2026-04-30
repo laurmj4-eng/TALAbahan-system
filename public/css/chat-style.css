@@ -32,9 +32,20 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
 #chat-button {
     position: relative; border: none; border-radius: 50%; width: 60px; height: 60px;
     cursor: pointer; box-shadow: var(--shadow-heavy); overflow: hidden;
-    transition: transform 0.3s ease; background: white; z-index: 2; padding: 0;
+    transition: transform 0.3s ease; background-color: white; z-index: 2; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+    image-rendering: auto;
 }
-#chat-button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#chat-button img { 
+    display: none !important;
+}
 #chat-button:hover { transform: scale(1.1) translateY(-5px); }
 
 .chat-button-pulse {

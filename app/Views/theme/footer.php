@@ -3,9 +3,7 @@
     <!-- ========================= -->
     <div class="chat-button-container" id="chat-button-container">
         <div class="chat-button-pulse" style="background-color: #8b5cf6;"></div>
-        <button id="chat-button" aria-label="Open Chat with Mj" style="border: 2px solid #8b5cf6;">
-            <img src="<?= base_url('images/logo.png') ?>" alt="Chat Bot">
-        </button>
+        <button id="chat-button" aria-label="Open Chat with Mj" style="border: 2px solid #8b5cf6; background-image: url('<?= base_url('images/logo.png') ?>'); background-size: 70%; background-position: center; background-repeat: no-repeat;"></button>
     </div>
 
     <div id="chat-container">
@@ -40,7 +38,7 @@
         </div>
     </div>
 
-    <script src="<?= base_url('js/chat-script.js') ?>"></script>
+    <script src="<?= base_url('js/chat-script.js') ?>?v=<?= time() ?>"></script>
     <script>
         function switchTab(tabId) {
             // MAGIC FIX: If on Product view, redirect to dashboard with the tab ID!
