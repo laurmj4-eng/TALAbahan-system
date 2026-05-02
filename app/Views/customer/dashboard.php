@@ -172,28 +172,31 @@
         }
         .btn-add-cart:hover { background: rgba(129, 140, 248, 0.2); }
 
-        /* --- CART FLOATING BUTTON --- */
+        /* --- PROFESSIONAL FLOATING BUTTONS LAYOUT --- */
         .cart-float {
             position: fixed;
             bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
+            right: 110px; /* Positioned to the left of the chatbot */
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: #fff;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             cursor: pointer;
-            z-index: 999;
-            transition: 0.3s;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .cart-float:hover {
-            transform: scale(1.1) rotate(-10deg);
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            filter: brightness(1.1);
         }
 
         .cart-badge {
