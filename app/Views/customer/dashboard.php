@@ -176,23 +176,19 @@
         .cart-float {
             position: fixed;
             bottom: 30px;
-            right: 100px; /* Adjusted to be beside Chatbot */
-            width: 60px; /* Matched to Chatbot height */
-            height: 60px; /* Matched to Chatbot height */
+            right: 30px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem; /* Slightly smaller to fit 60px */
+            font-size: 1.8rem;
             color: #fff;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             cursor: pointer;
-<<<<<<< HEAD
-            z-index: 2147483646; /* Just below chatbot z-index */
-=======
             z-index: 999;
->>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d
             transition: 0.3s;
         }
 
@@ -359,13 +355,7 @@
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
             .product-name { font-size: 0.95rem; height: 2.6rem; }
             .product-price { font-size: 1.1rem; }
-            .cart-float { 
-                width: 60px; 
-                height: 60px; 
-                bottom: 30px; 
-                right: 100px; 
-                font-size: 1.5rem; 
-            }
+            .cart-float { width: 60px; height: 60px; bottom: 20px; right: 20px; font-size: 1.5rem; }
             .checkout-sheet-content {
                 width: 100%;
                 max-width: none !important;
