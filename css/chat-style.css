@@ -34,7 +34,14 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
     cursor: pointer; box-shadow: var(--shadow-heavy); overflow: hidden;
     transition: transform 0.3s ease; background: white; z-index: 2; padding: 0;
 }
-#chat-button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#chat-button img { 
+    width: 80%; 
+    height: 80%; 
+    object-fit: contain; 
+    display: block; 
+    margin: 10% auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
 #chat-button:hover { transform: scale(1.1) translateY(-5px); }
 
 .chat-button-pulse {
@@ -73,20 +80,20 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
 /* Chat Header Area - Strict Layout */
 #chat-header {
     background: var(--primary-gradient);
-    color: white; padding: 0 16px; 
+    color: white; padding: 12px 16px; 
     display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; min-height: 70px; /* Strict height prevents collapse */
+    flex-shrink: 0; min-height: 80px; /* Increased to prevent overlap */
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
-.header-left { display: flex; align-items: center; gap: 10px; }
-.ai-info { display: flex; flex-direction: column; justify-content: center; }
-.ai-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; display: block; }
+.header-left { display: flex; align-items: center; gap: 12px; width: 60%; }
+.ai-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.ai-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Selector Details */
 #model-select {
     background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: 500;
-    outline: none; cursor: pointer; transition: all 0.2s; width: fit-content;
+    border-radius: 4px; padding: 4px 8px; font-size: 11px; font-weight: 500;
+    outline: none; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 140px;
 }
 #model-select:hover { background: rgba(255, 255, 255, 0.25); }
 #model-select option { background-color: #ffffff !important; color: #000000 !important; }

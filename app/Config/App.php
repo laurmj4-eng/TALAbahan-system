@@ -16,7 +16,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = '';
+    public string $baseURL = 'http://mjtalabahan.page.gd/';
 
     public function __construct()
     {
@@ -25,16 +25,15 @@ class App extends BaseConfig
         // Automatic BaseURL Detection
         if (isset($_SERVER['HTTP_HOST'])) {
             $host = $_SERVER['HTTP_HOST'];
-            if (strpos($host, 'mjtalabahan.page.gd') !== false) {
-                // On InfinityFree, we use HTTPS
-                $this->baseURL = 'https://' . $host . '/';
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            
+            if (strpos($host, 'mjtalabahan.page.gd') !== false || strpos($host, 'mj-talabahan.infy.uk') !== false) {
+                $this->baseURL = $protocol . '://' . $host . '/';
                 $this->indexPage = '';
             } elseif (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
                 $this->baseURL = 'http://localhost:8080/';
                 $this->indexPage = '';
             }
-        } else {
-            $this->baseURL = 'http://localhost:8080/';
         }
     }
 

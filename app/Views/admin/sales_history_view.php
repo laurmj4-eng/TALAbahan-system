@@ -46,7 +46,8 @@
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            const history = await response.json();
+            const result = await response.json();
+            const history = result.data || [];
             
             if (!history || history.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:rgba(255,255,255,0.4);">No transactions found in ledger.</td></tr>';

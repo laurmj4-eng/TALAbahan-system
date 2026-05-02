@@ -156,8 +156,8 @@ class Auth extends BaseController
             'role'     => 'customer' 
         ];
 
-        if($userModel->insert($data)) {
-            return redirect()->to('/login')->with('success', 'Account created successfully!');
+        if ($userModel->save($data)) {
+            return redirect()->to(base_url('login'))->with('success', 'Account created successfully!');
         } else {
             $errors = $userModel->errors();
             $errorMessage = !empty($errors) ? implode(' ', $errors) : 'Registration failed.';

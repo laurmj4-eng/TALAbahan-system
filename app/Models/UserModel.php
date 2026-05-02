@@ -34,8 +34,6 @@ class UserModel extends Model
 
     /**
      * Automatically hashes the password before it is saved.
-     * If the password field is empty (common during profile updates), 
-     * it removes the field so the existing password is not overwritten.
      */
     protected function hashPassword(array $data)
     {
@@ -45,14 +43,19 @@ class UserModel extends Model
         }
 
         // 2. If the password is empty or just whitespace, remove it from the update
-        if (empty(trim($data['data']['password']))) {
+        if (empty(trim((string)$data['data']['password']))) {
             unset($data['data']['password']);
             return $data;
         }
 
         // 3. Hash the plain-text password securely
-        // This will turn "mypassword123" into a 60-character string starting with $2y$
-        $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
+        // Check if it's already hashed to avoid double hashing
+        $password = (string)$data['data']['password'];
+        $info = password_get_info($password);
+        
+        if ($info['algo'] === 0) { // 0 means not hashed
+            $data['data']['password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
         
         return $data;
     }
