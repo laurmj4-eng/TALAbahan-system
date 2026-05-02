@@ -358,7 +358,13 @@
             .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
             .product-name { font-size: 0.95rem; height: 2.6rem; }
             .product-price { font-size: 1.1rem; }
-            .cart-float { width: 60px; height: 60px; bottom: 20px; right: 20px; font-size: 1.5rem; }
+            .cart-float { 
+                width: 55px !important; 
+                height: 55px !important; 
+                bottom: 20px !important; 
+                right: 90px !important; 
+                font-size: 1.3rem !important; 
+            }
             .checkout-sheet-content {
                 width: 100%;
                 max-width: none !important;

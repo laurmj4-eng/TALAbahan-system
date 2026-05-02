@@ -53,7 +53,7 @@
             50% { transform: scale(1.2); opacity: 0.1; }
             100% { transform: scale(0.95); opacity: 0.2; }
         }
-    </style>
+
         #chat-container {
             position: fixed !important;
             bottom: 100px !important;
@@ -95,6 +95,28 @@
             max-width: 85% !important;
             font-size: 14px !important;
             margin-bottom: 10px !important;
+        }
+        @media (max-width: 768px) {
+            #chat-button-container {
+                bottom: 20px !important;
+                right: 20px !important;
+                width: 55px !important;
+                height: 55px !important;
+            }
+            #chat-button {
+                width: 55px !important;
+                height: 55px !important;
+            }
+            #chat-button img {
+                width: 35px !important;
+                height: 35px !important;
+            }
+            #chat-container {
+                bottom: 85px !important;
+                right: 10px !important;
+                width: calc(100vw - 20px) !important;
+                height: 70vh !important;
+            }
         }
     </style>
 
