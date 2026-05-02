@@ -22,12 +22,26 @@ class Dashboard extends BaseController
     private const ALLOWED_PAYMENT_METHODS = ['COD', 'GCASH'];
     private const REMORSE_WINDOW_MINUTES = 60;
     private const REFUND_WINDOW_DAYS = 7;
+    private const ORDER_CENTER_TABS = ['all', 'to_pay', 'to_ship', 'to_receive', 'completed'];
 
     protected $checkoutService;
+    private static array $orderColumnCache = [];
 
     public function __construct()
     {
         $this->checkoutService = new CheckoutService();
+    }
+
+    private function orderColumnExists(string $column): bool
+    {
+        if (isset(self::$orderColumnCache[$column])) {
+            return (bool) self::$orderColumnCache[$column];
+        }
+
+        $db = db_connect();
+        $exists = $db->fieldExists($column, 'orders');
+        self::$orderColumnCache[$column] = $exists ? 1 : 0;
+        return $exists;
     }
 
     public function index()
@@ -40,13 +54,18 @@ class Dashboard extends BaseController
         // 2. Fetch products and shippable locations
         $productModel = new ProductModel();
         $shippingModel = new \App\Models\ShippingLocationModel();
+        $customerName = (string) session()->get('username');
+        $orderCounts = $this->getCustomerOrderCounts($customerName);
+        $activeOrdersCount = (int) ($orderCounts['to_pay'] + $orderCounts['to_ship'] + $orderCounts['to_receive']);
 
         // 3. Prepare data for the view
         $data =[
             'title'             => 'Customer Portal',
             'username'          => session()->get('username'),
             'products'          => $productModel->findAll(),
-            'shippingLocations' => $shippingModel->where('is_active', 1)->findAll()
+            'shippingLocations' => $shippingModel->where('is_active', 1)->findAll(),
+            'orderCounts'       => $orderCounts,
+            'activeOrdersCount' => $activeOrdersCount,
         ];
 
         // 4. Load the customer dashboard view
@@ -55,27 +74,48 @@ class Dashboard extends BaseController
 
     public function orderItems()
     {
-        // 1. Security check
+        // Backward compatibility: existing URL now shows the new Order Center
+        return $this->orderCenter();
+    }
+
+    public function profile()
+    {
         if (session()->get('role') !== 'customer') {
             return redirect()->to('/login');
         }
 
-        $orderModel = new \App\Models\OrderModel();
-        
-        // Fetch only orders for this customer
-        $orders = $orderModel->where('customer_name', session()->get('username'))
-                            ->orderBy('created_at', 'DESC')
-                            ->findAll();
+        $customerName = (string) session()->get('username');
+        $counts = $this->getCustomerOrderCounts($customerName);
 
-        // 3. Prepare data for the view
-        $data =[
-            'title'    => 'My Orders',
-            'username' => session()->get('username'),
-            'orders'   => $orders
-        ];
+        return view('customer/profile', [
+            'title' => 'My Profile',
+            'username' => $customerName,
+            'counts' => $counts,
+        ]);
+    }
 
-        // 4. Load the customer order items view (now as My Orders)
-        return view('customer/order_items', $data);
+    public function orderCenter()
+    {
+        if (session()->get('role') !== 'customer') {
+            return redirect()->to('/login');
+        }
+
+        $tab = strtolower(trim((string) $this->request->getGet('tab')));
+        if ($tab === '' || ! in_array($tab, self::ORDER_CENTER_TABS, true)) {
+            $tab = 'all';
+        }
+
+        $customerName = (string) session()->get('username');
+        $counts = $this->getCustomerOrderCounts($customerName);
+        $orders = $this->getOrdersForCustomerByTab($customerName, $tab);
+
+        return view('customer/order_items', [
+            'title' => 'Order Center',
+            'username' => $customerName,
+            'orders' => $orders,
+            'activeTab' => $tab,
+            'counts' => $counts,
+        ]);
     }
 
     public function preCheckout()
@@ -357,6 +397,7 @@ class Dashboard extends BaseController
         $items = $orderItemModel->where('order_id', $orderId)->findAll();
         $order['items'] = $items;
         $order['lifecycle'] = $this->buildLifecycleState($order);
+        $order['timeline'] = $this->buildOrderTimeline($order);
 
         return $this->response->setJSON(['status' => 'success', 'data' => $order]);
     }
@@ -651,6 +692,109 @@ class Dashboard extends BaseController
                 'can_contact_seller' => in_array($status, [OrderModel::STATUS_PROCESSING, OrderModel::STATUS_SHIPPED], true),
             ],
         ];
+    }
+
+    private function buildOrderTimeline(array $order): array
+    {
+        $timeline = [];
+
+        $createdAt = (string) ($order['created_at'] ?? '');
+        if ($createdAt !== '') {
+            $timeline[] = ['label' => 'Order placed', 'at' => $createdAt];
+        }
+
+        $paymentStatus = strtolower((string) ($order['payment_status'] ?? ''));
+        if (in_array($paymentStatus, ['paid', 'success', 'completed'], true)) {
+            $timeline[] = ['label' => 'Payment confirmed', 'at' => (string) ($order['updated_at'] ?? $createdAt)];
+        } elseif ($paymentStatus !== '') {
+            $timeline[] = ['label' => 'Payment status: ' . strtoupper($paymentStatus), 'at' => (string) ($order['updated_at'] ?? $createdAt)];
+        }
+
+        $status = (string) ($order['status'] ?? '');
+        if ($status === OrderModel::STATUS_PROCESSING) {
+            $timeline[] = ['label' => 'Preparing your order', 'at' => (string) ($order['updated_at'] ?? $createdAt)];
+        }
+
+        $shippedAt = (string) ($order['shipped_at'] ?? '');
+        if ($shippedAt !== '') {
+            $timeline[] = ['label' => 'Shipped', 'at' => $shippedAt];
+        }
+
+        $deliveredAt = (string) ($order['delivered_at'] ?? '');
+        if ($deliveredAt !== '') {
+            $timeline[] = ['label' => 'Delivered', 'at' => $deliveredAt];
+        }
+
+        if ($status === OrderModel::STATUS_COMPLETED) {
+            $timeline[] = ['label' => 'Completed', 'at' => $deliveredAt !== '' ? $deliveredAt : (string) ($order['updated_at'] ?? $createdAt)];
+        } elseif ($status === OrderModel::STATUS_CANCELLED) {
+            $timeline[] = ['label' => 'Cancelled', 'at' => (string) ($order['updated_at'] ?? $createdAt)];
+        } elseif ($status === OrderModel::STATUS_REFUNDED) {
+            $timeline[] = ['label' => 'Refunded', 'at' => (string) ($order['updated_at'] ?? $createdAt)];
+        }
+
+        return $timeline;
+    }
+
+    private function getCustomerOrderCounts(string $customerName): array
+    {
+        $orderModel = new OrderModel();
+
+        $all = (int) $orderModel
+            ->where('customer_name', $customerName)
+            ->countAllResults();
+
+        $toPayQuery = (new OrderModel())
+            ->where('customer_name', $customerName)
+            ->where('status', OrderModel::STATUS_PENDING);
+        if ($this->orderColumnExists('payment_status')) {
+            $toPayQuery->whereIn('payment_status', ['unpaid', 'failed', 'pending_confirmation']);
+        }
+        $toPay = (int) $toPayQuery->countAllResults();
+
+        $toShip = (int) (new OrderModel())
+            ->where('customer_name', $customerName)
+            ->where('status', OrderModel::STATUS_PROCESSING)
+            ->countAllResults();
+
+        $toReceive = (int) (new OrderModel())
+            ->where('customer_name', $customerName)
+            ->where('status', OrderModel::STATUS_SHIPPED)
+            ->countAllResults();
+
+        $completed = (int) (new OrderModel())
+            ->where('customer_name', $customerName)
+            ->where('status', OrderModel::STATUS_COMPLETED)
+            ->countAllResults();
+
+        return [
+            'all' => $all,
+            'to_pay' => $toPay,
+            'to_ship' => $toShip,
+            'to_receive' => $toReceive,
+            'completed' => $completed,
+        ];
+    }
+
+    private function getOrdersForCustomerByTab(string $customerName, string $tab): array
+    {
+        $orderModel = new OrderModel();
+        $orderModel->where('customer_name', $customerName);
+
+        if ($tab === 'to_pay') {
+            $orderModel->where('status', OrderModel::STATUS_PENDING);
+            if ($this->orderColumnExists('payment_status')) {
+                $orderModel->whereIn('payment_status', ['unpaid', 'failed', 'pending_confirmation']);
+            }
+        } elseif ($tab === 'to_ship') {
+            $orderModel->where('status', OrderModel::STATUS_PROCESSING);
+        } elseif ($tab === 'to_receive') {
+            $orderModel->where('status', OrderModel::STATUS_SHIPPED);
+        } elseif ($tab === 'completed') {
+            $orderModel->where('status', OrderModel::STATUS_COMPLETED);
+        }
+
+        return $orderModel->orderBy('created_at', 'DESC')->findAll();
     }
 
     /**

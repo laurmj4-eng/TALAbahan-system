@@ -44,19 +44,15 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
     image-rendering: auto;
 }
 #chat-button img { 
-    display: none !important;
-}
-<<<<<<< HEAD:css/chat-style.css
-#chat-button img { 
     width: 80%; 
     height: 80%; 
     object-fit: contain; 
     display: block; 
     margin: 10% auto;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: contrast(1.15) saturate(1.15) drop-shadow(0 2px 6px rgba(0,0,0,0.18));
 }
-=======
->>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d:public/css/chat-style.css
 #chat-button:hover { transform: scale(1.1) translateY(-5px); }
 
 .chat-button-pulse {

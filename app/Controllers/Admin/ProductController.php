@@ -38,9 +38,13 @@ class ProductController extends BaseController
         
         $img = $this->request->getFile('image');
         $imageName = null;
+        $uploadDir = rtrim(FCPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products';
+        if (! is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0755, true);
+        }
         if ($img && $img->isValid() && ! $img->hasMoved()) {
             $imageName = $img->getRandomName();
-            if (! $img->move(ROOTPATH . 'public/uploads/products', $imageName)) {
+            if (! $img->move($uploadDir, $imageName)) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to upload image'])->setStatusCode(500);
             }
         }
@@ -108,6 +112,10 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
         $db = db_connect();
+        $uploadDir = rtrim(FCPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products';
+        if (! is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0755, true);
+        }
         $productId = (int) $this->request->getPost('id');
         $product = $productModel->find($productId);
 
@@ -120,11 +128,14 @@ class ProductController extends BaseController
 
         if ($img && $img->isValid() && ! $img->hasMoved()) {
             // Delete old image if exists
-            if ($imageName && file_exists(ROOTPATH . 'public/uploads/products/' . $imageName)) {
-                unlink(ROOTPATH . 'public/uploads/products/' . $imageName);
+            if ($imageName) {
+                $oldPath = $uploadDir . DIRECTORY_SEPARATOR . $imageName;
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
             $imageName = $img->getRandomName();
-            if (! $img->move(ROOTPATH . 'public/uploads/products', $imageName)) {
+            if (! $img->move($uploadDir, $imageName)) {
                 return $this->response->setJSON([
                     'status'  => 'error',
                     'message' => 'Failed to upload new image.'

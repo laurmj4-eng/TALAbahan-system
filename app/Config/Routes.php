@@ -91,6 +91,8 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
 // --- 4. CUSTOMER GROUP ---
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('profile', 'Dashboard::profile');
+    $routes->get('order-center', 'Dashboard::orderCenter');
     $routes->get('order-items', 'Dashboard::orderItems');
     $routes->post('precheckout', 'Dashboard::preCheckout', ['filter' => 'csrf']);
     $routes->post('placeOrder', 'Dashboard::placeOrder', ['filter' => 'csrf']);

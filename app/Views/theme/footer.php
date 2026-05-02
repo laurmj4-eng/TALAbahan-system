@@ -32,9 +32,11 @@
             box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
         }
         #chat-button img {
-            width: 40px !important;
-            height: 40px !important;
-            object-fit: contain !important;
+            /* The logo file has a lot of whitespace; cover+oversize keeps it visible */
+            width: 96px !important;
+            height: 96px !important;
+            object-fit: cover !important;
+            object-position: center !important;
             pointer-events: none !important;
         }
         .chat-button-pulse {
@@ -116,8 +118,10 @@
                 height: 55px !important;
             }
             #chat-button img {
-                width: 35px !important;
-                height: 35px !important;
+                width: 88px !important;
+                height: 88px !important;
+                object-fit: cover !important;
+                object-position: center !important;
             }
             #chat-container {
                 bottom: 85px !important;

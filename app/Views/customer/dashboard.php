@@ -175,8 +175,8 @@
         /* --- PROFESSIONAL FLOATING BUTTONS LAYOUT --- */
         .cart-float {
             position: fixed;
-            bottom: 30px;
-            right: 110px; /* Positioned to the left of the chatbot */
+            bottom: 110px; /* Stacked above chatbot */
+            right: 30px;   /* Same right edge as chatbot */
             width: 60px;
             height: 60px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
@@ -214,6 +214,57 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #1e1b4b;
+        }
+
+        /* --- TOAST (Quick feedback) --- */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 130px; /* above bottom nav + below action buttons */
+            transform: translateX(-50%) translateY(12px);
+            background: rgba(20, 15, 45, 0.92);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: 14px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            z-index: 99980; /* below chat widget */
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            max-width: min(520px, calc(100vw - 32px));
+        }
+        .toast.show {
+            display: inline-flex;
+            animation: toastIn 0.16s ease-out forwards;
+        }
+        .toast .toast-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16,185,129,0.16);
+            border: 1px solid rgba(16,185,129,0.25);
+            color: #86efac;
+            flex: 0 0 auto;
+        }
+        .toast .toast-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @media (max-width: 768px) {
+            .toast { bottom: 120px; }
         }
 
         /* --- MODAL (Checkout) --- */
@@ -361,8 +412,8 @@
             .cart-float { 
                 width: 55px !important; 
                 height: 55px !important; 
-                bottom: 20px !important; 
-                right: 90px !important; 
+                bottom: 100px !important; 
+                right: 20px !important; 
                 font-size: 1.3rem !important; 
             }
             .checkout-sheet-content {
@@ -411,7 +462,11 @@
                     <div class="product-card <?= ($p['current_stock'] <= 0) ? 'out-of-stock' : '' ?>">
                         <div class="product-image-container">
                             <?php if ($p['image']): ?>
-                                <img src="<?= base_url('uploads/products/' . $p['image']) ?>" alt="<?= esc($p['name']) ?>">
+                                <img
+                                    src="<?= base_url('uploads/products/' . $p['image']) ?>"
+                                    alt="<?= esc($p['name']) ?>"
+                                    onerror="this.onerror=null;this.src='<?= base_url('images/pic1.jpg') ?>';"
+                                >
                             <?php else: ?>
                                 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05);">
                                     <i class="fas fa-image" style="font-size: 3rem; color: rgba(255,255,255,0.1);"></i>
@@ -452,6 +507,12 @@
         <div class="cart-float" onclick="openCheckoutModal()">
             <i class="fas fa-shopping-cart"></i>
             <div class="cart-badge" id="cartCount">0</div>
+        </div>
+
+        <!-- TOAST -->
+        <div class="toast" id="toast">
+            <span class="toast-icon"><i class="fas fa-check"></i></span>
+            <span class="toast-text" id="toastText">Added to cart</span>
         </div>
 
         <!-- CHECKOUT MODAL -->
@@ -639,6 +700,17 @@
         let cart = [];
         let selectedPayment = null;
         let checkoutQuote = null;
+        let toastTimer = null;
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toastText');
+            if (!toast || !text) return;
+            text.textContent = message || 'Added to cart';
+            toast.classList.add('show');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+        }
 
         function addToCart(id, name, price) {
             const index = cart.findIndex(item => item.id === id);
@@ -648,11 +720,13 @@
                 cart.push({ id, name, price, quantity: 1 });
             }
             updateCartUI();
+            showToast(`Added: ${name}`);
         }
 
         function buyNow(id, name, price) {
             cart = [{ id, name, price, quantity: 1 }];
             updateCartUI();
+            showToast(`Added: ${name}`);
             openCheckoutModal();
         }
 
@@ -681,6 +755,7 @@
                 alert('Your cart is empty!');
                 return;
             }
+            document.body.classList.add('modal-open');
             renderCartItems();
             document.getElementById('checkoutModal').classList.add('show');
             document.getElementById('checkoutCart').classList.add('active');
@@ -689,6 +764,7 @@
 
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
             // Reset steps
             document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
             document.getElementById('checkoutCart').classList.add('active');
@@ -991,4 +1067,64 @@
         }
     </script>
 
+<?= $this->include('theme/customer_bottom_nav') ?>
 <?= $this->include('theme/footer') ?>
+
+<style>
+    /* Customer Profile quick access (top-right) */
+    .profile-float {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 52px;
+        height: 52px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        cursor: pointer;
+        z-index: 99990; /* below chat widget */
+        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        text-decoration: none;
+    }
+    .profile-float:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(168, 85, 247, 0.45);
+    }
+    .profile-float i { font-size: 1.2rem; }
+    .profile-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(20, 15, 45, 0.98);
+        line-height: 1;
+    }
+    @media (max-width: 1024px) {
+        /* keep away from mobile sidebar toggle (top-left) */
+        .profile-float { top: 18px; right: 18px; }
+    }
+</style>
+
+<a class="profile-float" href="<?= site_url('customer/profile') ?>" title="Profile">
+    <i class="fas fa-user"></i>
+    <?php if (!empty($activeOrdersCount)): ?>
+        <span class="profile-badge"><?= (int) $activeOrdersCount ?></span>
+    <?php endif; ?>
+</a>

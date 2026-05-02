@@ -1,6 +1,50 @@
 <?= $this->include('theme/header') ?>
 
     <style>
+        .order-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 22px 0 26px 0;
+        }
+        .order-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.85);
+            background: rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.14);
+            font-weight: 800;
+            transition: 0.2s ease;
+        }
+        .order-tab:hover {
+            transform: translateY(-2px);
+            border-color: rgba(168, 85, 247, 0.45);
+            color: #fff;
+        }
+        .order-tab.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+            color: #fff;
+        }
+        .tab-count {
+            min-width: 22px;
+            height: 22px;
+            padding: 0 7px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
         .order-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -99,6 +143,38 @@
         .btn-review { background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
         .btn-refund { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.35); }
         .modal-stage { margin-bottom: 12px; color: rgba(255,255,255,0.75); font-size: 0.9rem; }
+        .timeline {
+            margin: 14px 0 16px 0;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+        .timeline h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 10px 1fr;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            margin-top: 6px;
+            background: rgba(168, 85, 247, 0.85);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.12);
+        }
+        .timeline-label { font-weight: 800; }
+        .timeline-at { color: rgba(255,255,255,0.55); font-size: 0.85rem; margin-top: 2px; }
         .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 
         @media (max-width: 768px) {
@@ -154,8 +230,31 @@
 
     <main class="main-content">
         <div style="margin-bottom: 40px;">
-            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">My Orders 📦</h1>
-            <p style="color: rgba(255,255,255,0.6);">Track your fresh seafood deliveries and history.</p>
+            <?php
+                $activeTab = $activeTab ?? (string) (($_GET['tab'] ?? 'all'));
+                $activeTab = strtolower(trim((string) $activeTab));
+                $counts = is_array($counts ?? null) ? $counts : [];
+            ?>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Order Center 📦</h1>
+            <p style="color: rgba(255,255,255,0.6);">Browse orders by status — just like a social commerce profile.</p>
+
+            <div class="order-tabs">
+                <a class="order-tab <?= $activeTab === 'all' ? 'active' : '' ?>" href="<?= site_url('customer/order-center?tab=all') ?>">
+                    All <span class="tab-count"><?= (int) ($counts['all'] ?? count($orders ?? [])) ?></span>
+                </a>
+                <a class="order-tab <?= $activeTab === 'to_pay' ? 'active' : '' ?>" href="<?= site_url('customer/order-center?tab=to_pay') ?>">
+                    To Pay <span class="tab-count"><?= (int) ($counts['to_pay'] ?? 0) ?></span>
+                </a>
+                <a class="order-tab <?= $activeTab === 'to_ship' ? 'active' : '' ?>" href="<?= site_url('customer/order-center?tab=to_ship') ?>">
+                    To Ship <span class="tab-count"><?= (int) ($counts['to_ship'] ?? 0) ?></span>
+                </a>
+                <a class="order-tab <?= $activeTab === 'to_receive' ? 'active' : '' ?>" href="<?= site_url('customer/order-center?tab=to_receive') ?>">
+                    To Receive <span class="tab-count"><?= (int) ($counts['to_receive'] ?? 0) ?></span>
+                </a>
+                <a class="order-tab <?= $activeTab === 'completed' ? 'active' : '' ?>" href="<?= site_url('customer/order-center?tab=completed') ?>">
+                    Completed <span class="tab-count"><?= (int) ($counts['completed'] ?? 0) ?></span>
+                </a>
+            </div>
         </div>
 
         <?php if (!empty($orders)): ?>
@@ -192,8 +291,8 @@
         <?php else: ?>
             <div style="text-align: center; padding: 100px; opacity: 0.5;">
                 <i class="fas fa-box-open" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                <h2>No orders yet</h2>
-                <p>Start your first seafood order from the dashboard!</p>
+                <h2>No orders found</h2>
+                <p>No orders match this tab yet. You can browse products and place an order anytime.</p>
                 <a href="<?= site_url('customer/dashboard') ?>" class="btn-buy" style="display: inline-flex; width: auto; padding: 15px 30px; margin-top: 20px; text-decoration: none;">
                     Go to Shop
                 </a>
@@ -208,6 +307,10 @@
             <div class="modal-header" id="modalTitle">Order Details</div>
             <div id="modalBody">
                 <div class="modal-stage" id="modalStage"></div>
+                <div class="timeline" id="timelineBox" style="display:none;">
+                    <h4><i class="fas fa-stream" style="color:#a855f7;"></i> Timeline</h4>
+                    <div id="timelineList"></div>
+                </div>
                 <div class="item-list" id="itemList">
                     <!-- Items will be injected here -->
                 </div>
@@ -263,6 +366,25 @@
                             <div class="item-price">₱${parseFloat(item.subtotal).toFixed(2)}</div>
                         </div>
                     `).join('');
+
+                    const timelineBox = document.getElementById('timelineBox');
+                    const timelineList = document.getElementById('timelineList');
+                    const timeline = Array.isArray(order.timeline) ? order.timeline : [];
+                    if (timeline.length > 0) {
+                        timelineList.innerHTML = timeline.map(e => `
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div>
+                                    <div class="timeline-label">${e.label || 'Update'}</div>
+                                    <div class="timeline-at">${e.at || ''}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                        timelineBox.style.display = 'block';
+                    } else {
+                        timelineList.innerHTML = '';
+                        timelineBox.style.display = 'none';
+                    }
 
                     const actions = document.getElementById('modalActions');
                     actions.innerHTML = '';
@@ -409,5 +531,7 @@
             }
         }
     </script>
+
+    <?= $this->include('theme/customer_bottom_nav') ?>
 </body>
 </html>
