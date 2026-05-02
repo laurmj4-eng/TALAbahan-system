@@ -66,9 +66,17 @@
             background: white !important;
             border-radius: 16px !important;
             box-shadow: 0 12px 40px rgba(0,0,0,0.3) !important;
-            display: none;
+            display: none !important; /* Managed by .active class */
             flex-direction: column !important;
             overflow: hidden !important;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        #chat-container.active {
+            display: flex !important;
+            opacity: 1;
+            transform: translateY(0);
         }
         #chat-header {
             background: linear-gradient(135deg, #6366f1, #a855f7) !important;
@@ -122,8 +130,8 @@
 
     <!-- Mj Assistant Integration -->
     <div id="chat-button-container">
-        <div class="chat-button-pulse"></div>
-        <button id="chat-button" onclick="toggleChatWindow()" type="button">
+        <button id="chat-button" type="button" style="z-index: 10 !important;">
+            <div class="chat-button-pulse" style="background-color: #8b5cf6; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; opacity: 0.3; animation: pulse-ring 2s infinite; pointer-events: none !important; z-index: -1;"></div>
             <img src="<?= base_url('images/logo.png') ?>" alt="MJ">
         </button>
     </div>
@@ -138,28 +146,24 @@
                     </select>
                 </div>
             </div>
-            <button onclick="toggleChatWindow()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="toggle-sound" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">🔊</button>
+                <button id="close-chat" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
         </div>
         <div id="chat-messages">
-            <div class="bot-msg">Hello! I am Mj. How can I help you today? ✨</div>
+            <!-- Messages will be loaded by chat-script.js -->
         </div>
-        <div style="padding: 15px; background: white; border-top: 1px solid #e2e8f0;">
-            <div style="display: flex; gap: 10px; background: #f1f5f9; padding: 8px 15px; border-radius: 25px; border: 1px solid #e2e8f0;">
+        <div id="chat-input-area" style="padding: 15px; background: white; border-top: 1px solid #e2e8f0;">
+            <div class="input-wrapper" style="display: flex; gap: 10px; background: #f1f5f9; padding: 8px 15px; border-radius: 25px; border: 1px solid #e2e8f0;">
                 <input type="text" id="chat-input" placeholder="Initiate inquiry..." style="flex: 1; border: none; background: none; outline: none; font-size: 14px; color: #333 !important;">
-                <button id="send-btn" style="background: #6366f1; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">></button>
+                <button id="send-btn" style="background: #6366f1; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 18px;">&gt;</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        function toggleChatWindow() {
-            const chat = document.getElementById('chat-container');
-            if (chat) {
-                const isHidden = window.getComputedStyle(chat).display === 'none';
-                chat.style.setProperty('display', isHidden ? 'flex' : 'none', 'important');
-            }
-        }
-    </script>
     <script src="<?= base_url('js/chat-script.js') ?>?v=<?= time() ?>"></script>
     <script>
         function switchTab(tabId) {
