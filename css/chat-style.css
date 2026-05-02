@@ -32,8 +32,21 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
 #chat-button {
     position: relative; border: none; border-radius: 50%; width: 60px; height: 60px;
     cursor: pointer; box-shadow: var(--shadow-heavy); overflow: hidden;
-    transition: transform 0.3s ease; background: white; z-index: 2; padding: 0;
+    transition: transform 0.3s ease; background-color: white; z-index: 2; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+    image-rendering: auto;
 }
+#chat-button img { 
+    display: none !important;
+}
+<<<<<<< HEAD:css/chat-style.css
 #chat-button img { 
     width: 80%; 
     height: 80%; 
@@ -42,6 +55,8 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
     margin: 10% auto;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
+=======
+>>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d:public/css/chat-style.css
 #chat-button:hover { transform: scale(1.1) translateY(-5px); }
 
 .chat-button-pulse {
@@ -222,7 +237,14 @@ main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
     }
     .chat-button-container { 
         bottom: 20px; 
-        right: 20px; 
+        left: 20px; 
+        right: auto;
+        z-index: 1000;
+    }
+    #chat-button {
+        width: 55px !important;
+        height: 55px !important;
+        background-size: 65% !important;
     }
     #chat-header {
         border-radius: 0;

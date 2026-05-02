@@ -1,6 +1,7 @@
 <!-- ========================= -->
     <!-- Mj Assistant Integration -->
     <!-- ========================= -->
+<<<<<<< HEAD
     <style>
         /* CRITICAL LIVE SERVER OVERRIDES */
         #chat-button-container {
@@ -83,6 +84,11 @@
             <div class="chat-button-pulse" style="background-color: #8b5cf6; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; opacity: 0.3; animation: pulse 2s infinite; pointer-events: none !important; z-index: -1;"></div>
             <img src="<?= base_url('images/logo.png') ?>" alt="MJ" style="pointer-events: none !important;">
         </button>
+=======
+    <div class="chat-button-container" id="chat-button-container">
+        <div class="chat-button-pulse" style="background-color: #8b5cf6;"></div>
+        <button id="chat-button" aria-label="Open Chat with Mj" style="border: 2px solid #8b5cf6; background-image: url('<?= base_url('images/logo.png') ?>'); background-size: 70%; background-position: center; background-repeat: no-repeat;"></button>
+>>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d
     </div>
 
     <div id="chat-container">
@@ -111,6 +117,7 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <script>
         // Use a more robust way to find the chat container
         function toggleChatWindow() {
@@ -140,6 +147,9 @@
     </script>
 
     <script src="<?= base_url('js/chat-script.js') ?>"></script>
+=======
+    <script src="<?= base_url('js/chat-script.js') ?>?v=<?= time() ?>"></script>
+>>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d
     <script>
         function switchTab(tabId) {
             // MAGIC FIX: If on Product view, redirect to dashboard with the tab ID!

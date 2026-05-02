@@ -7,9 +7,16 @@ use App\Models\CodComplianceModel;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
 use App\Models\RefundRequestModel;
+use App\Services\OrderService;
 
 class Orders extends BaseController
 {
+    protected $orderService;
+
+    public function __construct()
+    {
+        $this->orderService = new OrderService();
+    }
     public function index()
     {
         $model = new OrderModel();
@@ -105,24 +112,9 @@ class Orders extends BaseController
             ])->setStatusCode(400);
         }
 
-        if (! in_array($status, [
-            OrderModel::STATUS_PENDING,
-            OrderModel::STATUS_PROCESSING,
-            OrderModel::STATUS_SHIPPED,
-            OrderModel::STATUS_COMPLETED,
-            OrderModel::STATUS_CANCELLED,
-            OrderModel::STATUS_REFUNDED
-        ], true)) {
-            return $this->response->setJSON([
-                'status'  => 'error',
-                'message' => 'Invalid order status.',
-                'token'   => csrf_hash(),
-            ])->setStatusCode(400);
-        }
-
-        $model = new OrderModel();
-        $order = $model->find($id);
-        if (! $order) {
+        $orderModel = new OrderModel();
+        $order = $orderModel->find($id);
+        if (!$order) {
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Order not found',
@@ -130,53 +122,26 @@ class Orders extends BaseController
             ])->setStatusCode(404);
         }
 
-        $db = db_connect();
-        $db->transBegin();
-
-        $updateData = ['status' => $status];
-        if ($status === OrderModel::STATUS_SHIPPED && empty($order['shipped_at'])) {
-            $updateData['shipped_at'] = date('Y-m-d H:i:s');
-        }
-        if ($status === OrderModel::STATUS_COMPLETED) {
-            $updateData['delivered_at'] = date('Y-m-d H:i:s');
-            if (($order['payment_method'] ?? 'COD') === 'COD') {
-                $updateData['payment_status'] = 'paid';
-            }
-        }
-
-        if ($model->update($id, $updateData)) {
-            if (
-                $status === OrderModel::STATUS_CANCELLED
-                && strtoupper((string) ($order['payment_method'] ?? '')) === 'COD'
-                && trim((string) ($order['customer_name'] ?? '')) !== ''
-            ) {
-                $codComplianceModel = new CodComplianceModel();
-                $codComplianceModel->markFailedCod((string) ($order['customer_name'] ?? ''));
-            }
-
-            if ($db->transStatus() === false) {
-                $db->transRollback();
-                return $this->response->setJSON([
-                    'status'  => 'error',
-                    'message' => 'Failed to update status',
-                    'token'   => csrf_hash(),
-                ])->setStatusCode(500);
-            }
-            $db->transCommit();
-            return $this->response->setJSON([
-                'status' => 'success', 
-                'message' => 'Status updated successfully',
-                'token' => csrf_hash()
-            ]);
-        }
-
-        $db->transRollback();
+        $result = $this->orderService->updateOrderStatus($id, $status);
         
+        if (!$result['ok']) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => $result['message'],
+                'token'   => csrf_hash(),
+            ])->setStatusCode(400);
+        }
+
+        if ($status === OrderModel::STATUS_CANCELLED && strtoupper((string)($order['payment_method'] ?? '')) === 'COD') {
+            $codComplianceModel = new CodComplianceModel();
+            $codComplianceModel->markFailedCod((string)($order['customer_name'] ?? ''));
+        }
+
         return $this->response->setJSON([
-            'status' => 'error', 
-            'message' => 'Failed to update status',
+            'status' => 'success', 
+            'message' => $result['message'],
             'token' => csrf_hash()
-        ])->setStatusCode(500);
+        ]);
     }
 
     public function updateTracking()
@@ -190,31 +155,22 @@ class Orders extends BaseController
         $courierName = trim((string) $this->request->getPost('courier_name'));
 
         if ($id <= 0) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid order ID.'])->setStatusCode(400);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid order ID.', 'token' => csrf_hash()])->setStatusCode(400);
         }
 
-        $orderModel = new OrderModel();
-        $order = $orderModel->find($id);
-        if (! $order) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found.'])->setStatusCode(404);
-        }
-
-        $data = [
-            'tracking_number' => $trackingNumber === '' ? null : $trackingNumber,
-            'courier_name' => $courierName === '' ? null : $courierName,
-        ];
-        if (($data['tracking_number'] || $data['courier_name']) && $order['status'] === OrderModel::STATUS_PROCESSING) {
-            $data['status'] = OrderModel::STATUS_SHIPPED;
-            $data['shipped_at'] = date('Y-m-d H:i:s');
-        }
-
-        if (! $orderModel->update($id, $data)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update tracking.'])->setStatusCode(400);
+        $result = $this->orderService->updateTracking($id, $trackingNumber, $courierName);
+        
+        if (!$result['ok']) {
+            return $this->response->setJSON([
+                'status' => 'error', 
+                'message' => $result['message'],
+                'token' => csrf_hash()
+            ])->setStatusCode(400);
         }
 
         return $this->response->setJSON([
             'status' => 'success',
-            'message' => 'Tracking details updated.',
+            'message' => $result['message'],
             'token' => csrf_hash(),
         ]);
     }

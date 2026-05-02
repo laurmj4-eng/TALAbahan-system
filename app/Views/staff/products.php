@@ -311,8 +311,12 @@
         async function loadProducts() {
             try {
                 const response = await fetch('<?= site_url('staff/getProducts') ?>');
-                const products = await response.json();
-                renderProducts(products);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    renderProducts(result.data);
+                } else {
+                    showAlert('Error loading products: ' + (result.message || 'Unknown error'), 'error');
+                }
             } catch (error) {
                 showAlert('Error loading products', 'error');
             }

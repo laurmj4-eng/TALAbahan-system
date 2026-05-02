@@ -37,54 +37,72 @@ class AdminController extends BaseController
             ],
         ];
 
-        // Get today's sales and order count
-        $today = date('Y-m-d');
-        $data['cards']['today_sales'] = (float) $orderModel
-            ->selectSum('total_amount')
-            ->where('DATE(created_at)', $today)
-            ->first()['total_amount'] ?? 0;
+        try {
+            // Get today's sales and order count
+            $today = date('Y-m-d');
+            
+            $todaySalesResult = $orderModel
+                ->selectSum('total_amount')
+                ->where('DATE(created_at)', $today)
+                ->first();
+            
+            $data['cards']['today_sales'] = (float) ($todaySalesResult['total_amount'] ?? 0);
 
-        $data['cards']['today_orders'] = (int) $orderModel
-            ->where('DATE(created_at)', $today)
-            ->countAllResults();
+            $data['cards']['today_orders'] = (int) $orderModel
+                ->where('DATE(created_at)', $today)
+                ->countAllResults();
 
-        // Get low stock count
-        $data['cards']['low_stock_count'] = (int) $productModel
-            ->where('current_stock <=', 5)
-            ->countAllResults();
-
-        // Get 7-day sales trend for chart
-        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
-        $salesTrend = $orderModel
-            ->select('DATE(created_at) as order_date, SUM(total_amount) as daily_sales')
-            ->where('DATE(created_at) >=', $sevenDaysAgo)
-            ->groupBy('order_date')
-            ->orderBy('order_date', 'ASC')
-            ->findAll();
-
-        $chartLabels = [];
-        $chartSales = [];
-        $period = new \DatePeriod(
-            new \DateTime($sevenDaysAgo),
-            new \DateInterval('P1D'),
-            new \DateTime($today . ' +1 day')
-        );
-
-        foreach ($period as $date) {
-            $dateStr = $date->format('Y-m-d');
-            $chartLabels[] = $date->format('M d');
-            $dailySales = 0;
-            foreach ($salesTrend as $trend) {
-                if ($trend['order_date'] === $dateStr) {
-                    $dailySales = (float)$trend['daily_sales'];
-                    break;
-                }
+            // Get low stock count
+            try {
+                $data['cards']['low_stock_count'] = (int) $productModel
+                    ->where('current_stock <=', 5)
+                    ->countAllResults();
+            } catch (\Exception $e) {
+                log_message('error', 'Low stock count error: ' . $e->getMessage());
+                $data['cards']['low_stock_count'] = 0;
             }
-            $chartSales[] = $dailySales;
-        }
 
-        $data['chart']['labels'] = $chartLabels;
-        $data['chart']['sales'] = $chartSales;
+            // Get 7-day sales trend for chart
+            $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
+            try {
+                $salesTrend = $orderModel
+                    ->select('DATE(created_at) as order_date, SUM(total_amount) as daily_sales')
+                    ->where('DATE(created_at) >=', $sevenDaysAgo)
+                    ->groupBy('order_date')
+                    ->orderBy('order_date', 'ASC')
+                    ->findAll();
+
+                $chartLabels = [];
+                $chartSales = [];
+                $period = new \DatePeriod(
+                    new \DateTime($sevenDaysAgo),
+                    new \DateInterval('P1D'),
+                    new \DateTime($today . ' +1 day')
+                );
+
+                foreach ($period as $date) {
+                    $dateStr = $date->format('Y-m-d');
+                    $chartLabels[] = $date->format('M d');
+                    $dailySales = 0;
+                    foreach ($salesTrend as $trend) {
+                        if ($trend['order_date'] === $dateStr) {
+                            $dailySales = (float)($trend['daily_sales'] ?? 0);
+                            break;
+                        }
+                    }
+                    $chartSales[] = $dailySales;
+                }
+
+                $data['chart']['labels'] = $chartLabels;
+                $data['chart']['sales'] = $chartSales;
+            } catch (\Exception $e) {
+                log_message('error', 'Sales trend error: ' . $e->getMessage());
+                $data['chart']['labels'] = [];
+                $data['chart']['sales'] = [];
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Admin dashboard error: ' . $e->getMessage());
+        }
 
         // Points to app/Views/admin/dashboard.php
         return view('admin/dashboard', $data);

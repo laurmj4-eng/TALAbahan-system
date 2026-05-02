@@ -15,12 +15,20 @@ use App\Models\SalesModel;
 use App\Models\ShippingLocationModel;
 use App\Models\VoucherModel;
 use App\Models\VoucherRedemptionModel;
+use App\Services\CheckoutService;
 
 class Dashboard extends BaseController
 {
     private const ALLOWED_PAYMENT_METHODS = ['COD', 'GCASH'];
     private const REMORSE_WINDOW_MINUTES = 60;
     private const REFUND_WINDOW_DAYS = 7;
+
+    protected $checkoutService;
+
+    public function __construct()
+    {
+        $this->checkoutService = new CheckoutService();
+    }
 
     public function index()
     {
@@ -76,7 +84,16 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
-        $quote = $this->buildCheckoutQuote();
+        $orderDataJson = $this->request->getPost('order_data');
+        $orderData = json_decode((string) $orderDataJson, true);
+        
+        if (! is_array($orderData)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid checkout payload.'])->setStatusCode(400);
+        }
+
+        $username = session()->get('username');
+        $quote = $this->checkoutService->buildCheckoutQuote($orderData, $username);
+        
         if (! $quote['ok']) {
             return $this->response->setJSON(['status' => 'error', 'message' => $quote['message']])->setStatusCode(400);
         }
@@ -93,122 +110,30 @@ class Dashboard extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
-        $quote = $this->buildCheckoutQuote();
+        $orderDataJson = $this->request->getPost('order_data');
+        $orderData = json_decode((string) $orderDataJson, true);
+        
+        if (! is_array($orderData)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid checkout payload.'])->setStatusCode(400);
+        }
+
+        $username = session()->get('username');
+        $quote = $this->checkoutService->buildCheckoutQuote($orderData, $username);
+        
         if (! $quote['ok']) {
             return $this->response->setJSON(['status' => 'error', 'message' => $quote['message']])->setStatusCode(400);
         }
 
-        $data = $quote['data'];
-        $orderModel = new OrderModel();
-        $orderItemModel = new OrderItemModel();
-        $salesModel = new SalesModel();
-        $voucherRedemptionModel = new VoucherRedemptionModel();
-        $paymentAttemptModel = new PaymentAttemptModel();
-        $db = db_connect();
-
-        $transactionCode = 'ORD-' . strtoupper(uniqid());
-        $paymentMethod = strtoupper((string) $data['payment_method']);
-        $paymentStatus = $paymentMethod === 'COD' ? 'pending_confirmation' : 'paid';
-        $paymentProvider = $paymentMethod === 'COD' ? null : $paymentMethod;
-        $paymentRef = null;
-
-        if ($paymentMethod === 'GCASH') {
-            $paymentResult = $this->simulateGcashPayment((float) $data['final_total'], $transactionCode);
-            if (! $paymentResult['success']) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'GCash payment failed.'])->setStatusCode(400);
-            }
-            $paymentRef = $paymentResult['transaction_id'] ?? null;
+        $result = $this->checkoutService->placeOrder($quote['data'], $username);
+        
+        if (! $result['ok']) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $result['message']])->setStatusCode(400);
         }
-
-        $db->transBegin();
-        try {
-            $orderId = $orderModel->insert([
-                'transaction_code' => $transactionCode,
-                'customer_name' => $data['receiver_name'],
-                'total_amount' => (float) $data['final_total'],
-                'subtotal_amount' => (float) $data['subtotal'],
-                'shipping_fee' => (float) $data['shipping_fee'],
-                'voucher_discount' => (float) $data['voucher_discount'],
-                'final_amount' => (float) $data['final_total'],
-                'status' => 'Pending',
-                'notes' => 'Customer online order',
-                'payment_method' => $paymentMethod,
-                'payment_status' => $paymentStatus,
-                'payment_ref' => $paymentRef,
-                'payment_provider' => $paymentProvider,
-                'applied_vouchers' => json_encode($data['applied_vouchers']),
-                'shipping_barangay' => $data['shipping_barangay'],
-                'shipping_phone' => $data['shipping_phone'],
-            ], true);
-
-            if (! $orderId) {
-                throw new \RuntimeException('Failed to create order.');
-            }
-
-            foreach ($data['items'] as $item) {
-                $row = [
-                    'order_id' => $orderId,
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['product_name'],
-                    'unit' => $item['unit'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'subtotal' => $item['subtotal'],
-                ];
-                if (! $orderItemModel->insert($row)) {
-                    throw new \RuntimeException('Failed to save order line items.');
-                }
-
-                $builder = $db->table('products');
-                $builder->set('current_stock', 'current_stock - ' . (int) $item['quantity'], false);
-                $builder->where('id', (int) $item['product_id']);
-                $builder->where('current_stock >=', (int) $item['quantity']);
-                $builder->update();
-                if ($db->affectedRows() !== 1) {
-                    throw new \RuntimeException("Stock changed before checkout for {$item['product_name']}.");
-                }
-            }
-
-            foreach ($data['applied_vouchers'] as $voucher) {
-                $voucherRedemptionModel->insert([
-                    'voucher_id' => (int) $voucher['id'],
-                    'order_id' => (int) $orderId,
-                    'customer_name' => $data['receiver_name'],
-                    'discount_amount' => (float) $voucher['discount'],
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
-            }
-
-            $paymentAttemptModel->insert([
-                'order_id' => (int) $orderId,
-                'payment_method' => $paymentMethod,
-                'provider' => $paymentProvider,
-                'amount' => (float) $data['final_total'],
-                'status' => $paymentStatus === 'paid' ? 'success' : 'pending',
-                'reference' => $paymentRef,
-                'message' => $paymentStatus === 'paid' ? 'Payment settled at checkout.' : 'Awaiting COD collection.',
-                'created_at' => date('Y-m-d H:i:s'),
-            ]);
-
-            if (! $salesModel->recordFromOrder($transactionCode, array_column($data['items'], 'product_name'), (float) $data['final_total'])) {
-                throw new \RuntimeException('Failed to record sales history.');
-            }
-        } catch (\Throwable $e) {
-            $db->transRollback();
-            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()])->setStatusCode(500);
-        }
-
-        if ($db->transStatus() === false) {
-            $db->transRollback();
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Order transaction failed.'])->setStatusCode(500);
-        }
-
-        $db->transCommit();
 
         return $this->response->setJSON([
             'status' => 'success',
-            'message' => $paymentMethod === 'GCASH' ? 'GCash payment successful. Order placed.' : 'Order placed!',
-            'transaction_code' => $transactionCode,
+            'message' => $result['message'],
+            'transaction_code' => $result['transaction_code'],
         ]);
     }
 

@@ -190,32 +190,41 @@
             
             try {
                 const response = await fetch('<?= site_url('staff/getSalesHistory') ?>');
-                const data = await response.json();
+                const result = await response.json();
                 
-                // Update stats
-                document.getElementById('totalTxns').innerText = data.total_txns;
-                document.getElementById('totalRevenue').innerText = '₱' + parseFloat(data.total_revenue).toLocaleString(undefined, {minimumFractionDigits: 2});
-                document.getElementById('avgSale').innerText = '₱' + parseFloat(data.avg_sale).toLocaleString(undefined, {minimumFractionDigits: 2});
-                
-                // Render table
-                if (data.sales.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No sales history found.</td></tr>';
-                    return;
+                if (result.status === 'success') {
+                    const sales = result.data || [];
+                    
+                    // Calculate stats
+                    const totalTxns = sales.length;
+                    const totalRevenue = sales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
+                    const avgSale = totalTxns > 0 ? totalRevenue / totalTxns : 0;
+                    
+                    // Update stats
+                    document.getElementById('totalTxns').innerText = totalTxns;
+                    document.getElementById('totalRevenue').innerText = '₱' + parseFloat(totalRevenue).toLocaleString(undefined, {minimumFractionDigits: 2});
+                    document.getElementById('avgSale').innerText = '₱' + parseFloat(avgSale).toLocaleString(undefined, {minimumFractionDigits: 2});
+                    
+                    // Render table
+                    if (sales.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No sales history found.</td></tr>';
+                    } else {
+                        tableBody.innerHTML = '';
+                        sales.forEach(sale => {
+                            const row = `
+                                <tr>
+                                    <td class="txn-code">${sale.transaction_code}</td>
+                                    <td class="datetime">${new Date(sale.created_at).toLocaleString()}</td>
+                                    <td class="items" title="${sale.items}">${sale.items}</td>
+                                    <td class="revenue">₱${parseFloat(sale.total_amount).toFixed(2)}</td>
+                                </tr>
+                            `;
+                            tableBody.innerHTML += row;
+                        });
+                    }
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load sales history: ' + (result.message || 'Unknown error') + '</td></tr>';
                 }
-                
-                tableBody.innerHTML = '';
-                data.sales.forEach(sale => {
-                    const row = `
-                        <tr>
-                            <td class="txn-code">${sale.transaction_code}</td>
-                            <td class="datetime">${new Date(sale.created_at).toLocaleString()}</td>
-                            <td class="items" title="${sale.items}">${sale.items}</td>
-                            <td class="revenue">₱${parseFloat(sale.total_amount).toFixed(2)}</td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
-                
             } catch (error) {
                 console.error('Error fetching sales history:', error);
                 tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load sales history.</td></tr>';

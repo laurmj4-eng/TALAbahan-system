@@ -188,7 +188,11 @@
             color: #fff;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             cursor: pointer;
+<<<<<<< HEAD
             z-index: 2147483646; /* Just below chatbot z-index */
+=======
+            z-index: 999;
+>>>>>>> 3b91913bdf9b3177363692361a79da2abf36da4d
             transition: 0.3s;
         }
 

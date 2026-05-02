@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 23, 2026 at 03:33 PM
+-- Generation Time: Apr 30, 2026
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -78,9 +78,22 @@ CREATE TABLE `orders` (
   `transaction_code` varchar(20) DEFAULT NULL,
   `customer_name` varchar(255) DEFAULT NULL,
   `total_amount` decimal(10,2) DEFAULT 0.00,
+  `subtotal_amount` decimal(10,2) DEFAULT 0.00,
+  `shipping_fee` decimal(10,2) DEFAULT 0.00,
+  `voucher_discount` decimal(10,2) DEFAULT 0.00,
+  `final_amount` decimal(10,2) DEFAULT 0.00,
   `status` varchar(50) DEFAULT 'Pending',
   `notes` text DEFAULT NULL,
   `payment_method` varchar(50) DEFAULT 'COD',
+  `payment_status` varchar(30) DEFAULT 'unpaid',
+  `payment_ref` varchar(80) DEFAULT NULL,
+  `payment_provider` varchar(40) DEFAULT NULL,
+  `applied_vouchers` text DEFAULT NULL,
+  `tracking_number` varchar(80) DEFAULT NULL,
+  `courier_name` varchar(80) DEFAULT NULL,
+  `shipped_at` datetime DEFAULT NULL,
+  `delivered_at` datetime DEFAULT NULL,
+  `cancel_reason` text DEFAULT NULL,
   `shipping_barangay` varchar(255) DEFAULT NULL,
   `shipping_phone` varchar(50) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -91,10 +104,10 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `transaction_code`, `customer_name`, `total_amount`, `status`, `notes`, `payment_method`, `shipping_barangay`, `shipping_phone`, `created_at`, `updated_at`) VALUES
-(1, 'ORD-69EA021EB5182', 'Mj Laurito', 700.00, 'Processing', 'Customer online order', 'COD', NULL, NULL, '2026-04-23 11:27:26', '2026-04-23 12:44:37'),
-(2, 'ORD-69EA15A176419', 'Mj Laurito', 700.00, 'Cancelled', 'Customer online order', 'COD', NULL, NULL, '2026-04-23 12:50:41', '2026-04-23 12:51:39'),
-(3, 'ORD-69EA1EAFCACCC', 'Mj Laurito', 500.00, 'Pending', 'Customer online order', 'COD', 'bocana', '09129238032', '2026-04-23 13:29:19', '2026-04-23 13:29:19');
+INSERT INTO `orders` (`id`, `transaction_code`, `customer_name`, `total_amount`, `subtotal_amount`, `shipping_fee`, `voucher_discount`, `final_amount`, `status`, `notes`, `payment_method`, `payment_status`, `payment_ref`, `payment_provider`, `applied_vouchers`, `tracking_number`, `courier_name`, `shipped_at`, `delivered_at`, `cancel_reason`, `shipping_barangay`, `shipping_phone`, `created_at`, `updated_at`) VALUES
+(1, 'ORD-69EA021EB5182', 'Mj Laurito', 700.00, 700.00, 0.00, 0.00, 700.00, 'Processing', 'Customer online order', 'COD', 'unpaid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-23 11:27:26', '2026-04-23 12:44:37'),
+(2, 'ORD-69EA15A176419', 'Mj Laurito', 700.00, 700.00, 0.00, 0.00, 700.00, 'Cancelled', 'Customer online order', 'COD', 'unpaid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Cancelled by customer', NULL, NULL, '2026-04-23 12:50:41', '2026-04-23 12:51:39'),
+(3, 'ORD-69EA1EAFCACCC', 'Mj Laurito', 500.00, 500.00, 0.00, 0.00, 500.00, 'Pending', 'Customer online order', 'COD', 'unpaid', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bocana', '09129238032', '2026-04-23 13:29:19', '2026-04-23 13:29:19');
 
 -- --------------------------------------------------------
 
@@ -187,6 +200,7 @@ CREATE TABLE `shipping_locations` (
   `id` int(11) NOT NULL,
   `barangay_name` varchar(255) NOT NULL,
   `city_municipality` varchar(255) DEFAULT 'Bacolod City',
+  `shipping_fee` decimal(10,2) DEFAULT 49.00,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -196,9 +210,9 @@ CREATE TABLE `shipping_locations` (
 -- Dumping data for table `shipping_locations`
 --
 
-INSERT INTO `shipping_locations` (`id`, `barangay_name`, `city_municipality`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'dancalan', 'Ilog', 1, '2026-04-23 13:10:32', '2026-04-23 13:10:32'),
-(2, 'bocana', 'ilog', 1, '2026-04-23 13:10:50', '2026-04-23 13:10:50');
+INSERT INTO `shipping_locations` (`id`, `barangay_name`, `city_municipality`, `shipping_fee`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'dancalan', 'Ilog', 49.00, 1, '2026-04-23 13:10:32', '2026-04-23 13:10:32'),
+(2, 'bocana', 'ilog', 49.00, 1, '2026-04-23 13:10:50', '2026-04-23 13:10:50');
 
 -- --------------------------------------------------------
 
@@ -225,6 +239,148 @@ INSERT INTO `users` (`id`, `username`, `email`, `role`, `password`, `prompt_coun
 (3, 'staff_member', 'staff12345@gmail.com', 'staff', '$2y$10$xYNpeBlyRK/8/E5/I8nbsupnzPUN40OkbZf145UmiVEu2L/6gSgti', 0, '2026-04-08'),
 (13, 'laurito12345@gmail.com', 'laurito12345@gmail.com', 'customer', '$2y$10$XAuY70ZMSzxLcUXqTtARNuMSz5UuqK13GKX/WY6bbTelTRWXJIG7O', 0, '2026-04-20'),
 (14, 'Mj Laurito', 'laurmj4@gmail.com', 'customer', '', 0, '2026-04-20');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` varchar(40) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `scope` varchar(20) DEFAULT 'platform',
+  `discount_type` varchar(20) DEFAULT 'fixed',
+  `discount_value` decimal(10,2) DEFAULT 0.00,
+  `max_discount` decimal(10,2) DEFAULT NULL,
+  `min_order_amount` decimal(10,2) DEFAULT 0.00,
+  `payment_method_limit` varchar(30) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `starts_at` datetime DEFAULT NULL,
+  `ends_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vouchers`
+--
+
+INSERT INTO `vouchers` (`code`, `name`, `scope`, `discount_type`, `discount_value`, `max_discount`, `min_order_amount`, `is_active`, `created_at`, `updated_at`) VALUES
+('PLAT40', 'Platform 40 Off', 'platform', 'fixed', 40.00, 40.00, 500.00, 1, NOW(), NOW()),
+('SHOP8', 'Shop 8 Percent', 'shop', 'percent', 8.00, 120.00, 1000.00, 1, NOW(), NOW());
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher_redemptions`
+--
+
+CREATE TABLE `voucher_redemptions` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `voucher_id` int(11) UNSIGNED NOT NULL,
+  `order_id` int(11) UNSIGNED NOT NULL,
+  `customer_name` varchar(120) DEFAULT NULL,
+  `discount_amount` decimal(10,2) DEFAULT 0.00,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `voucher_id` (`voucher_id`),
+  KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_attempts`
+--
+
+CREATE TABLE `payment_attempts` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) UNSIGNED NOT NULL,
+  `payment_method` varchar(30) NOT NULL,
+  `provider` varchar(30) DEFAULT NULL,
+  `amount` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(20) DEFAULT 'pending',
+  `reference` varchar(80) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cod_compliance`
+--
+
+CREATE TABLE `cod_compliance` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `customer_name` varchar(120) NOT NULL,
+  `failed_cod_count` int(11) DEFAULT 0,
+  `window_start_at` datetime DEFAULT NULL,
+  `cod_disabled_until` datetime DEFAULT NULL,
+  `last_failed_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `customer_name` (`customer_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_payment_constraints`
+--
+
+CREATE TABLE `product_payment_constraints` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) UNSIGNED NOT NULL,
+  `payment_method` varchar(30) NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_reviews`
+--
+
+CREATE TABLE `order_reviews` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) UNSIGNED NOT NULL,
+  `customer_name` varchar(120) NOT NULL,
+  `rating` tinyint(1) NOT NULL,
+  `comment` text DEFAULT NULL,
+  `media_paths` text DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `refund_requests`
+--
+
+CREATE TABLE `refund_requests` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) UNSIGNED NOT NULL,
+  `customer_name` varchar(120) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'Pending',
+  `evidence_paths` text DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
