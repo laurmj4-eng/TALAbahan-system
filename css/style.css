@@ -65,46 +65,64 @@ body {
         align-items: center !important;
         justify-content: center !important;
         min-height: 100vh !important;
-        padding: 0 !important;
+        padding: 10px !important; /* Added small padding to prevent edge touching */
         background-size: cover !important;
         background-attachment: fixed !important;
     }
 
     .login-container {
-        padding: 20px 15px;
-        border-radius: 20px;
-        width: 80% !important; /* Occupies 80% of screen width */
-        max-width: 300px !important; /* Small floating card */
-        margin: 20px auto !important;
+        padding: 30px 20px !important; /* Slightly more padding for better balance */
+        border-radius: 24px !important;
+        width: 95% !important; /* More width on small screens */
+        max-width: 360px !important; /* Increased for better layout on mobile */
+        margin: auto !important;
         /* Ensure it floats clearly over background */
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        position: relative; /* Ensure it stays in flow */
+        top: 0;
     }
 
     h2 {
-        font-size: 1.3rem;
-        margin-bottom: 10px;
+        font-size: 1.5rem !important; /* Slightly larger */
+        margin-bottom: 20px !important;
     }
 
     .form-logo {
-        width: 90px;
-        margin-bottom: 8px;
+        width: 110px !important; /* Adjusted size */
+        margin-bottom: 15px !important;
     }
 
     input:not([type="checkbox"]), button {
-        padding: 8px 12px;
-        margin: 5px 0;
-        font-size: 12px;
-        min-height: 38px;
+        padding: 12px 15px !important;
+        margin: 8px 0 !important;
+        font-size: 14px !important;
+        min-height: 44px !important; /* Better touch target */
+    }
+
+    .remember-me-container {
+        margin: 10px 0 20px 0 !important;
+    }
+
+    label {
+        font-size: 13px !important;
     }
 
     .divider {
-        margin: 8px 0;
+        margin: 20px 0 !important;
     }
 
-    /* Scale reCAPTCHA to fit perfectly within the 300px container */
-    .g-recaptcha {
-        transform: scale(0.75);
+    /* Scale reCAPTCHA and its container to fit perfectly */
+    #captcha-container {
+        height: 72px !important; /* Adjusted height for scaled captcha */
+        margin-bottom: 10px !important;
+        transform: scale(0.85); /* Slightly larger than 0.75 for readability */
         transform-origin: center center;
+        width: 100% !important;
+    }
+
+    .g-recaptcha {
+        transform: none !important; /* Reset nested transform if any */
+        margin: 0 auto !important;
     }
 }
 
