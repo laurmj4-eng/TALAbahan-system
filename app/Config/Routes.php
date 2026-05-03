@@ -68,39 +68,39 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
 // --- 3. STAFF GROUP ---
 $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'staffGuard'], function($routes) {
     // Dashboard
-    $routes->get('dashboard', 'StaffController::index');
+    $routes->get('dashboard', 'Dashboard::index');
     
     // Product Management
-    $routes->get('products', 'StaffController::products');
-    $routes->get('getProducts', 'StaffController::getProducts');
-    $routes->get('getLowStockProducts', 'StaffController::getLowStockProducts');
-    $routes->get('getBestSellers', 'StaffController::getBestSellers');
-    $routes->get('getInventorySummary', 'StaffController::getInventorySummary');
+    $routes->get('products', 'Products::index');
+    $routes->get('getProducts', 'Products::getProducts');
+    $routes->get('getLowStockProducts', 'Products::getLowStockProducts');
+    $routes->get('getBestSellers', 'Products::getBestSellers');
+    $routes->get('getInventorySummary', 'Dashboard::getInventorySummary');
     
     // Order Management
-    $routes->get('orders', 'StaffController::orders');
-    $routes->get('getOrders', 'StaffController::getOrders');
-    $routes->get('getOrderDetail/(:num)', 'StaffController::getOrderDetail/$1');
-    $routes->post('updateOrderStatus', 'StaffController::updateOrderStatus', ['filter' => 'csrf']);
+    $routes->get('orders', 'Orders::index');
+    $routes->get('getOrders', 'Orders::getOrders');
+    $routes->get('getOrderDetail/(:num)', 'Orders::getOrderDetail/$1');
+    $routes->post('updateOrderStatus', 'Orders::updateOrderStatus', ['filter' => 'csrf']);
     
     // Sales History
-    $routes->get('salesHistory', 'StaffController::salesHistory');
-    $routes->get('getSalesHistory', 'StaffController::getSalesHistory');
+    $routes->get('salesHistory', 'Sales::salesHistory');
+    $routes->get('getSalesHistory', 'Sales::getSalesHistory');
 });
 
 // --- 4. CUSTOMER GROUP ---
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
-    $routes->get('profile', 'Dashboard::profile');
-    $routes->get('order-center', 'Dashboard::orderCenter');
-    $routes->get('order-items', 'Dashboard::orderItems');
-    $routes->post('precheckout', 'Dashboard::preCheckout', ['filter' => 'csrf']);
-    $routes->post('placeOrder', 'Dashboard::placeOrder', ['filter' => 'csrf']);
-    $routes->post('validate-location', 'Dashboard::validateLocation', ['filter' => 'csrf']);
-    $routes->get('order-details/(:num)', 'Dashboard::orderDetails/$1');
-    $routes->post('cancel-order', 'Dashboard::cancelOrder', ['filter' => 'csrf']);
-    $routes->post('pay-now', 'Dashboard::payNow', ['filter' => 'csrf']);
-    $routes->get('tracking/(:num)', 'Dashboard::tracking/$1');
-    $routes->post('review', 'Dashboard::submitReview', ['filter' => 'csrf']);
-    $routes->post('refund-request', 'Dashboard::submitRefundRequest', ['filter' => 'csrf']);
+    $routes->get('profile', 'Profile::index');
+    $routes->get('order-center', 'Orders::orderCenter');
+    $routes->get('order-items', 'Orders::orderItems');
+    $routes->post('precheckout', 'Checkout::preCheckout', ['filter' => 'csrf']);
+    $routes->post('placeOrder', 'Checkout::placeOrder', ['filter' => 'csrf']);
+    $routes->post('validate-location', 'Checkout::validateLocation', ['filter' => 'csrf']);
+    $routes->get('order-details/(:num)', 'Orders::orderDetails/$1');
+    $routes->post('cancel-order', 'Orders::cancelOrder', ['filter' => 'csrf']);
+    $routes->post('pay-now', 'Orders::payNow', ['filter' => 'csrf']);
+    $routes->get('tracking/(:num)', 'Orders::tracking/$1');
+    $routes->post('review', 'Reviews::submitReview', ['filter' => 'csrf']);
+    $routes->post('refund-request', 'Refunds::submitRefundRequest', ['filter' => 'csrf']);
 });

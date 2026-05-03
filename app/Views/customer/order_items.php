@@ -3,7 +3,7 @@
     <style>
         .order-tabs {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
             margin: 22px 0 26px 0;
         }
@@ -214,6 +214,15 @@
         }
 
         @media (max-width: 420px) {
+            .order-tabs {
+                gap: 10px;
+            }
+            .order-tab {
+                flex: 1 1 calc(50% - 10px);
+                justify-content: center;
+                font-size: 0.85rem;
+                padding: 10px 8px;
+            }
             .order-actions {
                 flex-direction: column;
             }
@@ -331,6 +340,7 @@
     <script>
         function closeModal() {
             document.getElementById('detailsModal').classList.remove('show');
+            document.body.classList.remove('details-modal-open');
         }
 
         function lifecycleLabel(key) {
@@ -345,6 +355,7 @@
         }
 
         async function viewDetails(orderId) {
+            document.body.classList.add('details-modal-open');
             try {
                 const response = await fetch(`<?= site_url('customer/order-details/') ?>${orderId}`);
                 const result = await response.json();
@@ -409,10 +420,12 @@
                     document.getElementById('detailsModal').classList.add('show');
                 } else {
                     alert(result.message || 'Failed to load details');
+                    document.body.classList.remove('details-modal-open');
                 }
             } catch (error) {
                 console.error(error);
-                alert('Connection error');
+                alert('Failed to load order details');
+                document.body.classList.remove('details-modal-open');
             }
         }
 

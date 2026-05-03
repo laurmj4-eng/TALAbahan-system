@@ -1,9 +1,14 @@
 <style>
         /* SENIOR FRONT-END: PROFESSIONAL FLOATING ACTIONS */
+        body.modal-open #chat-button-container,
+        body.details-modal-open #chat-button-container {
+            display: none !important;
+        }
+        
         #chat-button-container {
             position: fixed !important;
-            bottom: 30px !important;
-            right: 30px !important; /* Chatbot remains the primary far-right action */
+            bottom: 120px !important; /* Moved up slightly from 110px */
+            right: 30px !important;
             z-index: 2147483647 !important;
             width: 60px !important;
             height: 60px !important;
@@ -108,7 +113,7 @@
         }
         @media (max-width: 768px) {
             #chat-button-container {
-                bottom: 20px !important;
+                bottom: 165px !important; /* Moved up from 155px */
                 right: 20px !important;
                 width: 55px !important;
                 height: 55px !important;
@@ -124,7 +129,7 @@
                 object-position: center !important;
             }
             #chat-container {
-                bottom: 85px !important;
+                bottom: 225px !important; /* Moved up from 215px */
                 right: 10px !important;
                 width: calc(100vw - 20px) !important;
                 height: 70vh !important;

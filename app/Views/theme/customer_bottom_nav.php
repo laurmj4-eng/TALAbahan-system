@@ -10,71 +10,103 @@
 <style>
     .customer-bottom-nav {
         position: fixed;
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
+        left: 20px;
+        right: 20px;
+        bottom: 25px;
         z-index: 100000; /* below chat widget */
-        border-radius: 18px;
-        padding: 10px 14px;
-        background: rgba(20, 15, 45, 0.72);
-        border: 1px solid rgba(255,255,255,0.12);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+        border-radius: 25px;
+        padding: 12px 16px;
+        background: rgba(20, 15, 45, 0.85);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         display: none;
     }
 
-    /* Leave space at the right for Cart+Chat floating buttons */
+    /* Inner container: full width on mobile, centered */
     .customer-bottom-nav-inner {
         display: flex;
-        gap: 10px;
-        justify-content: space-around;
+        gap: 20px;
+        justify-content: center;
         align-items: center;
-        padding-right: 160px;
+        /* Remove large padding-right to allow buttons to space out */
+        padding-right: 0;
     }
 
     .cbn-item {
-        flex: 1 1 0;
-        min-width: 0;
+        flex: 1;
         display: inline-flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 14px;
+        gap: 6px;
+        padding: 12px 8px;
+        border-radius: 18px;
         text-decoration: none;
-        color: rgba(255,255,255,0.75);
-        font-weight: 900;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.10);
-        transition: 0.2s ease;
+        color: rgba(255,255,255,0.65);
+        font-weight: 800;
+        font-size: 0.75rem;
+        background: transparent;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
     }
-    .cbn-item i { font-size: 1.05rem; }
-    .cbn-item:hover { transform: translateY(-1px); color: #fff; border-color: rgba(168,85,247,0.45); }
+    .cbn-item i { 
+        font-size: 1.3rem; 
+        transition: transform 0.3s ease;
+    }
+    .cbn-item:hover { color: #fff; }
+    .cbn-item:hover i { transform: translateY(-3px); }
+    
     .cbn-item.active {
-        background: linear-gradient(135deg, #6366f1, #a855f7);
-        border-color: transparent;
         color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .cbn-item.active i {
+        color: #a855f7;
+        text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
     }
 
     /* Mobile only */
     @media (max-width: 1024px) {
         .customer-bottom-nav { display: block; }
-        /* Customer mobile: bottom nav replaces hamburger */
         .mobile-toggle { display: none !important; }
-        body.customer-has-bottom-nav .main-content { padding-bottom: 110px !important; }
+        body.customer-has-bottom-nav .main-content { padding-bottom: 120px !important; }
+        
+        /* Reposition cart float to be above nav */
+        .cart-float {
+            bottom: 110px !important;
+            right: 25px !important;
+        }
+        #chat-button-container {
+            bottom: 190px !important; /* Stacked above cart icon */
+            right: 25px !important;
+            display: flex !important; /* Ensure it stays visible */
+            left: auto !important; /* Override any left: 20px from chat-style.css */
+        }
+        #chat-container {
+            bottom: 250px !important; /* Stacked above button */
+            right: 15px !important;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .customer-bottom-nav {
+            left: 15px;
+            right: 15px;
+            bottom: 20px;
+        }
+        .customer-bottom-nav-inner { gap: 12px; }
+        .cbn-item { padding: 10px 5px; }
     }
 
     /* When a modal is open, keep checkout buttons unobstructed */
-    body.modal-open .customer-bottom-nav { display: none !important; }
-    body.modal-open #chat-button-container { display: none !important; }
-    body.modal-open .cart-float { display: none !important; }
-    body.modal-open .profile-float { display: none !important; }
-
-    @media (max-width: 420px) {
-        .customer-bottom-nav-inner { padding-right: 140px; }
-        .cbn-item { gap: 8px; padding: 10px; }
+    body.modal-open .customer-bottom-nav { 
+        pointer-events: none !important;
+        opacity: 0.1 !important;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
     }
 </style>
 

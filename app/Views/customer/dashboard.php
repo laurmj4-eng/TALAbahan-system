@@ -175,8 +175,8 @@
         /* --- PROFESSIONAL FLOATING BUTTONS LAYOUT --- */
         .cart-float {
             position: fixed;
-            bottom: 110px; /* Stacked above chatbot */
-            right: 30px;   /* Same right edge as chatbot */
+            bottom: 30px; /* Moved to bottom position */
+            right: 30px;
             width: 60px;
             height: 60px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
@@ -420,12 +420,31 @@
                 width: 100%;
                 max-width: none !important;
                 border-radius: 20px 20px 0 0;
-                max-height: 92vh;
+                max-height: 85vh; /* Reduced height to keep buttons visible */
                 padding: 18px !important;
+                display: flex;
+                flex-direction: column;
+                padding-bottom: 120px !important; /* Added extra padding to avoid bottom nav overlap */
             }
             .modal-header {
                 font-size: 1.35rem !important;
                 margin-bottom: 14px !important;
+            }
+            .location-step {
+                flex: 1;
+                display: none;
+                flex-direction: column;
+            }
+            .location-step.active {
+                display: flex;
+            }
+            .step-actions {
+                position: relative; /* Avoid overlapping on mobile */
+                margin-top: auto;
+                padding-bottom: 20px;
+            }
+            #cartItemsList {
+                max-height: 30vh !important; /* Limit list height on mobile */
             }
         }
     </style>
@@ -756,6 +775,14 @@
                 return;
             }
             document.body.classList.add('modal-open');
+            
+            // Hide Chatbot and Bottom Nav when cart is open
+            const chatbotContainer = document.getElementById('chat-button-container');
+            if (chatbotContainer) chatbotContainer.style.display = 'none';
+            
+            const bottomNav = document.querySelector('.customer-bottom-nav');
+            if (bottomNav) bottomNav.style.display = 'none';
+
             renderCartItems();
             document.getElementById('checkoutModal').classList.add('show');
             document.getElementById('checkoutCart').classList.add('active');
@@ -765,6 +792,14 @@
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.remove('show');
             document.body.classList.remove('modal-open');
+            
+            // Show Chatbot and Bottom Nav again when cart is closed
+            const chatbotContainer = document.getElementById('chat-button-container');
+            if (chatbotContainer) chatbotContainer.style.display = 'flex';
+            
+            const bottomNav = document.querySelector('.customer-bottom-nav');
+            if (bottomNav) bottomNav.style.display = 'block';
+
             // Reset steps
             document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
             document.getElementById('checkoutCart').classList.add('active');

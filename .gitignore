@@ -1,6 +1,11 @@
 # CodeIgniter 4 Files
-/writable/*
+/writable/cache/*
+/writable/debugbar/*
+/writable/logs/*
+/writable/session/*
 !/writable/.gitkeep
+!/writable/*/index.html
+!/writable/*/.gitkeep
 /vendor/
 /.env
 /public/uploads/*
