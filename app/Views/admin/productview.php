@@ -18,13 +18,46 @@
         }
     }
 
-    .modal .form-group {
-        margin-bottom: 5px;
+    /* Fix for mobile responsiveness: Ensure natural scrolling */
+    @media (max-width: 768px) {
+        .modal {
+            padding: 0 !important;
+            align-items: flex-start !important;
+            overflow-y: auto !important;
+        }
+
+        .modal-content {
+            margin: 0 !important;
+            width: 100% !important;
+            min-height: 100vh !important;
+            border-radius: 0 !important;
+            padding: 25px 20px 100px 20px !important; /* Extra bottom padding for button visibility */
+            display: block !important;
+            transform: none !important;
+            overflow-y: visible !important;
+        }
+
+        .modal-header {
+            font-size: 1.8rem !important;
+            margin-bottom: 20px !important;
+        }
+
+        .premium-form {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
+
+        .modal .btn-primary {
+            position: relative !important;
+            width: 100% !important;
+            margin-top: 30px !important;
+            padding: 16px !important;
+        }
     }
 
-    .modal .btn-primary {
-        grid-column: 1 / -1;
-        margin-top: 20px;
+    .modal .form-group {
+        margin-bottom: 5px;
     }
 </style>
 

@@ -101,12 +101,16 @@
         .cbn-item { padding: 10px 5px; }
     }
 
-    /* When a modal is open, keep checkout buttons unobstructed */
+    /* Desktop/Laptop: Always Hidden */
+    @media (min-width: 1025px) {
+        .customer-bottom-nav { 
+            display: none !important; 
+        }
+    }
+
+    /* When a modal is open, hide nav to keep checkout buttons unobstructed */
     body.modal-open .customer-bottom-nav { 
-        pointer-events: none !important;
-        opacity: 0.1 !important;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
+        display: none !important;
     }
 </style>
 

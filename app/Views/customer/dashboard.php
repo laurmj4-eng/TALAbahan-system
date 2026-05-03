@@ -285,6 +285,9 @@
             max-height: 88vh;
             overflow-y: auto;
             animation: sheetUp 0.28s ease;
+            padding: 20px 20px 0 20px; /* Added padding for better desktop layout */
+            display: flex;
+            flex-direction: column;
         }
         @keyframes sheetUp {
             from { transform: translateY(20px); opacity: 0.2; }
@@ -337,11 +340,13 @@
         .step-actions {
             position: sticky;
             bottom: 0;
-            background: linear-gradient(to top, rgba(20,15,45,0.98), rgba(20,15,45,0.86));
-            padding-top: 12px;
-            margin-top: 18px;
+            background: #140f2d; /* Solid background to prevent content overlap */
+            padding: 15px 20px;
+            margin: 20px -20px 0 -20px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            z-index: 100;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         .cart-item-row {
             display: flex;
@@ -420,31 +425,57 @@
                 width: 100%;
                 max-width: none !important;
                 border-radius: 20px 20px 0 0;
-                max-height: 85vh; /* Reduced height to keep buttons visible */
-                padding: 18px !important;
+                max-height: 92vh; /* Use more screen height on mobile */
+                padding: 0 !important; /* Remove padding to let content handle it */
                 display: flex;
                 flex-direction: column;
-                padding-bottom: 120px !important; /* Added extra padding to avoid bottom nav overlap */
+                overflow: hidden; /* Prevent double scrollbars */
             }
             .modal-header {
-                font-size: 1.35rem !important;
-                margin-bottom: 14px !important;
+                font-size: 1.25rem !important;
+                margin-bottom: 10px !important;
+                padding: 18px 18px 0 18px;
             }
             .location-step {
                 flex: 1;
                 display: none;
                 flex-direction: column;
+                overflow: hidden; /* Step itself handles layout */
             }
             .location-step.active {
                 display: flex;
             }
+            /* Scrollable area inside the step */
+            .location-step > *:not(.modal-header):not(.step-actions) {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+            #cartItemsList, .map-container, .payment-option-container {
+                overflow-y: auto;
+            }
+            .map-container {
+                height: 160px; /* Smaller map on mobile */
+                margin-bottom: 15px;
+            }
             .step-actions {
-                position: relative; /* Avoid overlapping on mobile */
+                position: relative; /* Fixed at bottom of the flex container */
                 margin-top: auto;
-                padding-bottom: 20px;
+                padding: 15px 18px;
+                padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* Support for modern phones */
+                background: #140f2d;
+                z-index: 101;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                display: flex;
+                gap: 10px;
             }
             #cartItemsList {
-                max-height: 30vh !important; /* Limit list height on mobile */
+                max-height: 25vh !important;
+            }
+            .location-input-group {
+                margin-bottom: 15px;
+            }
+            .location-input-group input, .location-input-group select {
+                padding: 10px; /* Slightly smaller inputs */
             }
         }
     </style>
@@ -545,26 +576,28 @@
                         <i class="fas fa-shopping-basket" style="color: #a855f7; margin-right: 10px;"></i> Confirm Order
                     </div>
                     
-                    <div id="cartItemsList" style="margin-bottom: 25px; max-height: 200px; overflow-y: auto;">
-                        <!-- Items will be injected here -->
-                    </div>
+                    <div style="flex: 1; overflow-y: auto;">
+                        <div id="cartItemsList" style="margin-bottom: 25px;">
+                            <!-- Items will be injected here -->
+                        </div>
 
-                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 25px;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
-                            <span>Subtotal:</span>
-                            <span id="cartSubtotal">₱0.00</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
-                            <span>Shipping Fee:</span>
-                            <span id="cartShippingFee">₱0.00</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:0.95rem; color:#fbbf24; margin-bottom:8px;">
-                            <span>Voucher Discount:</span>
-                            <span id="cartVoucher">-₱0.00</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
-                            <span>Total Amount:</span>
-                            <span id="cartTotal" style="color: #10b981;">₱0.00</span>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 25px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
+                                <span>Subtotal:</span>
+                                <span id="cartSubtotal">₱0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.95rem; color: rgba(255,255,255,0.7); margin-bottom:8px;">
+                                <span>Shipping Fee:</span>
+                                <span id="cartShippingFee">₱0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.95rem; color:#fbbf24; margin-bottom:8px;">
+                                <span>Voucher Discount:</span>
+                                <span id="cartVoucher">-₱0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800;">
+                                <span>Total Amount:</span>
+                                <span id="cartTotal" style="color: #10b981;">₱0.00</span>
+                            </div>
                         </div>
                     </div>
 
@@ -580,48 +613,50 @@
                         <i class="fas fa-map-marked-alt" style="color: #a855f7; margin-right: 10px;"></i> Delivery Details
                     </div>
 
-                    <div class="location-input-group">
-                        <label>Receiver Name</label>
-                        <input type="text" id="deliveryName" value="<?= esc($username) ?>" required>
-                    </div>
-
-                    <div class="location-input-group">
-                        <label>Contact Number</label>
-                        <input type="text" id="deliveryPhone" placeholder="09XXXXXXXXX" required>
-                    </div>
-
-                    <button class="btn-location" onclick="getLocation()">
-                        <i class="fas fa-location-crosshairs"></i> Get Current Location
-                    </button>
-
-                    <div id="locationError" class="location-status"></div>
-
-                    <div class="map-container" id="mapContainer">
-                        <div class="map-placeholder" id="mapPlaceholder">
-                            <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
-                            Waiting for location...
+                    <div style="flex: 1; overflow-y: auto;">
+                        <div class="location-input-group">
+                            <label>Receiver Name</label>
+                            <input type="text" id="deliveryName" value="<?= esc($username) ?>" required>
                         </div>
-                    </div>
 
-                    <div class="location-input-group">
-                        <label>Detected Barangay / Area</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
-                            <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-                                <i class="fas fa-edit"></i>
-                            </button>
+                        <div class="location-input-group">
+                            <label>Contact Number</label>
+                            <input type="text" id="deliveryPhone" placeholder="09XXXXXXXXX" required>
                         </div>
-                    </div>
 
-                    <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
-                        <label style="color: #818cf8;">Select Correct Barangay Manually</label>
-                        <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
-                            <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
-                            <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
-                                <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
-                            <?php endforeach; endif; ?>
-                        </select>
-                        <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
+                        <button class="btn-location" onclick="getLocation()">
+                            <i class="fas fa-location-crosshairs"></i> Get Current Location
+                        </button>
+
+                        <div id="locationError" class="location-status"></div>
+
+                        <div class="map-container" id="mapContainer">
+                            <div class="map-placeholder" id="mapPlaceholder">
+                                <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                                Waiting for location...
+                            </div>
+                        </div>
+
+                        <div class="location-input-group">
+                            <label>Detected Barangay / Area</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
+                                <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
+                            <label style="color: #818cf8;">Select Correct Barangay Manually</label>
+                            <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
+                                <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
+                                <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
+                                    <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
+                                <?php endforeach; endif; ?>
+                            </select>
+                            <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
+                        </div>
                     </div>
 
                     <div class="step-actions">
@@ -636,49 +671,51 @@
                         <i class="fas fa-credit-card" style="color: #a855f7; margin-right: 10px;"></i> Payment Method
                     </div>
 
-                    <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
-                    
-                    <div class="payment-option" onclick="selectPayment('COD')" id="payCOD">
-                        <i class="fas fa-hand-holding-usd"></i>
-                        <div>
-                            <h4>Cash on Delivery</h4>
-                            <p>Pay when your order arrives</p>
+                    <div style="flex: 1; overflow-y: auto;">
+                        <h4 style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">Select Payment Method:</h4>
+                        
+                        <div class="payment-option" onclick="selectPayment('COD')" id="payCOD">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            <div>
+                                <h4>Cash on Delivery</h4>
+                                <p>Pay when your order arrives</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="payment-option" onclick="selectPayment('GCASH')" id="payGCASH">
-                        <i class="fas fa-mobile-alt"></i>
-                        <div>
-                            <h4>GCash</h4>
-                            <p>Pay via GCash transfer</p>
+                        <div class="payment-option" onclick="selectPayment('GCASH')" id="payGCASH">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <h4>GCash</h4>
+                                <p>Pay via GCash transfer</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="location-input-group" style="margin-top: 8px;">
-                        <label>Voucher Code (Optional)</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="voucherCode" placeholder="Enter platform/shop voucher code" style="flex: 1;">
-                            <button class="btn-location" style="margin-bottom: 0;" onclick="refreshQuote()">Apply</button>
+                        <div class="location-input-group" style="margin-top: 8px;">
+                            <label>Voucher Code (Optional)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="voucherCode" placeholder="Enter platform/shop voucher code" style="flex: 1;">
+                                <button class="btn-location" style="margin-bottom: 0;" onclick="refreshQuote()">Apply</button>
+                            </div>
+                            <small id="voucherHint" style="display:block; margin-top: 8px; color: rgba(255,255,255,0.5);">Available vouchers are auto-applied if eligible.</small>
                         </div>
-                        <small id="voucherHint" style="display:block; margin-top: 8px; color: rgba(255,255,255,0.5);">Available vouchers are auto-applied if eligible.</small>
-                    </div>
 
-                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:15px; padding-top:12px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                            <span style="color:rgba(255,255,255,0.7);">Subtotal</span>
-                            <span id="paySubtotal">₱0.00</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                            <span style="color:rgba(255,255,255,0.7);">Shipping</span>
-                            <span id="payShipping">₱0.00</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                            <span style="color:#fbbf24;">Voucher</span>
-                            <span id="payVoucher">-₱0.00</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800;">
-                            <span>Total</span>
-                            <span id="payTotal" style="color:#10b981;">₱0.00</span>
+                        <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:15px; padding-top:12px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span style="color:rgba(255,255,255,0.7);">Subtotal</span>
+                                <span id="paySubtotal">₱0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span style="color:rgba(255,255,255,0.7);">Shipping</span>
+                                <span id="payShipping">₱0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span style="color:#fbbf24;">Voucher</span>
+                                <span id="payVoucher">-₱0.00</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800;">
+                                <span>Total</span>
+                                <span id="payTotal" style="color:#10b981;">₱0.00</span>
+                            </div>
                         </div>
                     </div>
 
@@ -776,13 +813,10 @@
             }
             document.body.classList.add('modal-open');
             
-            // Hide Chatbot and Bottom Nav when cart is open
+            // Hide Chatbot when cart is open
             const chatbotContainer = document.getElementById('chat-button-container');
             if (chatbotContainer) chatbotContainer.style.display = 'none';
             
-            const bottomNav = document.querySelector('.customer-bottom-nav');
-            if (bottomNav) bottomNav.style.display = 'none';
-
             renderCartItems();
             document.getElementById('checkoutModal').classList.add('show');
             document.getElementById('checkoutCart').classList.add('active');
@@ -793,13 +827,10 @@
             document.getElementById('checkoutModal').classList.remove('show');
             document.body.classList.remove('modal-open');
             
-            // Show Chatbot and Bottom Nav again when cart is closed
+            // Show Chatbot again when cart is closed
             const chatbotContainer = document.getElementById('chat-button-container');
             if (chatbotContainer) chatbotContainer.style.display = 'flex';
             
-            const bottomNav = document.querySelector('.customer-bottom-nav');
-            if (bottomNav) bottomNav.style.display = 'block';
-
             // Reset steps
             document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
             document.getElementById('checkoutCart').classList.add('active');
