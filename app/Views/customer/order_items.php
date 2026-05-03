@@ -1,4 +1,8 @@
+<?php if (!($isAJAX ?? false)): ?>
 <?= $this->include('theme/header') ?>
+<?= $this->include('theme/sidebar') ?>
+<div id="page-content">
+<?php endif; ?>
 
     <style>
         .order-tabs {
@@ -43,6 +47,13 @@
             font-size: 0.75rem;
             font-weight: 900;
             line-height: 1;
+            animation: badgeBounce 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) alternate infinite;
+            animation-iteration-count: 2; /* Bounce twice on load */
+        }
+
+        @keyframes badgeBounce {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2) translateY(-2px); }
         }
 
         .order-card {
@@ -545,6 +556,9 @@
         }
     </script>
 
-    <?= $this->include('theme/customer_bottom_nav') ?>
+<?php if (!($isAJAX ?? false)): ?>
+</div>
+<?= $this->include('theme/customer_bottom_nav') ?>
 </body>
 </html>
+<?php endif; ?>

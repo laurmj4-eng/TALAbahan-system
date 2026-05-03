@@ -1,5 +1,8 @@
+<?php if (!($isAJAX ?? false)): ?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
+<div id="page-content">
+<?php endif; ?>
 
 <style>
     .profile-header {
@@ -131,6 +134,13 @@
         color: #fff;
         line-height: 1;
         flex: 0 0 auto;
+        animation: badgeBounce 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) alternate infinite;
+        animation-iteration-count: 2;
+    }
+
+    @keyframes badgeBounce {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.2) translateY(-2px); }
     }
     .badge-pill {
         position: absolute;
@@ -233,6 +243,9 @@
     </div>
 </main>
 
+<?php if (!($isAJAX ?? false)): ?>
+</div>
 <?= $this->include('theme/customer_bottom_nav') ?>
 <?= $this->include('theme/footer') ?>
+<?php endif; ?>
 

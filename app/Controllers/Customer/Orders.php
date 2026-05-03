@@ -42,6 +42,7 @@ class Orders extends BaseController
             'orders' => $orders,
             'activeTab' => $tab,
             'counts' => $counts,
+            'isAJAX' => $this->request->isAJAX(),
         ]);
     }
 

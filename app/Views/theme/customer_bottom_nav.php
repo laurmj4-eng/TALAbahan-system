@@ -40,28 +40,29 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 12px 8px;
+        gap: 4px; /* Reduced gap */
+        padding: 10px 4px; /* More compact padding */
         border-radius: 18px;
         text-decoration: none;
-        color: rgba(255,255,255,0.65);
-        font-weight: 800;
-        font-size: 0.75rem;
+        color: rgba(255,255,255,0.5); /* Slightly dimmer for better contrast with active */
+        font-weight: 700;
+        font-size: 0.7rem; /* Smaller font */
         background: transparent;
         border: none;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
     }
     .cbn-item i { 
-        font-size: 1.3rem; 
-        transition: transform 0.3s ease;
+        font-size: 1.2rem; /* Slightly smaller icons */
+        transition: all 0.3s ease;
     }
     .cbn-item:hover { color: #fff; }
-    .cbn-item:hover i { transform: translateY(-3px); }
+    .cbn-item:hover i { transform: translateY(-2px); color: #a855f7; }
     
     .cbn-item.active {
         color: #fff;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(168, 85, 247, 0.12); /* Purple-ish background for active */
+        border: 1px solid rgba(168, 85, 247, 0.2);
     }
     .cbn-item.active i {
         color: #a855f7;
@@ -117,6 +118,78 @@
 <script>
     (function () {
         try { document.body.classList.add('customer-has-bottom-nav'); } catch (e) {}
+
+        // AJAX Navigation Logic
+        function initAjaxNav() {
+            document.querySelectorAll('a[href*="/customer/"]').forEach(link => {
+                // Skip if it's already handled or has a specific exclusion
+                if (link.dataset.ajaxInit || link.getAttribute('href').includes('logout')) return;
+                
+                link.addEventListener('click', function(e) {
+                    const url = this.getAttribute('href');
+                    if (!url || url.includes('#') || url.includes('javascript:')) return;
+
+                    e.preventDefault();
+                    
+                    // Add loading state
+                    const content = document.getElementById('page-content');
+                    if (!content) return;
+                    content.style.opacity = '0.5';
+                    
+                    fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.text();
+                    })
+                    .then(html => {
+                        content.innerHTML = html;
+                        content.style.opacity = '1';
+                        
+                        // Update active state in nav
+                        const path = new URL(url, window.location.origin).pathname;
+                        document.querySelectorAll('.cbn-item').forEach(item => {
+                            const itemPath = new URL(item.href, window.location.origin).pathname;
+                            item.classList.toggle('active', path === itemPath);
+                        });
+                        
+                        // Update URL without reload
+                        window.history.pushState({ path: url }, '', url);
+                        
+                        // Re-run any scripts in the new content
+                        const scripts = content.querySelectorAll('script');
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                            oldScript.parentNode.replaceChild(newScript, oldScript);
+                        });
+
+                        // Re-initialize AJAX links for the new content
+                        initAjaxNav();
+                        
+                        // Scroll to top
+                        window.scrollTo(0, 0);
+                    })
+                    .catch(err => {
+                        console.error('AJAX Nav Error:', err);
+                        window.location.href = url; // Fallback to normal load
+                    });
+                });
+                
+                link.dataset.ajaxInit = 'true';
+            });
+        }
+
+        initAjaxNav();
+
+        // Handle back/forward buttons
+        window.onpopstate = function() {
+            window.location.reload();
+        };
     })();
 </script>
 

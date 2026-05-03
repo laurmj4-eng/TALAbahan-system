@@ -377,21 +377,21 @@
 
         .modal-close-btn {
             position: absolute;
-            top: 25px;
-            right: 25px;
+            top: 20px;
+            right: 20px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.6);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.3s;
-            font-size: 1.5rem;
-            z-index: 10;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            z-index: 100;
         }
 
         .modal-close-btn:hover {
@@ -399,6 +399,16 @@
             color: #fca5a5;
             border-color: rgba(239, 68, 68, 0.3);
             transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            .modal-close-btn {
+                top: 15px;
+                right: 15px;
+                width: 32px;
+                height: 32px;
+                font-size: 1.1rem;
+            }
         }
 
         .modal-header {

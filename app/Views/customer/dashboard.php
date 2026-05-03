@@ -1,5 +1,8 @@
+<?php if (!($isAJAX ?? false)): ?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
+<div id="page-content">
+<?php endif; ?>
 
     <style>
         /* --- ENHANCED WELCOME BANNER --- */
@@ -47,13 +50,13 @@
         .welcome-icon {
             font-size: 6rem; 
             opacity: 0.1; 
-            transform: rotate(10deg); 
             user-select: none;
             color: #c084fc;
             position: absolute;
             right: 40px;
             top: 50%;
             transform: translateY(-50%) rotate(10deg);
+            pointer-events: none; /* Ensure it doesn't block clicks */
         }
 
         /* --- PRODUCT GRID (TikTok/Shopee Style) --- */
@@ -82,39 +85,42 @@
 
         .product-image-container {
             width: 100%;
-            aspect-ratio: 1/1;
+            aspect-ratio: 1 / 1.1; /* Slightly taller for more impact */
             overflow: hidden;
             position: relative;
+            background: rgba(255, 255, 255, 0.02); /* Placeholder bg */
         }
 
         .product-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .product-card:hover .product-image-container img {
-            transform: scale(1.1);
+            transform: scale(1.08);
         }
 
         .product-info {
-            padding: 15px;
+            padding: 12px 14px; /* Reduced internal padding */
             flex: 1;
             display: flex;
             flex-direction: column;
+            gap: 4px; /* Consistent spacing between elements */
         }
 
         .product-name {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: #fff;
-            margin: 0 0 8px 0;
+            margin: 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             height: 2.8rem;
+            line-height: 1.4;
         }
 
         .product-price-row {
@@ -133,6 +139,29 @@
         .product-unit {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- SOCIAL PROOF INDICATORS --- */
+        .product-social-proof {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 600;
+        }
+
+        .rating-stars {
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .sold-count {
+            padding-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn-buy {
@@ -214,6 +243,13 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #1e1b4b;
+            animation: badgeBounce 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) alternate infinite;
+            animation-iteration-count: 2;
+        }
+
+        @keyframes badgeBounce {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2) translateY(-2px); }
         }
 
         /* --- TOAST (Quick feedback) --- */
@@ -349,14 +385,61 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
         .cart-item-row {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden; /* Hide the delete button initially */
+            touch-action: pan-y; /* Allow vertical scroll but handle horizontal swipe */
+        }
+        .cart-item-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            margin-bottom: 8px;
-            gap: 10px;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            background: #140f2d; /* Match modal bg to cover delete button */
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 100%;
+        }
+        .cart-item-delete-action {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 70px;
+            background: #ef4444;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 1;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .cart-item-delete-action:active {
+            background: #dc2626;
+        }
+        .cart-item-thumb {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .cart-item-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .cart-item-info {
+            flex: 1;
+            min-width: 0;
         }
         .qty-controls {
             display: inline-flex;
@@ -408,18 +491,58 @@
         }
 
         @media (max-width: 768px) {
-            .welcome-card { padding: 25px; flex-direction: column; align-items: flex-start; text-align: left; }
-            .welcome-text h1 { font-size: 1.8rem; }
-            .welcome-icon { font-size: 4rem; opacity: 0.05; top: 20px; transform: rotate(10deg); }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-            .product-name { font-size: 0.95rem; height: 2.6rem; }
-            .product-price { font-size: 1.1rem; }
+            .welcome-card { 
+                padding: 25px; 
+                flex-direction: column; 
+                align-items: flex-start; 
+                text-align: left; 
+                min-height: 140px;
+                margin-bottom: 20px;
+            }
+            .welcome-text h1 { font-size: 1.6rem; }
+            .welcome-text p { font-size: 0.95rem; line-height: 1.4; margin-top: 8px; max-width: 80%; }
+            .welcome-icon { 
+                font-size: 3.5rem; 
+                opacity: 0.08; 
+                right: 20px;
+                top: 20px; 
+                transform: rotate(15deg); 
+            }
+            .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .product-card { border-radius: 16px; }
+            .product-info { padding: 10px; gap: 4px; }
+            .product-name { font-size: 0.85rem; height: 2.4rem; line-height: 1.25; }
+            .product-price { font-size: 1rem; }
+            .product-unit { font-size: 0.7rem; }
+            .product-social-proof { font-size: 0.65rem; gap: 6px; }
+            .sold-count { padding-left: 6px; }
+            .btn-buy { 
+                padding: 10px; 
+                margin-top: 8px; 
+                border-radius: 10px; 
+                font-size: 0.85rem;
+                gap: 6px;
+            }
+            .btn-buy i { font-size: 0.9rem; }
+            .btn-add-cart { 
+                padding: 8px; 
+                margin-top: 4px; 
+                border-radius: 8px; 
+                font-size: 0.8rem; 
+            }
             .cart-float { 
-                width: 55px !important; 
-                height: 55px !important; 
-                bottom: 100px !important; 
+                width: 52px !important; 
+                height: 52px !important; 
+                bottom: 105px !important; 
                 right: 20px !important; 
-                font-size: 1.3rem !important; 
+                font-size: 1.2rem !important; 
+            }
+            .cart-badge {
+                width: 22px;
+                height: 22px;
+                font-size: 0.7rem;
+                top: -2px;
+                right: -2px;
             }
             .checkout-sheet-content {
                 width: 100%;
@@ -530,11 +653,22 @@
                                 <div class="product-unit">/ <?= esc($p['unit']) ?></div>
                             </div>
                             
+                            <!-- REAL-TIME SOCIAL PROOF INDICATORS -->
+                            <div class="product-social-proof">
+                                <div class="rating-stars">
+                                    <i class="fas fa-star"></i>
+                                    <span><?= $p['real_rating'] ? number_format($p['real_rating'], 1) : '5.0' ?></span>
+                                </div>
+                                <div class="sold-count">
+                                    <?= number_format($p['real_sold_count'] ?? 0) ?> Sold
+                                </div>
+                            </div>
+                            
                             <?php if ($p['current_stock'] > 0): ?>
-                                <button class="btn-buy" onclick="buyNow(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>)">
+                                <button class="btn-buy" onclick="buyNow(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>, '<?= esc($p['image']) ?>')">
                                     <i class="fas fa-bolt"></i> Buy Now
                                 </button>
-                                <button class="btn-add-cart" onclick="addToCart(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>)">
+                                <button class="btn-add-cart" onclick="addToCart(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>, '<?= esc($p['image']) ?>')">
                                     <i class="fas fa-cart-plus"></i> Add to Cart
                                 </button>
                             <?php else: ?>
@@ -768,19 +902,19 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
         }
 
-        function addToCart(id, name, price) {
+        function addToCart(id, name, price, image) {
             const index = cart.findIndex(item => item.id === id);
             if (index > -1) {
                 cart[index].quantity += 1;
             } else {
-                cart.push({ id, name, price, quantity: 1 });
+                cart.push({ id, name, price, image, quantity: 1 });
             }
             updateCartUI();
             showToast(`Added: ${name}`);
         }
 
-        function buyNow(id, name, price) {
-            cart = [{ id, name, price, quantity: 1 }];
+        function buyNow(id, name, price, image) {
+            cart = [{ id, name, price, image, quantity: 1 }];
             updateCartUI();
             showToast(`Added: ${name}`);
             openCheckoutModal();
@@ -804,6 +938,53 @@
                 return;
             }
             renderCartItems();
+        }
+
+        function removeFromCart(id) {
+            const idx = cart.findIndex(item => item.id === id);
+            if (idx !== -1) {
+                const name = cart[idx].name;
+                cart.splice(idx, 1);
+                updateCartUI();
+                showToast(`Removed: ${name}`);
+                if (cart.length === 0) {
+                    closeCheckoutModal();
+                } else {
+                    renderCartItems();
+                }
+            }
+        }
+
+        // Swipe-to-Delete Logic
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let activeSwipeItem = null;
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            activeSwipeItem = e.currentTarget;
+            // Reset other open items
+            document.querySelectorAll('.cart-item-content').forEach(item => {
+                if (item !== activeSwipeItem) item.style.transform = 'translateX(0)';
+            });
+        }
+
+        function handleTouchMove(e) {
+            const currentX = e.changedTouches[0].screenX;
+            const diff = touchStartX - currentX;
+            if (diff > 0 && diff <= 70) { // Swiping left
+                activeSwipeItem.style.transform = `translateX(-${diff}px)`;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (diff > 35) { // Threshold for keeping it open
+                activeSwipeItem.style.transform = 'translateX(-70px)';
+            } else {
+                activeSwipeItem.style.transform = 'translateX(0)';
+            }
         }
 
         function openCheckoutModal() {
@@ -841,21 +1022,33 @@
             let subtotal = 0;
             list.innerHTML = '';
             
-            cart.forEach(item => {
+            cart.forEach((item, index) => {
                 const lineSubtotal = item.price * item.quantity;
                 subtotal += lineSubtotal;
+                const imgSrc = item.image ? `<?= base_url('uploads/products/') ?>${item.image}` : `<?= base_url('images/pic1.jpg') ?>`;
                 list.innerHTML += `
-                    <div class="cart-item-row">
-                        <div>
-                            <div style="font-weight: 700; color: #fff;">${item.name}</div>
-                            <div class="qty-controls">
-                                <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                                <span style="font-size:0.9rem; color: rgba(255,255,255,0.75);">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-                                <span style="font-size:0.85rem; color: rgba(255,255,255,0.5); margin-left: 8px;">₱${item.price.toFixed(2)} each</span>
-                            </div>
+                    <div class="cart-item-row" data-index="${index}">
+                        <div class="cart-item-delete-action" onclick="removeFromCart(${item.id})">
+                            <i class="fas fa-trash-alt"></i>
                         </div>
-                        <div style="font-weight: 800; color: #818cf8;">₱${lineSubtotal.toFixed(2)}</div>
+                        <div class="cart-item-content" 
+                             ontouchstart="handleTouchStart(event)" 
+                             ontouchmove="handleTouchMove(event)" 
+                             ontouchend="handleTouchEnd(event)">
+                            <div class="cart-item-thumb">
+                                <img src="${imgSrc}" alt="${item.name}" onerror="this.src='<?= base_url('images/pic1.jpg') ?>'">
+                            </div>
+                            <div class="cart-item-info">
+                                <div style="font-weight: 700; color: #fff;">${item.name}</div>
+                                <div class="qty-controls">
+                                    <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                                    <span style="font-size:0.9rem; color: rgba(255,255,255,0.75);">${item.quantity}</span>
+                                    <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                                    <span style="font-size:0.85rem; color: rgba(255,255,255,0.5); margin-left: 8px;">₱${item.price.toFixed(2)} each</span>
+                                </div>
+                            </div>
+                            <div style="font-weight: 800; color: #818cf8;">₱${lineSubtotal.toFixed(2)}</div>
+                        </div>
                     </div>
                 `;
             });
@@ -1133,8 +1326,11 @@
         }
     </script>
 
+<?php if (!($isAJAX ?? false)): ?>
+</div>
 <?= $this->include('theme/customer_bottom_nav') ?>
 <?= $this->include('theme/footer') ?>
+<?php endif; ?>
 
 <style>
     /* Customer Profile quick access (top-right) */
@@ -1142,49 +1338,66 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        width: 52px;
-        height: 52px;
-        border-radius: 999px;
+        width: 48px; /* Slightly smaller */
+        height: 48px;
+        border-radius: 16px; /* Squircle for modern look */
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.16);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         display: flex;
         align-items: center;
         justify-content: center;
         color: #fff;
         cursor: pointer;
-        z-index: 99990; /* below chat widget */
-        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        z-index: 99990; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
     .profile-float:hover {
-        transform: translateY(-2px);
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(168, 85, 247, 0.45);
+        transform: translateY(-3px) scale(1.05);
+        background: rgba(168, 85, 247, 0.15);
+        border-color: rgba(168, 85, 247, 0.4);
+        box-shadow: 0 12px 25px rgba(168, 85, 247, 0.2);
     }
-    .profile-float i { font-size: 1.2rem; }
+    .profile-float i { font-size: 1.1rem; }
     .profile-badge {
         position: absolute;
-        top: -6px;
-        right: -6px;
+        top: -5px;
+        right: -5px;
         min-width: 20px;
         height: 20px;
-        padding: 0 6px;
-        border-radius: 999px;
+        padding: 0 5px;
+        border-radius: 8px; /* Match squircle */
         background: #ef4444;
         color: #fff;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 800;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid rgba(20, 15, 45, 0.98);
-        line-height: 1;
+        border: 2px solid #1e1b4b;
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        animation: badgeBounce 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) alternate infinite;
+        animation-iteration-count: 2;
     }
-    @media (max-width: 1024px) {
-        /* keep away from mobile sidebar toggle (top-left) */
-        .profile-float { top: 18px; right: 18px; }
+    @media (max-width: 768px) {
+        .profile-float { 
+            top: 15px; 
+            right: 15px; 
+            width: 42px; 
+            height: 42px; 
+            border-radius: 12px;
+        }
+        .profile-float i { font-size: 1rem; }
+        .profile-badge { 
+            top: -4px; 
+            right: -4px; 
+            min-width: 18px; 
+            height: 18px; 
+            font-size: 0.65rem; 
+        }
     }
 </style>
 

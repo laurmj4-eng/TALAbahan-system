@@ -20,6 +20,7 @@ class Profile extends BaseController
             'title' => 'My Profile',
             'username' => $customerName,
             'counts' => $counts,
+            'isAJAX' => $this->request->isAJAX(),
         ]);
     }
 }

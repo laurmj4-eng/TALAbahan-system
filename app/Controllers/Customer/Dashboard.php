@@ -3,7 +3,9 @@
 namespace App\Controllers\Customer;
 
 use App\Controllers\BaseController;
+use App\Models\OrderItemModel;
 use App\Models\OrderModel;
+use App\Models\OrderReviewModel;
 use App\Models\ProductModel;
 use App\Models\ShippingLocationModel;
 
@@ -16,24 +18,50 @@ class Dashboard extends BaseController
             return redirect()->to('/login');
         }
 
-        // 2. Fetch products and shippable locations
+        // 2. Fetch models
         $productModel = new ProductModel();
         $shippingModel = new ShippingLocationModel();
+        $orderItemModel = new OrderItemModel();
+        $reviewModel = new OrderReviewModel();
+
         $customerName = (string) session()->get('username');
         $orderCounts = $this->getCustomerOrderCounts($customerName);
         $activeOrdersCount = (int) ($orderCounts['to_pay'] + $orderCounts['to_ship'] + $orderCounts['to_receive']);
 
-        // 3. Prepare data for the view
+        // 3. Fetch products and calculate real-time social proof
+        $products = $productModel->findAll();
+        
+        foreach ($products as &$p) {
+            // Get actual sold count from order_items
+            $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
+            
+            // Get real-time average rating
+            // 1. Get all order IDs that contain this product
+            $orderIds = array_column($orderItemModel->where('product_id', $p['id'])->select('order_id')->findAll(), 'order_id');
+            
+            if (!empty($orderIds)) {
+                // 2. Get average rating from order_reviews for these orders
+                $ratingResult = $reviewModel->selectAvg('rating')
+                    ->whereIn('order_id', $orderIds)
+                    ->first();
+                $p['real_rating'] = $ratingResult['rating'] ? round((float)$ratingResult['rating'], 1) : null;
+            } else {
+                $p['real_rating'] = null;
+            }
+        }
+
+        // 4. Prepare data for the view
         $data =[
             'title'             => 'Customer Portal',
             'username'          => session()->get('username'),
-            'products'          => $productModel->findAll(),
+            'products'          => $products,
             'shippingLocations' => $shippingModel->where('is_active', 1)->findAll(),
             'orderCounts'       => $orderCounts,
             'activeOrdersCount' => $activeOrdersCount,
+            'isAJAX'            => $this->request->isAJAX(),
         ];
 
-        // 4. Load the customer dashboard view
+        // 5. Load the customer dashboard view
         return view('customer/dashboard', $data);
     }
 
