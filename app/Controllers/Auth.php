@@ -28,10 +28,21 @@ class Auth extends BaseController
             $provider = trim((string)$this->request->getPost('provider')); 
             $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
 
-            // 2. Verify reCAPTCHA (Server-side)
+            // 2. Verify reCAPTCHA (Server-side) - Using CURL for better compatibility on InfinityFree
             if ($provider !== 'google' && !empty($recaptchaResponse)) {
                 $secret = env('RECAPTCHA_SECRET_KEY'); 
-                $verify = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                    'secret'   => $secret,
+                    'response' => $recaptchaResponse
+                ]));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Often needed on InfinityFree
+                $verify = curl_exec($ch);
+                curl_close($ch);
                 
                 if ($verify !== false) {
                     $captchaData = json_decode($verify);
@@ -133,11 +144,22 @@ class Auth extends BaseController
 
     public function createAccount()
     {
-        // 1. Verify reCAPTCHA (Server-side)
+        // 1. Verify reCAPTCHA (Server-side) - Using CURL for better compatibility on InfinityFree
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
         if (!empty($recaptchaResponse)) {
             $secret = env('RECAPTCHA_SECRET_KEY');
-            $verify = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$recaptchaResponse}");
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                'secret'   => $secret,
+                'response' => $recaptchaResponse
+            ]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+            $verify = curl_exec($ch);
+            curl_close($ch);
             
             if ($verify !== false) {
                 $captchaData = json_decode($verify);

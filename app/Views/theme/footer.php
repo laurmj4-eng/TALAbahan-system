@@ -115,59 +115,77 @@
             #chat-button-container {
                 bottom: 165px !important; /* Moved up from 155px */
                 right: 20px !important;
-                width: 55px !important;
-                height: 55px !important;
+                width: 60px !important; /* Kept standard size for better tap target */
+                height: 60px !important;
             }
             #chat-button {
-                width: 55px !important;
-                height: 55px !important;
+                width: 60px !important;
+                height: 60px !important;
+                /* Add a subtle ring for better visibility on mobile */
+                box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2), 0 8px 25px rgba(0,0,0,0.3) !important;
             }
             #chat-button img {
-                width: 88px !important;
-                height: 88px !important;
+                width: 90px !important;
+                height: 90px !important;
                 object-fit: cover !important;
                 object-position: center !important;
             }
             #chat-container {
-                bottom: 225px !important; /* Moved up from 215px */
-                right: 10px !important;
-                width: calc(100vw - 20px) !important;
-                height: 70vh !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                border-radius: 0 !important;
+                z-index: 2147483647 !important;
+            }
+            #chat-header {
+                padding: 20px 15px !important;
+                padding-top: calc(env(safe-area-inset-top) + 15px) !important;
+                border-radius: 0 !important;
+            }
+            #chat-input-area {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 15px) !important;
             }
         }
     </style>
 
     <!-- Mj Assistant Integration -->
+    <div id="chat-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2147483645; transition: opacity 0.3s ease;"></div>
+    
     <div id="chat-button-container">
-        <button id="chat-button" type="button" style="z-index: 10 !important;">
+        <button id="chat-button" type="button" style="z-index: 10 !important;" aria-label="Open Chatbot">
             <div class="chat-button-pulse" style="background-color: #8b5cf6; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; opacity: 0.3; animation: pulse-ring 2s infinite; pointer-events: none !important; z-index: -1;"></div>
-            <img src="<?= base_url('images/logo.png') ?>" alt="MJ">
+            <img src="<?= base_url('images/logo.png') ?>" alt="MJ" onerror="this.src='<?= base_url('favicon.ico') ?>'">
         </button>
     </div>
 
     <div id="chat-container">
         <div id="chat-header">
             <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.3);">
+                    <img src="<?= base_url('images/logo.png') ?>" alt="MJ" style="width: 120%; height: 120%; object-fit: cover;">
+                </div>
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 700; font-size: 14px;">Mj Sub-Routine AI</span>
-                    <select id="model-select" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; font-size: 11px; padding: 2px 5px;">
-                        <option value="openrouter/free">Optimum Protocol</option>
+                    <span style="font-weight: 700; font-size: 15px; letter-spacing: 0.5px;">Mj AI Assistant</span>
+                    <select id="model-select" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; font-size: 10px; padding: 2px 8px; outline: none; margin-top: 2px;">
+                        <option value="openrouter/free">Optimum Protocol (Stable)</option>
                     </select>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button id="toggle-sound" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">🔊</button>
-                <button id="close-chat" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button id="toggle-sound" title="Toggle Sound" style="background: rgba(255,255,255,0.1); border: none; color: white; cursor: pointer; font-size: 16px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">🔊</button>
+                <button id="close-chat" title="Close Chat" style="background: rgba(255,255,255,0.1); border: none; color: white; font-size: 20px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
             </div>
         </div>
         <div id="chat-messages">
             <!-- Messages will be loaded by chat-script.js -->
         </div>
-        <div id="chat-input-area" style="padding: 15px; background: white; border-top: 1px solid #e2e8f0;">
-            <div class="input-wrapper" style="display: flex; gap: 10px; background: #f1f5f9; padding: 8px 15px; border-radius: 25px; border: 1px solid #e2e8f0;">
-                <input type="text" id="chat-input" placeholder="Initiate inquiry..." style="flex: 1; border: none; background: none; outline: none; font-size: 14px; color: #333 !important;">
-                <button id="send-btn" style="background: #6366f1; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 18px;">&gt;</span>
+        <div id="chat-input-area" style="padding: 15px; background: white; border-top: 1px solid #e2e8f0; box-shadow: 0 -4px 15px rgba(0,0,0,0.03);">
+            <div class="input-wrapper" style="display: flex; gap: 10px; background: #f8fafc; padding: 10px 15px; border-radius: 20px; border: 1.5px solid #e2e8f0; transition: all 0.2s ease;">
+                <input type="text" id="chat-input" placeholder="Type your message..." style="flex: 1; border: none; background: none; outline: none; font-size: 14px; color: #1e293b; padding: 5px 0;">
+                <button id="send-btn" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);">
+                    <i class="fas fa-paper-plane" style="font-size: 14px;"></i>
                 </button>
             </div>
         </div>
@@ -175,6 +193,21 @@
 
     <script src="<?= base_url('js/chat-script.js') ?>?v=<?= time() ?>"></script>
     <script>
+        // Ensure Chatbot opens even if scripts are re-run by AJAX
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('#chat-button');
+            if (btn && typeof openChat === 'function') {
+                e.preventDefault();
+                openChat();
+            }
+            
+            const closeBtn = e.target.closest('#close-chat');
+            if (closeBtn && typeof closeChatFn === 'function') {
+                e.preventDefault();
+                closeChatFn();
+            }
+        });
+
         function switchTab(tabId) {
             // MAGIC FIX: If on Product view, redirect to dashboard with the tab ID!
             if (!document.getElementById('tab-' + tabId)) {

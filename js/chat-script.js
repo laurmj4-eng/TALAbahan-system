@@ -12,6 +12,7 @@ const sendBtn = document.getElementById('send-btn');
 const chatMessages = document.getElementById('chat-messages');
 const modelSelect = document.getElementById('model-select');
 const toggleSoundBtn = document.getElementById('toggle-sound');
+const chatBackdrop = document.getElementById('chat-backdrop');
 
 let chatHistory = JSON.parse(localStorage.getItem('myChatbotHistory')) || [];
 let isSoundEnabled = true;
@@ -29,11 +30,69 @@ if (!chatButton || !chatContainer || !closeChat || !chatInput || !sendBtn || !ch
     console.warn('Chat UI elements are missing from the page.');
 } else {
 
-chatButton.addEventListener('click', () => {
+const openChat = () => {
     chatContainer.classList.add('active');
-    setTimeout(() => chatInput.focus(), 300);
+    if (chatBackdrop) {
+        chatBackdrop.style.display = 'block';
+        setTimeout(() => chatBackdrop.style.opacity = '1', 10);
+    }
+    
+    // Mobile optimization: Slight delay for keyboard to prevent layout shift
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    setTimeout(() => {
+        chatInput.focus();
+        if (isMobile) {
+            // Ensure input is visible on mobile when keyboard pops up
+            chatInput.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 350);
+};
+
+const closeChatFn = () => {
+    chatContainer.classList.remove('active');
+    if (chatBackdrop) {
+        chatBackdrop.style.opacity = '0';
+        setTimeout(() => chatBackdrop.style.display = 'none', 300);
+    }
+    document.body.style.overflow = ''; // Restore scrolling
+};
+
+// Use both click and pointerdown for faster response on mobile
+if (chatButton) {
+    chatButton.onclick = (e) => {
+        e.preventDefault();
+        openChat();
+    };
+    
+    // For touch devices, pointerdown is faster than click
+    chatButton.onpointerdown = (e) => {
+        if (e.pointerType === 'touch') {
+            openChat();
+        }
+    };
+}
+
+if (closeChat) {
+    closeChat.onclick = (e) => {
+        e.preventDefault();
+        closeChatFn();
+    };
+}
+
+if (chatBackdrop) {
+    chatBackdrop.addEventListener('click', closeChatFn);
+}
+
+// Close chat on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && chatContainer.classList.contains('active')) {
+        closeChatFn();
+    }
 });
-closeChat.addEventListener('click', () => chatContainer.classList.remove('active'));
 
 toggleSoundBtn.addEventListener('click', () => {
     isSoundEnabled = !isSoundEnabled;
@@ -194,24 +253,28 @@ sendBtn.addEventListener('click', handleSend);
 chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
 
 const downloadChatBtn = document.getElementById('download-chat');
-downloadChatBtn?.addEventListener('click', () => {
-    if (chatHistory.length === 0) return alert("No history!");
-    let textToSave = "--- Chat History ---\n\n";
-    chatHistory.forEach(msg => { textToSave += `[${msg.timestamp}] ${msg.role.toUpperCase()}: ${msg.content}\n\n`; });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([textToSave], { type: 'text/plain' }));
-    a.download = 'Mj_Chat_History.txt';
-    a.click();
-});
+if (downloadChatBtn) {
+    downloadChatBtn.addEventListener('click', () => {
+        if (chatHistory.length === 0) return alert("No history!");
+        let textToSave = "--- Chat History ---\n\n";
+        chatHistory.forEach(msg => { textToSave += `[${msg.timestamp}] ${msg.role.toUpperCase()}: ${msg.content}\n\n`; });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([textToSave], { type: 'text/plain' }));
+        a.download = 'Mj_Chat_History.txt';
+        a.click();
+    });
+}
 
 const clearChatBtn = document.getElementById('clear-chat');
-clearChatBtn?.addEventListener('click', () => {
-    if (confirm("Clear conversation history?")) {
-        chatHistory = [];
-        saveHistory();
-        loadHistoryUI();
-    }
-});
+if (clearChatBtn) {
+    clearChatBtn.addEventListener('click', () => {
+        if (confirm("Clear conversation history?")) {
+            chatHistory = [];
+            saveHistory();
+            loadHistoryUI();
+        }
+    });
+}
 
 // START THE UI
 loadHistoryUI();

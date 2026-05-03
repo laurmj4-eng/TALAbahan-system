@@ -81,14 +81,16 @@
             right: 25px !important;
         }
         #chat-button-container {
-            bottom: 190px !important; /* Stacked above cart icon */
+            bottom: 175px !important; /* Stacked above cart icon and bottom nav */
             right: 25px !important;
-            display: flex !important; /* Ensure it stays visible */
-            left: auto !important; /* Override any left: 20px from chat-style.css */
+            display: flex !important;
+            left: auto !important;
         }
         #chat-container {
-            bottom: 250px !important; /* Stacked above button */
-            right: 15px !important;
+            bottom: 0 !important; /* Mobile full-screen override */
+            right: 0 !important;
+            width: 100vw !important;
+            height: 100% !important;
         }
     }
 

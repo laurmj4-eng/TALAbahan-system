@@ -26,10 +26,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'localhost',
-        'username'     => '',
-        'password'     => '',
-        'database'     => '',
+        'hostname'     => 'sql206.infinityfree.com',
+        'username'     => 'if0_41764652',
+        'password'     => 'yEEY6EnLGIFdD',
+        'database'     => 'if0_41764652_mj_chatbot',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
@@ -88,36 +88,34 @@ class Database extends Config
     {
         parent::__construct();
 
-        // Ensure that we always set the database group to 'tests' if
-        // we are currently running an automated test suite, so that
-        // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
             return;
         }
 
-        // Automatic Database Detection
+        // Environment Detection Logic
+        $isLocal = false;
         if (isset($_SERVER['HTTP_HOST'])) {
             $host = $_SERVER['HTTP_HOST'];
-            if (strpos($host, 'mjtalabahan.page.gd') !== false) {
-                // LIVE (InfinityFree)
-                $this->default['hostname'] = env('database.live.hostname', 'sql206.infinityfree.com');
-                $this->default['database'] = env('database.live.database', 'if0_41764652_mj_chatbot');
-                $this->default['username'] = env('database.live.username', 'if0_41764652');
-                $this->default['password'] = env('database.live.password', 'yEEY6EnLGIfdD');
-            } else {
-                // LOCAL (XAMPP)
-                $this->default['hostname'] = env('database.local.hostname', 'localhost');
-                $this->default['database'] = env('database.local.database', 'mj_chatbot');
-                $this->default['username'] = env('database.local.username', 'root');
-                $this->default['password'] = env('database.local.password', '');
+            // STRICT LOCAL DETECTION: Only use local settings if explicitly on localhost or 127.0.0.1
+            if (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
+                $isLocal = true;
             }
-        } else {
-            // Default to local if no HTTP_HOST (e.g. CLI)
+        }
+
+        if ($isLocal) {
+            // Switch to LOCAL (XAMPP) settings
             $this->default['hostname'] = env('database.local.hostname', 'localhost');
             $this->default['database'] = env('database.local.database', 'mj_chatbot');
             $this->default['username'] = env('database.local.username', 'root');
             $this->default['password'] = env('database.local.password', '');
+        } else {
+            // FORCED LIVE SETTINGS (InfinityFree)
+            // We use the hardcoded defaults directly to avoid any .env issues on free hosting
+            $this->default['hostname'] = 'sql206.infinityfree.com';
+            $this->default['database'] = 'if0_41764652_mj_chatbot';
+            $this->default['username'] = 'if0_41764652';
+            $this->default['password'] = 'yEEY6EnLGIfdD';
         }
     }
 }
