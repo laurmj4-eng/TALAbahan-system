@@ -348,6 +348,23 @@ CREATE TABLE `product_payment_constraints` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `order_status_history`
+--
+
+CREATE TABLE `order_status_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `status_from` varchar(50) NOT NULL,
+  `status_to` varchar(50) NOT NULL,
+  `changed_by` varchar(100) NOT NULL,
+  `remarks` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `order_reviews`
 --
 
