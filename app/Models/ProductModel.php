@@ -18,10 +18,10 @@ class ProductModel extends Model
 
     protected $validationRules = [
         'name'          => 'required|min_length[2]|max_length[255]',
-        'cost_price'    => 'required|decimal|greater_than_equal_to[0]',
-        'selling_price' => 'required|decimal|greater_than[0]|validate_price_gt_cost',
-        'initial_stock' => 'required|decimal|greater_than_equal_to[0]',
-        'current_stock' => 'required|decimal|greater_than_equal_to[0]',
+        'cost_price'    => 'required|numeric|greater_than_equal_to[0]',
+        'selling_price' => 'required|numeric|greater_than[0]|validate_price_gt_cost',
+        'initial_stock' => 'required|numeric|greater_than_equal_to[0]',
+        'current_stock' => 'required|numeric|greater_than_equal_to[0]',
     ];
 
     protected $validationMessages = [

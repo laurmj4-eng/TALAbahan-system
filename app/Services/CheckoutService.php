@@ -13,6 +13,7 @@ use App\Models\ShippingLocationModel;
 use App\Models\ProductPaymentConstraintModel;
 use App\Models\CodComplianceModel;
 use App\Models\UserModel;
+use App\Models\OrderStatusHistoryModel;
 use Exception;
 
 class CheckoutService
@@ -28,6 +29,7 @@ class CheckoutService
     protected $productPaymentConstraintModel;
     protected $codComplianceModel;
     protected $userModel;
+    protected $historyModel;
     protected $emailService;
 
     private const ALLOWED_PAYMENT_METHODS = ['COD', 'GCASH'];
@@ -45,6 +47,7 @@ class CheckoutService
         $this->productPaymentConstraintModel = new ProductPaymentConstraintModel();
         $this->codComplianceModel = new CodComplianceModel();
         $this->userModel = new UserModel();
+        $this->historyModel = new OrderStatusHistoryModel();
         $this->emailService = new EmailNotificationService();
     }
 
@@ -259,8 +262,13 @@ class CheckoutService
             ], true);
 
             if (!$orderId) {
-                throw new Exception('Failed to create order.');
+                $errors = $this->orderModel->errors();
+                $errorMsg = !empty($errors) ? implode(', ', $errors) : 'Unknown database error.';
+                throw new Exception('Failed to create order: ' . $errorMsg);
             }
+
+            // Log initial status
+            $this->historyModel->logStatusChange($orderId, 'N/A', OrderModel::STATUS_PENDING, $quoteData['receiver_name'], 'Order placed via online portal');
 
             foreach ($quoteData['items'] as $item) {
                 $row = [

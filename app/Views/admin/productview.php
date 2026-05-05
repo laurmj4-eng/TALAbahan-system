@@ -276,12 +276,13 @@
                 return;
             }
 
-            document.getElementById('editProductId').value = result.id;
-            document.getElementById('editProductName').value = result.name;
-            document.getElementById('editProductUnit').value = result.unit;
-            document.getElementById('editCostPrice').value = result.cost_price;
-            document.getElementById('editSellingPrice').value = result.selling_price;
-            document.getElementById('editCurrentStock').value = result.current_stock;
+            const product = result.data;
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductUnit').value = product.unit;
+            document.getElementById('editCostPrice').value = product.cost_price;
+            document.getElementById('editSellingPrice').value = product.selling_price;
+            document.getElementById('editCurrentStock').value = product.current_stock;
 
         } catch (error) {
             console.error('Error fetching product details:', error);

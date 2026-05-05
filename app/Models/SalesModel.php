@@ -16,7 +16,7 @@ class SalesModel extends Model
     protected $validationRules = [
         'transaction_code' => 'required|min_length[5]|max_length[50]|is_unique[sales_history.transaction_code]',
         'items_summary'    => 'required|min_length[2]',
-        'total_amount'     => 'required|decimal|greater_than[0]',
+        'total_amount'     => 'required|numeric|greater_than[0]',
     ];
 
     public function recordFromOrder(string $transactionCode, array $itemNames, float $totalAmount): bool

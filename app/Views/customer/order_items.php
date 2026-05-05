@@ -245,8 +245,6 @@
             }
         }
     </style>
-    <!-- SIDEBAR -->
-    <?= $this->include('theme/sidebar') ?>
 
     <main class="main-content">
         <div style="margin-bottom: 40px;">

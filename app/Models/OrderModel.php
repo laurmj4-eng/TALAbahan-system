@@ -46,7 +46,7 @@ class OrderModel extends Model
 
     protected $validationRules = [
         'customer_name' => 'required|min_length[2]|max_length[120]',
-        'total_amount'  => 'required|decimal|greater_than_equal_to[0]',
+        'total_amount'  => 'required|numeric|greater_than_equal_to[0]',
         'status'        => 'required|in_list[Pending,Processing,Shipped,Completed,Cancelled,Refunded]',
     ];
 

@@ -7,6 +7,7 @@ use App\Models\OrderItemModel;
 use App\Models\ProductModel;
 use App\Models\SalesModel;
 use App\Models\UserModel;
+use App\Models\OrderStatusHistoryModel;
 use Exception;
 
 class OrderService
@@ -16,6 +17,7 @@ class OrderService
     protected $productModel;
     protected $salesModel;
     protected $userModel;
+    protected $historyModel;
     protected $emailService;
 
     public function __construct()
@@ -25,6 +27,7 @@ class OrderService
         $this->productModel = new ProductModel();
         $this->salesModel = new SalesModel();
         $this->userModel = new UserModel();
+        $this->historyModel = new OrderStatusHistoryModel();
         $this->emailService = new EmailNotificationService();
     }
 
@@ -70,6 +73,10 @@ class OrderService
             if (!$this->orderModel->update($orderId, $updateData)) {
                 throw new Exception('Failed to update order status.');
             }
+
+            // Log status change
+            $changedBy = session()->get('username') ?? 'System';
+            $this->historyModel->logStatusChange($orderId, $oldStatus, $status, $changedBy);
 
             if ($db->transStatus() === false) {
                 throw new Exception('Transaction failed.');
@@ -140,6 +147,10 @@ class OrderService
                 throw new Exception('Failed to cancel order.');
             }
 
+            // Log status change
+            $changedBy = $customerName ?: (session()->get('username') ?? 'System');
+            $this->historyModel->logStatusChange($orderId, $order['status'], OrderModel::STATUS_CANCELLED, $changedBy, $cancelReason);
+
             $db->transCommit();
             return ['ok' => true, 'message' => 'Order cancelled successfully.'];
         } catch (Exception $e) {
@@ -179,6 +190,13 @@ class OrderService
 
         if (!$this->orderModel->update($orderId, $data)) {
             return ['ok' => false, 'message' => 'Failed to update tracking.'];
+        }
+
+        // Log status change if tracking triggered a status change
+        if (isset($data['status']) && $oldStatus !== $data['status']) {
+            $changedBy = session()->get('username') ?? 'System';
+            $remarks = "Tracking: {$trackingNumber} ({$courierName})";
+            $this->historyModel->logStatusChange($orderId, $oldStatus, $data['status'], $changedBy, $remarks);
         }
 
         if (isset($data['status']) && $oldStatus !== $data['status']) {

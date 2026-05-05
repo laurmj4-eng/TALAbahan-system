@@ -1,15 +1,23 @@
 <?php 
     $role = session()->get('role') ?? 'admin'; 
     $username = session()->get('username') ?? 'User';
-    $is_dashboard = url_is($role.'/dashboard*') || url_is('dashboard*');
-    $is_order_items = url_is('admin/orders/items*');
-    $is_orders = url_is('admin/orders*');
-    $is_products = url_is('staff/products*') || url_is('admin/products*');
-    $is_staff_orders = url_is('staff/orders*');
-    $is_sales = url_is('staff/salesHistory*') || url_is('admin/sales*');
-    $is_customer_order_items = url_is('customer/order-items*');
-    $is_shipping = url_is('admin/shipping*');
-    $is_vouchers = url_is('admin/vouchers*');
+    
+    // Get current URI segments for precise matching
+    $uri = service('uri');
+    $seg1 = $uri->getTotalSegments() >= 1 ? $uri->getSegment(1) : '';
+    $seg2 = $uri->getTotalSegments() >= 2 ? $uri->getSegment(2) : '';
+    $seg3 = $uri->getTotalSegments() >= 3 ? $uri->getSegment(3) : '';
+
+    // Precise Active States
+    $is_dashboard = ($seg2 === 'dashboard');
+    $is_order_items = ($seg1 === 'admin' && $seg2 === 'orders' && $seg3 === 'items');
+    $is_orders = ($seg1 === 'admin' && $seg2 === 'orders' && $seg3 === '');
+    $is_products = ($seg2 === 'products');
+    $is_staff_orders = ($seg1 === 'staff' && $seg2 === 'orders');
+    $is_sales = ($seg2 === 'sales' || $seg2 === 'salesHistory');
+    $is_customer_order_items = ($seg1 === 'customer' && in_array($seg2, ['order-items', 'order-center', 'order-details', 'tracking']));
+    $is_shipping = ($seg1 === 'admin' && $seg2 === 'shipping');
+    $is_vouchers = ($seg1 === 'admin' && $seg2 === 'vouchers');
 ?>
 
 <?= $this->include('theme/sidebar_styles') ?>

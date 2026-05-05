@@ -112,7 +112,17 @@
         transition: 0.3s;
     }
     .btn-details:hover { background: #ffffff; color: #000000; transform: scale(1.1); }
+
+    /* Pagination Styling */
+    .pagination-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+    }
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
 
 <div class="card glass-panel" id="order-card-container">
     <div class="flex-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
@@ -152,7 +162,9 @@
                         <td>
                             <div class="txn-pill"><?= esc($o['transaction_code']) ?></div>
                             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 8px;">
-                                <?= date('M d, Y • h:i A', strtotime($o['created_at'])) ?>
+                                <time class="timeago" datetime="<?= date('c', strtotime($o['created_at'])) ?>">
+                                    <?= date('M d, Y • h:i A', strtotime($o['created_at'])) ?>
+                                </time>
                             </div>
                         </td>
                         <td>
@@ -201,6 +213,12 @@
         </tbody>
     </table>
     </div>
+
+    <?php if (isset($pager)): ?>
+        <div class="pagination-container">
+            <?= $pager->links() ?>
+        </div>
+    <?php endif; ?>
 </div>
 
 <!-- Order Details Modal -->
@@ -226,10 +244,24 @@
         <div style="text-align: right; margin-top: 30px; font-size: 1.5rem; font-weight: 800;">
             Total: <span id="modalTotal" style="color: #4ade80;">&#8369;0.00</span>
         </div>
+
+        <!-- Activity Log Timeline -->
+        <div style="margin-top: 40px;">
+            <div class="modal-header" style="font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+                <i class="fas fa-history" style="margin-right: 10px;"></i> Order Activity Log
+            </div>
+            <div id="modalHistory" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- History items will be injected here -->
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+$(document).ready(function() {
+    $("time.timeago").timeago();
+});
+
 async function viewOrderDetails(id) {
     try {
         const response = await fetch(`<?= site_url('admin/orders/show/') ?>${id}`);
@@ -253,7 +285,37 @@ async function viewOrderDetails(id) {
                 `;
             });
             
-            document.getElementById('modalTotal').innerText = '&#8369;' + parseFloat(order.total_amount).toFixed(2);
+            document.getElementById('modalTotal').innerHTML = '&#8369;' + parseFloat(order.total_amount).toFixed(2);
+            
+            // Populate History
+            const historyDiv = document.getElementById('modalHistory');
+            historyDiv.innerHTML = '';
+            
+            if (order.history && order.history.length > 0) {
+                order.history.forEach(log => {
+                    const date = new Date(log.created_at);
+                    const dateStr = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+                    
+                    historyDiv.innerHTML += `
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border-left: 3px solid #6366f1;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: 700; color: #a5b4fc;">${log.status_to}</span>
+                                <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">${dateStr}</span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">
+                                Status changed from <span style="color: rgba(255,255,255,0.4); text-decoration: line-through;">${log.status_from}</span>
+                            </div>
+                            <div style="font-size: 0.75rem; margin-top: 8px; color: rgba(255,255,255,0.3);">
+                                <i class="fas fa-user-edit" style="font-size: 0.65rem;"></i> Updated by ${log.changed_by}
+                                ${log.remarks ? `<br><i class="fas fa-comment-dots" style="font-size: 0.65rem;"></i> ${log.remarks}` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                historyDiv.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.85rem;">No activity logs found.</div>';
+            }
+
             document.getElementById('orderModal').classList.add('show');
         } else {
             alert(result.message);

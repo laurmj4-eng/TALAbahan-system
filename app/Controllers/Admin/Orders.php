@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\CodComplianceModel;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
+use App\Models\OrderStatusHistoryModel;
 use App\Models\RefundRequestModel;
 use App\Services\OrderService;
 
@@ -20,7 +21,19 @@ class Orders extends BaseController
     public function index()
     {
         $model = new OrderModel();
-        $data['orders'] = $model->getOrdersWithItemCount();
+        
+        // Add pagination: 10 orders per page
+        $data = [
+            'orders' => $model->orderBy('created_at', 'DESC')->paginate(10),
+            'pager'  => $model->pager,
+        ];
+
+        // We need to inject the item count for each order since we are using standard paginate()
+        foreach ($data['orders'] as &$o) {
+            $db = db_connect();
+            $o['item_count'] = $db->table('order_items')->where('order_id', $o['id'])->countAllResults();
+        }
+
         return view('admin/orders_standalone', $data);
     }
 
@@ -80,6 +93,9 @@ class Orders extends BaseController
 
         $orderItemModel = new OrderItemModel();
         $items          = $orderItemModel->getItemsByOrder($orderId);
+        
+        $historyModel = new OrderStatusHistoryModel();
+        $history      = $historyModel->getHistoryByOrder($orderId);
 
         return $this->response->setJSON([
             'status' => 'success',
@@ -87,6 +103,7 @@ class Orders extends BaseController
                 'order_id'   => (int) $orderId,
                 'items'      => $items,
                 'item_count' => count($items),
+                'history'    => $history
             ],
         ]);
     }
