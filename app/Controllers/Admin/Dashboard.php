@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\OrderModel;
 use App\Models\ProductModel;
+use App\Models\SalesModel;
 
 class Dashboard extends BaseController
 {
@@ -47,6 +48,16 @@ class Dashboard extends BaseController
 
         $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
         
+        // --- ADDED LEDGER DATA FETCHING ---
+        try {
+            $salesModel = new SalesModel();
+            $data['ledger_history'] = $salesModel->orderBy('created_at', 'DESC')->findAll();
+        } catch (\Exception $e) {
+            log_message('error', 'Dashboard Ledger Fetch Error: ' . $e->getMessage());
+            $data['ledger_history'] = [];
+        }
+        // ----------------------------------
+
         // Calculate Growth Metric (Today vs Yesterday)
         $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
         $growth = 0;

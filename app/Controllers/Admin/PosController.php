@@ -72,12 +72,7 @@ class PosController extends BaseController
             $salesModel = new SalesModel();
             $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
             
-            return $this->response->setJSON([
-                'status'  => 'success',
-                'message' => 'Sales history fetched.',
-                'data'    => $history ?? [],
-                'token'   => csrf_hash(),
-            ])->setStatusCode(200);
+            return $this->response->setJSON($history ?? []);
         } catch (\Exception $e) {
             log_message('error', 'getHistory error: ' . $e->getMessage());
             return $this->response->setJSON([
