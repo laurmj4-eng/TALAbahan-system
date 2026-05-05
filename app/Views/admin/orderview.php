@@ -262,6 +262,10 @@ $(document).ready(function() {
     $("time.timeago").timeago();
 });
 
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
 async function viewOrderDetails(id) {
     try {
         const response = await fetch(`<?= site_url('admin/orders/show/') ?>${id}`);
