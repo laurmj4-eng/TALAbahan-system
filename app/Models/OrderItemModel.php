@@ -13,7 +13,7 @@ class OrderItemModel extends Model
     protected $useTimestamps    = false;
 
     protected $allowedFields = [
-        'order_id', 'product_id', 'product_name', 'unit', 'quantity', 'unit_price', 'subtotal'
+        'order_id', 'product_id', 'product_name', 'unit', 'quantity', 'unit_price', 'subtotal', 'cost_price'
     ];
 
     protected $validationRules = [

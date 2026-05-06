@@ -74,7 +74,16 @@ class OrderService
                 throw new Exception('Failed to update order status.');
             }
 
-            // Log status change
+            // --- AUTO-TRIGGER LOGIC ---
+            // 1. If cancelled, restore stock automatically
+            if ($status === OrderModel::STATUS_CANCELLED && $oldStatus !== OrderModel::STATUS_CANCELLED) {
+                $orderItems = $this->orderItemModel->where('order_id', $orderId)->findAll();
+                foreach ($orderItems as $item) {
+                    $this->productModel->increaseStock((int)$item['product_id'], (float)$item['quantity']);
+                }
+            }
+
+            // 2. Log status change
             $changedBy = session()->get('username') ?? 'System';
             $this->historyModel->logStatusChange($orderId, $oldStatus, $status, $changedBy);
 

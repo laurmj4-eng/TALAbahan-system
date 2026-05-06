@@ -23,8 +23,10 @@ class Dashboard extends BaseController
             'username' => session()->get('username'),
             'users'    => $userModel->findAll(),
             'cards'    => [
-                'today_sales'     => 0,
-                'today_orders'    => 0,
+                'today_sales'      => 0,
+                'today_orders'     => 0,
+                'today_profit'     => 0,
+                'profit_margin'    => 0,
             ],
             'chart'    => [
                 'labels'   => [],
@@ -47,6 +49,11 @@ class Dashboard extends BaseController
         }
 
         $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
+        $data['cards']['today_profit'] = round((float) $orderModel->getTodayProfit(), 2);
+        
+        if ($data['cards']['today_sales'] > 0) {
+            $data['cards']['profit_margin'] = round(($data['cards']['today_profit'] / $data['cards']['today_sales']) * 100, 1);
+        }
         
         // --- ADDED LEDGER DATA FETCHING ---
         try {
@@ -72,6 +79,16 @@ class Dashboard extends BaseController
             ->where('DATE(created_at)', date('Y-m-d'))
             ->countAllResults();
 
+        // --- ORDER AGING ALERTS (Stale Orders > 24 Hours) ---
+        $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
+        $data['stale_orders'] = $orderModel
+            ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
+            ->where('created_at <', $yesterday)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+        
+        $data['cards']['stale_orders_count'] = count($data['stale_orders']);
+
         // Top 3 Selling Products (Last 30 Days)
         $db = \Config\Database::connect();
         $data['top_products'] = $db->table('order_items oi')
@@ -85,7 +102,7 @@ class Dashboard extends BaseController
             ->get()
             ->getResultArray();
 
-        // Recent Activity Feed (Orders + New Users)
+        // Recent Activity Feed (Orders + New Users + Stock)
         $activities = [];
 
         try {
@@ -94,49 +111,67 @@ class Dashboard extends BaseController
                 ->select('h.*, o.transaction_code')
                 ->join('orders o', 'o.id = h.order_id')
                 ->orderBy('h.created_at', 'DESC')
-                ->limit(5)
-                ->get()
-                ->getResultArray();
-            
-            foreach ($recentOrders as $order) {
-                $activities[] = [
-                    'type' => 'order',
-                    'title' => "Order #{$order['transaction_code']}",
-                    'desc' => "Status changed to <strong>{$order['status_to']}</strong> by {$order['changed_by']}",
-                    'time' => $order['created_at'],
-                    'icon' => 'fa-box',
-                    'color' => '#6366f1'
-                ];
-            }
-
-            // 2. Get recent user registrations
-            $recentUsers = $db->table('users')
-                ->orderBy('created_at', 'DESC')
                 ->limit(3)
                 ->get()
                 ->getResultArray();
             
-            foreach ($recentUsers as $user) {
+            foreach ($recentOrders as $ro) {
                 $activities[] = [
-                    'type' => 'user',
-                    'title' => "New User: " . ($user['full_name'] ?: $user['username']),
-                    'desc' => "Joined the platform as a " . ucfirst($user['role']),
-                    'time' => $user['created_at'],
-                    'icon' => 'fa-user-plus',
+                    'title' => 'Order Updated',
+                    'desc'  => "TXN: {$ro['transaction_code']} changed to {$ro['status_to']} by {$ro['changed_by']}",
+                    'time'  => $ro['created_at'],
+                    'icon'  => 'fa-shopping-bag',
+                    'color' => '#818cf8'
+                ];
+            }
+
+            // 2. Get recent stock changes (from products updated_at)
+            $recentStock = $db->table('products')
+                ->select('name, current_stock, updated_at')
+                ->where('updated_at >=', date('Y-m-d H:i:s', strtotime('-24 hours')))
+                ->orderBy('updated_at', 'DESC')
+                ->limit(3)
+                ->get()
+                ->getResultArray();
+
+            foreach ($recentStock as $rs) {
+                $activities[] = [
+                    'title' => 'Stock Update',
+                    'desc'  => "Product '{$rs['name']}' now has {$rs['current_stock']} units.",
+                    'time'  => $rs['updated_at'],
+                    'icon'  => 'fa-boxes',
                     'color' => '#10b981'
                 ];
             }
+
+            // 3. Get recent user changes
+            $recentUsers = $db->table('users')
+                ->select('username, role, email')
+                ->orderBy('id', 'DESC')
+                ->limit(2)
+                ->get()
+                ->getResultArray();
+
+            foreach ($recentUsers as $ru) {
+                $activities[] = [
+                    'title' => 'New User Access',
+                    'desc'  => "{$ru['username']} ({$ru['role']}) added to the system.",
+                    'time'  => date('Y-m-d H:i:s'), // Assuming just now if no created_at
+                    'icon'  => 'fa-user-plus',
+                    'color' => '#fbbf24'
+                ];
+            }
+
+            // Sort all activities by time
+            usort($activities, function($a, $b) {
+                return strtotime($b['time']) - strtotime($a['time']);
+            });
+
+            $data['activities'] = array_slice($activities, 0, 8);
         } catch (\Exception $e) {
-            // Log error but don't crash the dashboard if history table is missing or has issues
             log_message('error', 'Dashboard Activity Feed Error: ' . $e->getMessage());
+            $data['activities'] = [];
         }
-
-        // Sort combined activities by time
-        usort($activities, function($a, $b) {
-            return strtotime($b['time']) - strtotime($a['time']);
-        });
-
-        $data['activities'] = array_slice($activities, 0, 6); // Top 6 most recent
 
         return view('admin/dashboard', $data);
     }

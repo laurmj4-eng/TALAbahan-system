@@ -3,7 +3,15 @@
     <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Real-time transaction logs and revenue records.</p>
     
     <div class="sales-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;">
-        <input type="text" id="salesSearch" onkeyup="filterSalesTable()" placeholder="Search transactions..." style="padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 300px; max-width: 100%;">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="salesSearch" onkeyup="filterSalesTable()" placeholder="Search transactions..." style="padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 200px;">
+            <div style="display: flex; gap: 5px; align-items: center;">
+                <input type="date" id="start_date" class="voucher-input" style="width: 140px;">
+                <span style="color: rgba(255,255,255,0.4);">to</span>
+                <input type="date" id="end_date" class="voucher-input" style="width: 140px;">
+                <button onclick="applyDateFilter()" class="btn-apply-voucher" style="padding: 10px 15px;">Filter</button>
+            </div>
+        </div>
         <button onclick="exportSalesToCsv()" class="btn-primary" style="background: #10b981; display: flex; align-items: center; gap: 8px; height: auto; padding: 10px 20px;">
             <i class="fas fa-download"></i> Export CSV
         </button>
@@ -69,12 +77,17 @@
         });
     }
 
-    async function loadSalesHistory() {
+    async function loadSalesHistory(startDate = '', endDate = '') {
         const tbody = document.getElementById('sales-history-body');
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:rgba(255,255,255,0.4);">Loading financial data...</td></tr>';
         
         try {
-            const response = await fetch('<?= site_url('admin/getHistory') ?>');
+            let url = '<?= site_url('admin/getHistory') ?>';
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            }
+            
+            const response = await fetch(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -86,6 +99,23 @@
             console.error('Error loading sales history:', error);
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:#f87171;">Unable to fetch financial ledger. Please refresh the page.</td></tr>';
         }
+    }
+
+    function applyDateFilter() {
+        const start = document.getElementById('start_date').value;
+        const end = document.getElementById('end_date').value;
+        if (!start || !end) return alert("Please select both start and end dates.");
+        loadSalesHistory(start, end);
+    }
+
+    function exportSalesToCsv() {
+        const start = document.getElementById('start_date').value;
+        const end = document.getElementById('end_date').value;
+        let url = '<?= site_url('admin/getHistory') ?>?export=csv';
+        if (start && end) {
+            url += `&start_date=${start}&end_date=${end}`;
+        }
+        window.location.href = url;
     }
     
     function filterSalesTable() {

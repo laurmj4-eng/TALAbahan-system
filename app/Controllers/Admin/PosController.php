@@ -56,6 +56,10 @@ class PosController extends BaseController
             'data'    => [
                 'transaction_code' => $result['transaction_code'],
                 'total_amount'     => (float) $result['total_amount'],
+                'discount'         => (float) ($result['discount'] ?? 0),
+                'customer'         => $result['customer'] ?? 'Walk-in Customer',
+                'items'            => $result['items'] ?? [],
+                'date'             => $result['date'] ?? date('Y-m-d H:i:s'),
             ],
             'token'   => csrf_hash(),
         ]);
@@ -68,9 +72,24 @@ class PosController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
+        $startDate = $this->request->getGet('start_date');
+        $endDate   = $this->request->getGet('end_date');
+        $export    = $this->request->getGet('export');
+
         try {
             $salesModel = new SalesModel();
-            $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
+            $query = $salesModel->orderBy('created_at', 'DESC');
+
+            if ($startDate && $endDate) {
+                $query->where('DATE(created_at) >=', $startDate)
+                      ->where('DATE(created_at) <=', $endDate);
+            }
+
+            $history = $query->findAll();
+
+            if ($export === 'csv') {
+                return $this->exportToCSV($history);
+            }
             
             return $this->response->setJSON($history ?? []);
         } catch (\Exception $e) {
@@ -81,5 +100,28 @@ class PosController extends BaseController
                 'token'   => csrf_hash(),
             ])->setStatusCode(500);
         }
+    }
+
+    private function exportToCSV(array $data)
+    {
+        $filename = 'sales_report_' . date('Ymd_His') . '.csv';
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['ID', 'Transaction Code', 'Items Summary', 'Total Amount', 'Created At']);
+
+        foreach ($data as $row) {
+            fputcsv($output, [
+                $row['id'],
+                $row['transaction_code'],
+                $row['items_summary'],
+                $row['total_amount'],
+                $row['created_at']
+            ]);
+        }
+
+        fclose($output);
+        exit;
     }
 }

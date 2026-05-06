@@ -30,7 +30,7 @@
             </button>
         </div>
 
-        <div class="premium-cards-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="premium-cards-grid" style="grid-template-columns: repeat(4, 1fr);">
             <div class="premium-stat-card glass-panel">
                 <div class="premium-stat-icon bg-success color-success"><i class="fas fa-coins"></i></div>
                 <div class="premium-stat-label">Today's Sales</div>
@@ -42,16 +42,43 @@
                         </span>
                     <?php endif; ?>
                 </div>
-                <div class="premium-stat-desc">Compared to yesterday's final total</div>
+                <div class="premium-stat-desc">Final total for today</div>
+            </div>
+
+            <div class="premium-stat-card glass-panel">
+                <div class="premium-stat-icon bg-premium color-premium" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fas fa-chart-pie"></i></div>
+                <div class="premium-stat-label">Net Profit</div>
+                <div class="premium-stat-value" style="color: #8b5cf6;">
+                    &#8369;<?= number_format((float)($cards['today_profit'] ?? 0), 2) ?>
+                </div>
+                <div class="premium-stat-desc">Earnings after cost</div>
+            </div>
+
+            <div class="premium-stat-card glass-panel">
+                <div class="premium-stat-icon bg-warning color-warning"><i class="fas fa-percentage"></i></div>
+                <div class="premium-stat-label">Profit Margin</div>
+                <div class="premium-stat-value color-warning"><?= $cards['profit_margin'] ?? 0 ?>%</div>
+                <div class="premium-stat-desc">Profit to sales ratio</div>
             </div>
             
             <div class="premium-stat-card glass-panel">
                 <div class="premium-stat-icon bg-info color-info"><i class="fas fa-shopping-cart"></i></div>
                 <div class="premium-stat-label">Today's Orders</div>
                 <div class="premium-stat-value color-info"><?= (int)($cards['today_orders'] ?? 0) ?></div>
-                <div class="premium-stat-desc">Total transactions processed</div>
+                <div class="premium-stat-desc">Transactions processed</div>
             </div>
         </div>
+
+        <?php if (!empty($stale_orders)): ?>
+            <div class="premium-alert warning glass-panel" style="margin-top: 25px; border-left: 4px solid #fbbf24; background: rgba(251, 191, 36, 0.05);">
+                <i class="fas fa-exclamation-triangle" style="color: #fbbf24;"></i>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; color: #fbbf24;">Action Required: <?= count($stale_orders) ?> Stale Orders</div>
+                    <div style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Some orders have been pending for more than 24 hours. Please review and update their status.</div>
+                </div>
+                <button onclick="switchTab('orders')" class="premium-action-btn" style="padding: 8px 15px; font-size: 0.8rem; background: #fbbf24; color: #000;">View Orders</button>
+            </div>
+        <?php endif; ?>
 
         <div class="premium-section-header">
             <i class="fas fa-chart-line"></i>
