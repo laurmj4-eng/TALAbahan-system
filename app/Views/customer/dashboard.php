@@ -466,7 +466,7 @@
             width: 100%; 
             height: 350px; /* Increased height for Desktop */
             border-radius: 20px; 
-            background: rgba(255,255,255,0.05); 
+            background: #242424; /* Solid background before map loads */
             margin-bottom: 20px; 
             display: flex; 
             align-items: center; 
@@ -475,6 +475,7 @@
             overflow: hidden; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
+            z-index: 5;
         }
         .map-placeholder { text-align: center; color: rgba(255,255,255,0.3); }
         .btn-location { background: #818cf8; color: #fff; padding: 10px 15px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s; margin-bottom: 15px; }
@@ -774,13 +775,36 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: LOCATION & NAME -->
                 <div id="checkoutLocation" class="location-step">
                     <div class="modal-header">
                         <i class="fas fa-map-marked-alt" style="color: #a855f7; margin-right: 10px;"></i> Delivery Details
                     </div>
 
-                    <div style="flex: 1; overflow-y: auto;">
+                    <?php if (($ship_to_all ?? '0') !== '1'): ?>
+                        <!-- PRE-VALIDATION BANNER (Strict Mode Only) -->
+                        <div style="margin: 0 18px 15px 18px; padding: 12px 18px; background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.2); border-radius: 12px; display: flex; align-items: center; gap: 12px; animation: fadeIn 0.4s ease;">
+                            <span style="font-size: 1.2rem;">🦀</span>
+                            <span style="font-size: 0.85rem; color: #c7d2fe; font-weight: 500; line-height: 1.4;">
+                                Fresh seafood delivery available for 
+                                <strong style="color: #fff;">
+                                    <?php 
+                                        if (!empty($shippingLocations)) {
+                                            $names = array_column($shippingLocations, 'barangay_name');
+                                            if (count($names) > 3) {
+                                                echo esc(implode(', ', array_slice($names, 0, 3))) . ' and more...';
+                                            } else {
+                                                echo esc(implode(', ', $names));
+                                            }
+                                        } else {
+                                            echo "selected areas";
+                                        }
+                                    ?>
+                                </strong>!
+                            </span>
+                        </div>
+                    <?php endif; ?>
+
+                    <div style="flex: 1; overflow-y: auto;" class="step-content-scroll">
                         <div class="location-input-group">
                             <label>Receiver Name</label>
                             <input type="text" id="deliveryName" value="<?= esc($username) ?>" required>
@@ -816,7 +840,25 @@
                                 <i class="fas fa-location-crosshairs"></i> Get Current Location
                             </button>
 
-                        <div id="locationError" class="location-status"></div>
+                            <!-- SERVICEABLE AREAS TOOLTIP (TikTok Style) -->
+                            <div style="margin-top: -5px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.5); font-size: 0.75rem;">
+                                <i class="fas fa-location-dot" style="color: #a855f7;"></i>
+                                <span>Currently serving: 
+                                    <strong style="color: rgba(255,255,255,0.8);">
+                                        <?php 
+                                            if (!empty($shippingLocations)) {
+                                                $names = array_column($shippingLocations, 'barangay_name');
+                                                echo esc(implode(', ', array_slice($names, 0, 3)));
+                                                if (count($names) > 3) echo '...';
+                                            } else {
+                                                echo "selected areas";
+                                            }
+                                        ?>
+                                    </strong>
+                                </span>
+                            </div>
+
+                            <div id="locationError" class="location-status"></div>
                         
                         <!-- Supported Areas Link -->
                         <div id="supportedAreasHint" style="display: none; margin-top: -10px; margin-bottom: 20px; text-align: center; animation: fadeIn 0.3s ease;">
@@ -825,9 +867,9 @@
                             </a>
                         </div>
 
-                        <div class="map-container" id="mapContainer" style="position: relative;">
-                            <div id="checkoutMap" style="width: 100%; height: 100%; border-radius: 20px; z-index: 1;"></div>
-                            <div class="map-placeholder" id="mapPlaceholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                        <div class="map-container" id="mapContainer" style="position: relative; min-height: 200px;">
+                            <div id="checkoutMap" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; z-index: 1; background: #242424;"></div>
+                            <div class="map-placeholder" id="mapPlaceholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.3s ease;">
                                 <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
                                 Waiting for location...
                             </div>
@@ -1165,6 +1207,13 @@
         function goToLocation() {
             document.getElementById('checkoutCart').classList.remove('active');
             document.getElementById('checkoutLocation').classList.add('active');
+            
+            // Refresh map size if it already exists
+            if (leafletMap) {
+                setTimeout(() => {
+                    leafletMap.invalidateSize();
+                }, 300);
+            }
         }
 
         function backToCart() {
@@ -1193,16 +1242,24 @@
                 const lon = position.coords.longitude;
                 
                 // Hide placeholder and show coordinates subtly
-                placeholder.style.display = 'none';
+                placeholder.style.opacity = '0';
+                placeholder.style.pointerEvents = 'none';
+                setTimeout(() => placeholder.style.display = 'none', 300);
                 const coordsDiv = document.getElementById('gpsCoords');
                 coordsDiv.innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
                 coordsDiv.style.display = 'block';
 
                 // Initialize or update Leaflet Map
                 if (!leafletMap) {
-                    leafletMap = L.map('checkoutMap').setView([lat, lon], 16);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap'
+                    leafletMap = L.map('checkoutMap', {
+                        zoomControl: true,
+                        dragging: true,
+                        touchZoom: true
+                    }).setView([lat, lon], 16);
+                    
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     }).addTo(leafletMap);
                 } else {
                     leafletMap.setView([lat, lon], 16);
@@ -1294,7 +1351,7 @@
                     }
                 } else {
                     btn.disabled = true;
-                    status.innerText = `It looks like you're a bit outside our current range. We're working hard to reach ${bgy} soon!`;
+                    status.innerHTML = "We currently only deliver our fresh catch to <strong style='color: #2dd4bf;'>Bocana</strong> and nearby spots. Check back soon as we expand our route!";
                     status.style.display = 'block';
                     document.getElementById('supportedAreasHint').style.display = 'block';
                     document.getElementById('detectedBarangay').style.borderColor = '#ef4444';
