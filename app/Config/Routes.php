@@ -58,6 +58,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->post('shipping/update', 'ShippingController::update', ['filter' => 'csrf']);
     $routes->post('shipping/delete', 'ShippingController::delete', ['filter' => 'csrf']);
     $routes->get('shipping/getDetails/(:num)', 'ShippingController::getDetails/$1');
+    $routes->post('shipping/updateGlobal', 'ShippingController::updateGlobalShipping', ['filter' => 'csrf']);
 
     // --- Voucher Management ---
     $routes->get('vouchers', 'VoucherController::index');

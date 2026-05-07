@@ -89,6 +89,11 @@ class Checkout extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'No location detected']);
         }
 
+        $settingsModel = new \App\Models\SettingsModel();
+        if ($settingsModel->getSetting('ship_to_all', '0') === '1') {
+            return $this->response->setJSON(['status' => 'success']);
+        }
+
         $shippingModel = new ShippingLocationModel();
         
         $location = $shippingModel->where('barangay_name', $barangay)

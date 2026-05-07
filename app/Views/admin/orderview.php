@@ -226,6 +226,19 @@
     <div class="modal-content">
         <button class="modal-close-btn" onclick="closeModal('orderModal')">&times;</button>
         <div id="modalTitle" class="modal-header">Order Receipt</div>
+
+        <!-- Customer & Shipping Info -->
+        <div style="display: flex; gap: 20px; margin-bottom: 25px; flex-wrap: wrap;">
+            <div class="glass-panel" style="flex: 1; min-width: 250px; padding: 20px; border-radius: 15px;">
+                <h4 style="color: #a855f7; margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;"><i class="fas fa-user"></i> Customer</h4>
+                <div id="modalCustomerName" style="font-weight: 700; color: #fff; font-size: 1.1rem;">-</div>
+                <div id="modalCustomerPhone" style="color: rgba(255,255,255,0.6); margin-top: 5px;">-</div>
+            </div>
+            <div class="glass-panel" style="flex: 1; min-width: 250px; padding: 20px; border-radius: 15px;">
+                <h4 style="color: #a855f7; margin-bottom: 12px; font-size: 0.9rem; text-transform: uppercase;"><i class="fas fa-map-marker-alt"></i> Shipping Address</h4>
+                <div id="modalShippingAddress" style="color: #fff; line-height: 1.5;">-</div>
+            </div>
+        </div>
         
         <div class="table-responsive glass-panel">
             <table class="premium-table" style="margin-top: 0; min-width: auto;">
@@ -275,6 +288,15 @@ async function viewOrderDetails(id) {
             const order = result.data;
             document.getElementById('modalTitle').innerText = 'Receipt: ' + order.transaction_code;
             
+            // Populate Customer & Shipping
+            document.getElementById('modalCustomerName').innerText = order.customer_name || 'Walk-in';
+            document.getElementById('modalCustomerPhone').innerText = order.shipping_phone || 'No phone provided';
+            
+            let fullAddress = `Brgy. ${order.shipping_barangay}`;
+            if (order.shipping_city) fullAddress += `, ${order.shipping_city}`;
+            if (order.shipping_street) fullAddress = `${order.shipping_street}, ${fullAddress}`;
+            document.getElementById('modalShippingAddress').innerText = fullAddress;
+
             const tbody = document.getElementById('modalItems');
             tbody.innerHTML = '';
             

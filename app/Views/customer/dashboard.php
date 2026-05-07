@@ -758,44 +758,66 @@
                             <input type="text" id="deliveryPhone" placeholder="09XXXXXXXXX" required>
                         </div>
 
-                        <button class="btn-location" onclick="getLocation()">
-                            <i class="fas fa-location-crosshairs"></i> Get Current Location
-                        </button>
-
-                        <div id="locationError" class="location-status"></div>
-
-                        <div class="map-container" id="mapContainer">
-                            <div class="map-placeholder" id="mapPlaceholder">
-                                <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
-                                Waiting for location...
+                        <?php if (($ship_to_all ?? '0') === '1'): ?>
+                            <!-- MANUAL ADDRESS ENTRY (When Global Shipping is ON) -->
+                            <div class="location-input-group">
+                                <label>Province / City / Municipality</label>
+                                <input type="text" id="manualCity" placeholder="e.g. Negros Occidental, Bacolod City" required>
                             </div>
-                        </div>
-
-                        <div class="location-input-group">
-                            <label>Detected Barangay / Area</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
-                                <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                            
+                            <div class="location-input-group">
+                                <label>Barangay</label>
+                                <input type="text" id="manualBarangayInput" placeholder="e.g. Villamonte" required>
                             </div>
-                        </div>
 
-                        <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
-                            <label style="color: #818cf8;">Select Correct Barangay Manually</label>
-                            <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
-                                <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
-                                <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
-                                    <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
-                                <?php endforeach; endif; ?>
-                            </select>
-                            <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
-                        </div>
+                            <div class="location-input-group">
+                                <label>Street / House Number / Landmarks</label>
+                                <textarea id="manualStreet" placeholder="e.g. Blk 12 Lot 5, Moon Street, near Water Station" rows="3" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; outline: none; transition: 0.3s; resize: none;"></textarea>
+                            </div>
+
+                            <!-- Hidden field to keep JS compatibility with 'detectedBarangay' -->
+                            <input type="hidden" id="detectedBarangay">
+                        <?php else: ?>
+                            <!-- AUTO DETECTION (When Specific Locations Only) -->
+                            <button class="btn-location" onclick="getLocation()">
+                                <i class="fas fa-location-crosshairs"></i> Get Current Location
+                            </button>
+
+                            <div id="locationError" class="location-status"></div>
+
+                            <div class="map-container" id="mapContainer">
+                                <div class="map-placeholder" id="mapPlaceholder">
+                                    <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                                    Waiting for location...
+                                </div>
+                            </div>
+
+                            <div class="location-input-group">
+                                <label>Detected Barangay / Area</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
+                                    <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
+                                <label style="color: #818cf8;">Select Correct Barangay Manually</label>
+                                <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
+                                    <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
+                                    <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
+                                        <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="step-actions">
                         <button class="btn-buy" style="background: #444; flex: 1;" onclick="backToCart()">Back</button>
-                        <button id="btnConfirmLocation" class="btn-buy" style="flex: 2;" onclick="goToPayment()" disabled>Next: Payment Method</button>
+                        <button id="btnConfirmLocation" class="btn-buy" style="flex: 2;" onclick="goToPayment()" <?= (($ship_to_all ?? '0') === '1') ? '' : 'disabled' ?>>Next: Payment Method</button>
                     </div>
                 </div>
 
@@ -1240,7 +1262,25 @@
         async function requestCheckoutQuote() {
             const name = document.getElementById('deliveryName').value.trim();
             const phone = document.getElementById('deliveryPhone').value.trim();
-            const barangay = document.getElementById('detectedBarangay').value.trim();
+            
+            let barangay, city, street;
+            const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
+
+            if (shipToAll) {
+                city = document.getElementById('manualCity')?.value.trim();
+                barangay = document.getElementById('manualBarangayInput')?.value.trim();
+                street = document.getElementById('manualStreet')?.value.trim();
+                
+                if (!city || !barangay || !street) {
+                    return { status: 'error', message: 'Please fill in all address fields.' };
+                }
+            } else {
+                barangay = document.getElementById('detectedBarangay').value.trim();
+                if (!barangay) {
+                    return { status: 'error', message: 'Please select or detect your barangay.' };
+                }
+            }
+
             const voucherCode = document.getElementById('voucherCode').value.trim();
             const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -1252,7 +1292,9 @@
                 shipping_details: {
                     name: name || 'Customer',
                     phone,
-                    barangay
+                    barangay,
+                    city,
+                    street
                 }
             };
 
@@ -1275,7 +1317,18 @@
         async function placeOrder() {
             const name = document.getElementById('deliveryName').value.trim();
             const phone = document.getElementById('deliveryPhone').value.trim();
-            const barangay = document.getElementById('detectedBarangay').value.trim();
+            
+            let barangay, city, street;
+            const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
+
+            if (shipToAll) {
+                city = document.getElementById('manualCity')?.value.trim();
+                barangay = document.getElementById('manualBarangayInput')?.value.trim();
+                street = document.getElementById('manualStreet')?.value.trim();
+            } else {
+                barangay = document.getElementById('detectedBarangay').value.trim();
+            }
+
             const voucherCode = document.getElementById('voucherCode').value.trim();
 
             const quoteOk = await refreshQuote();
@@ -1292,7 +1345,9 @@
                 shipping_details: {
                     name: name || 'Customer',
                     phone: phone,
-                    barangay: barangay
+                    barangay: barangay,
+                    city: city,
+                    street: street
                 }
             };
 

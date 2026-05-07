@@ -10,6 +10,7 @@ use App\Models\VoucherModel;
 use App\Models\VoucherRedemptionModel;
 use App\Models\PaymentAttemptModel;
 use App\Models\ShippingLocationModel;
+use App\Models\SettingsModel;
 use App\Models\ProductPaymentConstraintModel;
 use App\Models\CodComplianceModel;
 use App\Models\UserModel;
@@ -31,6 +32,7 @@ class CheckoutService
     protected $userModel;
     protected $historyModel;
     protected $emailService;
+    protected $settingsModel;
 
     private const ALLOWED_PAYMENT_METHODS = ['COD', 'GCASH'];
 
@@ -49,6 +51,7 @@ class CheckoutService
         $this->userModel = new UserModel();
         $this->historyModel = new OrderStatusHistoryModel();
         $this->emailService = new EmailNotificationService();
+        $this->settingsModel = new SettingsModel();
     }
 
     public function buildCheckoutQuote(array $orderData, string $username): array
@@ -61,6 +64,8 @@ class CheckoutService
         $shipping = $orderData['shipping_details'] ?? [];
         $phone = trim((string)($shipping['phone'] ?? ''));
         $barangay = trim((string)($shipping['barangay'] ?? ''));
+        $city = trim((string)($shipping['city'] ?? ''));
+        $street = trim((string)($shipping['street'] ?? ''));
         $receiverName = trim((string)($shipping['name'] ?? $username));
         
         if ($receiverName === '') {
@@ -80,14 +85,25 @@ class CheckoutService
             return ['ok' => false, 'message' => 'Unsupported payment method.'];
         }
 
-        $shippingLocation = $this->shippingLocationModel->where('barangay_name', $barangay)
-            ->where('is_active', 1)
-            ->first();
+        $shipToAll = $this->settingsModel->getSetting('ship_to_all', '0') === '1';
+        $shippingLocation = null;
 
-        if (!$shippingLocation) {
-            $shippingLocation = $this->shippingLocationModel->like('barangay_name', $barangay)
+        if ($shipToAll) {
+            // Mock a shipping location if global shipping is enabled
+            $shippingLocation = [
+                'barangay_name' => $barangay,
+                'shipping_fee' => 49.00 // Default fee for global shipping
+            ];
+        } else {
+            $shippingLocation = $this->shippingLocationModel->where('barangay_name', $barangay)
                 ->where('is_active', 1)
                 ->first();
+
+            if (!$shippingLocation) {
+                $shippingLocation = $this->shippingLocationModel->like('barangay_name', $barangay)
+                    ->where('is_active', 1)
+                    ->first();
+            }
         }
 
         if (!$shippingLocation) {
@@ -210,6 +226,8 @@ class CheckoutService
                 'receiver_name' => $receiverName,
                 'shipping_phone' => $phone,
                 'shipping_barangay' => $shippingLocation['barangay_name'],
+                'shipping_city' => $city ?: ($shippingLocation['city_municipality'] ?? 'Bacolod City'),
+                'shipping_street' => $street,
                 'payment_method' => $paymentMethod,
                 'items' => $lineItems,
                 'subtotal' => round($subtotal, 2),
@@ -258,6 +276,8 @@ class CheckoutService
                 'payment_provider' => $paymentProvider,
                 'applied_vouchers' => json_encode($quoteData['applied_vouchers']),
                 'shipping_barangay' => $quoteData['shipping_barangay'],
+                'shipping_city' => $quoteData['shipping_city'] ?? null,
+                'shipping_street' => $quoteData['shipping_street'] ?? null,
                 'shipping_phone' => $quoteData['shipping_phone'],
             ], true);
 

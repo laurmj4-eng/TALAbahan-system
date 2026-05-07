@@ -41,6 +41,8 @@ class OrderModel extends Model
         'delivered_at',
         'cancel_reason',
         'shipping_barangay',
+        'shipping_city',
+        'shipping_street',
         'shipping_phone',
     ];
 

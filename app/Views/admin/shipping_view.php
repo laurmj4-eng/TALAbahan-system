@@ -60,6 +60,68 @@
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
     }
+
+    /* Toggle Switch Styles */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #a855f7;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .toggle-label {
+        font-weight: 600;
+        color: #fff;
+    }
 </style>
 
 <main class="main-content">
@@ -72,6 +134,18 @@
             <button class="btn-primary" onclick="openModal('addLocationModal')" style="padding: 12px 25px; border-radius: 12px; height: fit-content;">
                 <i class="fas fa-plus"></i> Add Location
             </button>
+        </div>
+
+        <!-- Global Shipping Toggle -->
+        <div class="toggle-container">
+            <span class="toggle-label">Ship to All Locations (Global)</span>
+            <label class="switch">
+                <input type="checkbox" id="globalShippingToggle" onchange="toggleGlobalShipping(this)" <?= $ship_to_all === '1' ? 'checked' : '' ?>>
+                <span class="slider"></span>
+            </label>
+            <span id="toggleStatus" style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                <?= $ship_to_all === '1' ? 'Currently: ON (Shipping to all)' : 'Currently: OFF (Specific locations only)' ?>
+            </span>
         </div>
 
         <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
@@ -205,6 +279,41 @@
         const res = await fetch('<?= site_url('admin/shipping/delete') ?>', { method: 'POST', body: formData });
         const result = await res.json();
         if(result.status === 'success') location.reload(); else alert(result.message);
+    }
+
+    async function toggleGlobalShipping(checkbox) {
+        const isChecked = checkbox.checked ? '1' : '0';
+        const formData = new FormData();
+        formData.append('ship_to_all', isChecked);
+        formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        const statusText = document.getElementById('toggleStatus');
+        const originalText = statusText.innerText;
+        statusText.innerText = 'Updating...';
+
+        try {
+            const res = await fetch('<?= site_url('admin/shipping/updateGlobal') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+            const result = await res.json();
+            
+            if (result.status === 'success') {
+                statusText.innerText = isChecked === '1' ? 'Currently: ON (Shipping to all)' : 'Currently: OFF (Specific locations only)';
+            } else {
+                alert(result.message);
+                checkbox.checked = !checkbox.checked;
+                statusText.innerText = originalText;
+            }
+        } catch (error) {
+            console.error('Error updating global shipping:', error);
+            alert('An error occurred. Please try again.');
+            checkbox.checked = !checkbox.checked;
+            statusText.innerText = originalText;
+        }
     }
 </script>
 

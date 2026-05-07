@@ -95,20 +95,18 @@ class Database extends Config
 
         // Environment Detection Logic
         $isLocal = false;
-        if (isset($_SERVER['HTTP_HOST'])) {
-            $host = $_SERVER['HTTP_HOST'];
-            // STRICT LOCAL DETECTION: Only use local settings if explicitly on localhost or 127.0.0.1
-            if (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
-                $isLocal = true;
-            }
+        
+        // Detect if running from CLI or if host is localhost
+        if (is_cli() || (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || $_SERVER['HTTP_HOST'] === '127.0.0.1'))) {
+            $isLocal = true;
         }
 
         if ($isLocal) {
             // Switch to LOCAL (XAMPP) settings
-            $this->default['hostname'] = env('database.local.hostname', 'localhost');
-            $this->default['database'] = env('database.local.database', 'mj_chatbot');
-            $this->default['username'] = env('database.local.username', 'root');
-            $this->default['password'] = env('database.local.password', '');
+            $this->default['hostname'] = env('database.default.hostname', 'localhost');
+            $this->default['database'] = env('database.default.database', 'mj_chatbot');
+            $this->default['username'] = env('database.default.username', 'root');
+            $this->default['password'] = env('database.default.password', '');
         } else {
             // FORCED LIVE SETTINGS (InfinityFree)
             // We use the hardcoded defaults directly to avoid any .env issues on free hosting

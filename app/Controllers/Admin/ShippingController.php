@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\ShippingLocationModel;
+use App\Models\SettingsModel;
 
 class ShippingController extends BaseController
 {
@@ -14,13 +15,36 @@ class ShippingController extends BaseController
         }
 
         $model = new ShippingLocationModel();
+        $settingsModel = new SettingsModel();
+        
         $data = [
-            'title'     => 'Shipping Locations',
-            'username'  => session()->get('username'),
-            'locations' => $model->findAll()
+            'title'             => 'Shipping Locations',
+            'username'          => session()->get('username'),
+            'locations'         => $model->findAll(),
+            'ship_to_all'       => $settingsModel->getSetting('ship_to_all', '0')
         ];
 
         return view('admin/shipping_view', $data);
+    }
+
+    public function updateGlobalShipping()
+    {
+        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $settingsModel = new SettingsModel();
+        $value = $this->request->getPost('ship_to_all');
+
+        if ($settingsModel->updateSetting('ship_to_all', $value)) {
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Global shipping setting updated!',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(200);
+        }
+
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update setting', 'token' => csrf_hash()])->setStatusCode(400);
     }
 
     public function store()

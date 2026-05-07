@@ -8,6 +8,7 @@ use App\Models\OrderModel;
 use App\Models\OrderReviewModel;
 use App\Models\ProductModel;
 use App\Models\ShippingLocationModel;
+use App\Models\SettingsModel;
 
 class Dashboard extends BaseController
 {
@@ -23,6 +24,7 @@ class Dashboard extends BaseController
         $shippingModel = new ShippingLocationModel();
         $orderItemModel = new OrderItemModel();
         $reviewModel = new OrderReviewModel();
+        $settingsModel = new SettingsModel();
 
         $customerName = (string) session()->get('username');
         $orderCounts = $this->getCustomerOrderCounts($customerName);
@@ -56,6 +58,7 @@ class Dashboard extends BaseController
             'username'          => session()->get('username'),
             'products'          => $products,
             'shippingLocations' => $shippingModel->where('is_active', 1)->findAll(),
+            'ship_to_all'       => $settingsModel->getSetting('ship_to_all', '0'),
             'orderCounts'       => $orderCounts,
             'activeOrdersCount' => $activeOrdersCount,
             'isAJAX'            => $this->request->isAJAX(),
