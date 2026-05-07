@@ -462,7 +462,20 @@
         .location-input-group { margin-bottom: 20px; }
         .location-input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: rgba(255,255,255,0.7); }
         .location-input-group input { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
-        .map-container { width: 100%; height: 200px; border-radius: 15px; background: rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .map-container { 
+            width: 100%; 
+            height: 350px; /* Increased height for Desktop */
+            border-radius: 20px; 
+            background: rgba(255,255,255,0.05); 
+            margin-bottom: 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         .map-placeholder { text-align: center; color: rgba(255,255,255,0.3); }
         .btn-location { background: #818cf8; color: #fff; padding: 10px 15px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: 0.3s; margin-bottom: 15px; }
         .btn-location:hover { transform: translateY(-2px); filter: brightness(1.1); }
@@ -548,22 +561,23 @@
                 width: 100%;
                 max-width: none !important;
                 border-radius: 20px 20px 0 0;
-                max-height: 92vh; /* Use more screen height on mobile */
-                padding: 0 !important; /* Remove padding to let content handle it */
+                max-height: 95vh; /* Increased height for mobile */
+                padding: 0 !important;
                 display: flex;
                 flex-direction: column;
-                overflow: hidden; /* Prevent double scrollbars */
+                overflow: hidden;
             }
             .modal-header {
-                font-size: 1.25rem !important;
-                margin-bottom: 10px !important;
+                font-size: 1.15rem !important;
+                margin-bottom: 8px !important;
                 padding: 18px 18px 0 18px;
             }
             .location-step {
                 flex: 1;
                 display: none;
                 flex-direction: column;
-                overflow: hidden; /* Step itself handles layout */
+                overflow: hidden;
+                height: 100%;
             }
             .location-step.active {
                 display: flex;
@@ -573,32 +587,44 @@
                 padding-left: 18px;
                 padding-right: 18px;
             }
-            #cartItemsList, .map-container, .payment-option-container {
+            #cartItemsList, .map-container, .payment-option-container, .step-content-scroll {
                 overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
             .map-container {
-                height: 160px; /* Smaller map on mobile */
-                margin-bottom: 15px;
+                height: 180px !important; /* Optimized height for mobile */
+                min-height: 180px;
+                margin-bottom: 12px;
             }
             .step-actions {
-                position: relative; /* Fixed at bottom of the flex container */
+                position: sticky; /* Keep actions visible at bottom */
+                bottom: 0;
                 margin-top: auto;
-                padding: 15px 18px;
-                padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* Support for modern phones */
+                padding: 12px 18px;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom));
                 background: #140f2d;
                 z-index: 101;
                 border-top: 1px solid rgba(255,255,255,0.1);
                 display: flex;
-                gap: 10px;
+                gap: 8px;
             }
             #cartItemsList {
-                max-height: 25vh !important;
+                max-height: 35vh !important;
             }
             .location-input-group {
-                margin-bottom: 15px;
+                margin-bottom: 12px;
+            }
+            .location-input-group label {
+                font-size: 0.85rem;
+                margin-bottom: 4px;
             }
             .location-input-group input, .location-input-group select {
-                padding: 10px; /* Slightly smaller inputs */
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+            #geocodedAddressContainer {
+                padding: 10px !important;
+                margin-top: 8px !important;
             }
         }
         .btn-buy:disabled {
