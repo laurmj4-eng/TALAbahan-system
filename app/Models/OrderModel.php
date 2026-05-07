@@ -97,9 +97,13 @@ class OrderModel extends Model
      */
     public function getTodayRevenue()
     {
+        $today = date('Y-m-d');
         $result = $this->selectSum('total_amount')
             ->where('status', self::STATUS_COMPLETED)
-            ->where('DATE(created_at)', date('Y-m-d'))
+            ->groupStart()
+                ->where('DATE(created_at)', $today)
+                ->orWhere("created_at LIKE '{$today}%'")
+            ->groupEnd()
             ->first();
         return $result['total_amount'] ?? 0;
     }
@@ -110,6 +114,7 @@ class OrderModel extends Model
     public function getTodayProfit(): float
     {
         $db = db_connect();
+        $today = date('Y-m-d');
         
         // Check if cost_price column exists to avoid crash if migration hasn't run on production yet
         if (!$db->fieldExists('cost_price', 'order_items')) {
@@ -120,7 +125,10 @@ class OrderModel extends Model
             ->select('SUM(oi.subtotal - (oi.cost_price * oi.quantity)) as profit')
             ->join('orders o', 'o.id = oi.order_id')
             ->where('o.status', self::STATUS_COMPLETED)
-            ->where('DATE(o.created_at)', date('Y-m-d'))
+            ->groupStart()
+                ->where('DATE(o.created_at)', $today)
+                ->orWhere("o.created_at LIKE '{$today}%'")
+            ->groupEnd()
             ->get()
             ->getRowArray();
 
@@ -134,7 +142,10 @@ class OrderModel extends Model
     {
         $result = $this->selectSum('total_amount')
             ->where('status', self::STATUS_COMPLETED)
-            ->where('DATE(created_at)', $date)
+            ->groupStart()
+                ->where('DATE(created_at)', $date)
+                ->orWhere("created_at LIKE '{$date}%'")
+            ->groupEnd()
             ->first();
 
         return (float) ($result['total_amount'] ?? 0);

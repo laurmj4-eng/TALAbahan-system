@@ -1323,15 +1323,28 @@
             try {
                 const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+
                 const payload = new URLSearchParams();
                 payload.append('barangay', bgy);
                 if (csrfName && csrfToken) payload.append(csrfName, csrfToken);
 
                 const response = await fetch('<?= site_url('customer/validate-location') ?>', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        [csrfHeader]: csrfToken
+                    },
                     body: payload.toString()
                 });
+                
+                // Update CSRF token if returned in headers or body
+                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
+                if (newToken) {
+                    document.querySelector('meta[name="csrf-token"]').content = newToken;
+                }
+
                 const result = await response.json();
                 
                 if(result.status === 'success') {
@@ -1458,6 +1471,7 @@
             const voucherCode = document.getElementById('voucherCode').value.trim();
             const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
 
             const payload = {
                 items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
@@ -1479,9 +1493,19 @@
             try {
                 const response = await fetch('<?= site_url('customer/precheckout') ?>', {
                     method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        [csrfHeader]: csrfToken
+                    },
                     body: formData
                 });
+
+                // Update CSRF token if returned in headers or body
+                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
+                if (newToken) {
+                    document.querySelector('meta[name="csrf-token"]').content = newToken;
+                }
+
                 return await response.json();
             } catch (error) {
                 return { status: 'error', message: 'Connection error while validating checkout.' };
@@ -1530,15 +1554,27 @@
             try {
                 const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+                
                 const formData = new FormData();
                 formData.append('order_data', JSON.stringify(orderData));
                 if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
 
                 const response = await fetch('<?= site_url('customer/placeOrder') ?>', {
                     method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        [csrfHeader]: csrfToken
+                    },
                     body: formData
                 });
+
+                // Update CSRF token if returned in headers or body
+                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
+                if (newToken) {
+                    document.querySelector('meta[name="csrf-token"]').content = newToken;
+                }
+
                 const result = await response.json();
                 
                 if(result.status === 'success') {

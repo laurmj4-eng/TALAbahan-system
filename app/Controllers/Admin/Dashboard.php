@@ -18,6 +18,10 @@ class Dashboard extends BaseController
 
         $userModel = new UserModel();
         
+        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
+        $db = \Config\Database::connect();
+        $db->query("SET time_zone = '+08:00'");
+        
         $data = [
             'title'    => 'Admin Dashboard',
             'username' => session()->get('username'),
@@ -75,8 +79,12 @@ class Dashboard extends BaseController
         }
         $data['cards']['sales_growth'] = round($growth, 1);
 
+        $today = date('Y-m-d');
         $data['cards']['today_orders'] = (int) $orderModel
-            ->where('DATE(created_at)', date('Y-m-d'))
+            ->groupStart()
+                ->where('DATE(created_at)', $today)
+                ->orWhere("created_at LIKE '{$today}%'")
+            ->groupEnd()
             ->countAllResults();
 
         // --- ORDER AGING ALERTS (Stale Orders > 24 Hours) ---
@@ -174,5 +182,34 @@ class Dashboard extends BaseController
         }
 
         return view('admin/dashboard', $data);
+    }
+
+    public function getTodaySalesData()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
+        $db = \Config\Database::connect();
+        $db->query("SET time_zone = '+08:00'");
+
+        $orderModel = new OrderModel();
+        $todaySales = round((float) $orderModel->getTodayRevenue(), 2);
+        $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
+        
+        $growth = 0;
+        if ($yesterdaySales > 0) {
+            $growth = (($todaySales - $yesterdaySales) / $yesterdaySales) * 100;
+        } elseif ($todaySales > 0) {
+            $growth = 100;
+        }
+        $salesGrowth = round($growth, 1);
+
+        return $this->response->setJSON([
+            'today_sales' => $todaySales,
+            'sales_growth' => $salesGrowth,
+            'server_time' => date('M d, Y h:i A')
+        ]);
     }
 }

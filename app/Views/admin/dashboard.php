@@ -23,6 +23,7 @@
             <div>
                 <h1 class="premium-title">Welcome back, <?= esc(session()->get('username') ?? 'Admin') ?>!</h1>
                 <p class="premium-status-text">Manage products, monitor sales, and track order activity in one clean owner dashboard.</p>
+                <p style="font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: -10px;">Server Time: <span id="server-time"><?= date('M d, Y h:i A') ?></span></p>
             </div>
             <button onclick="window.print()" class="premium-action-btn glass-panel" style="padding: 12px 24px; height: auto;">
                 <i class="fas fa-print color-info"></i>
@@ -279,6 +280,42 @@
         <script>
             $(document).ready(function() {
                 $("time.timeago").timeago();
+
+                // Function to fetch and update today's sales data
+                function updateTodaySales() {
+                    $.ajax({
+                        url: '<?= site_url('admin/dashboard/todaySales') ?>',
+                        method: 'GET',
+                        dataType: 'json',
+                        cache: false, // Prevent browser caching
+                        data: { _: new Date().getTime() }, // Cache buster
+                        success: function(response) {
+                            if (response.today_sales !== undefined) {
+                                // Update Today's Sales value
+                                $('.premium-stat-card:first .premium-stat-value').html(
+                                    '&#8369;' + parseFloat(response.today_sales).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) +
+                                    (response.sales_growth !== undefined ? 
+                                        '<span style="font-size: 0.9rem; margin-left: 10px; font-weight: 600; color: ' + (response.sales_growth >= 0 ? '#4ade80' : '#f87171') + ';">' +
+                                        (response.sales_growth >= 0 ? '↑' : '↓') + ' ' + Math.abs(response.sales_growth) + '%' +
+                                        '</span>'
+                                    : '')
+                                );
+                            }
+                            if (response.server_time !== undefined) {
+                                $('#server-time').text(response.server_time);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error fetching today's sales data:", error);
+                        }
+                    });
+                }
+
+                // Initial call to update sales data
+                updateTodaySales();
+
+                // Set interval to update sales data every 5 seconds
+                setInterval(updateTodaySales, 5000); 
             });
         </script>
     </section>

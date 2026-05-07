@@ -43,39 +43,41 @@ class Checkout extends BaseController
         return $this->response->setJSON([
             'status' => 'success',
             'data' => $quote['data'],
+            'token' => csrf_hash(),
         ]);
     }
 
     public function placeOrder()
     {
         if (session()->get('role') !== 'customer' || !$this->request->isAJAX()) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
         $orderDataJson = $this->request->getPost('order_data');
         $orderData = json_decode((string) $orderDataJson, true);
         
         if (! is_array($orderData)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid checkout payload.'])->setStatusCode(400);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid checkout payload.', 'token' => csrf_hash()])->setStatusCode(400);
         }
 
         $username = session()->get('username');
         $quote = $this->checkoutService->buildCheckoutQuote($orderData, $username);
         
         if (! $quote['ok']) {
-            return $this->response->setJSON(['status' => 'error', 'message' => $quote['message']])->setStatusCode(400);
+            return $this->response->setJSON(['status' => 'error', 'message' => $quote['message'], 'token' => csrf_hash()])->setStatusCode(400);
         }
 
         $result = $this->checkoutService->placeOrder($quote['data'], $username);
         
         if (! $result['ok']) {
-            return $this->response->setJSON(['status' => 'error', 'message' => $result['message']])->setStatusCode(400);
+            return $this->response->setJSON(['status' => 'error', 'message' => $result['message'], 'token' => csrf_hash()])->setStatusCode(400);
         }
 
         return $this->response->setJSON([
             'status' => 'success',
             'message' => $result['message'],
             'transaction_code' => $result['transaction_code'],
+            'token' => csrf_hash(),
         ]);
     }
 
@@ -86,12 +88,12 @@ class Checkout extends BaseController
     {
         $barangay = trim($this->request->getPost('barangay'));
         if (empty($barangay)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'No location detected']);
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No location detected', 'token' => csrf_hash()]);
         }
 
         $settingsModel = new \App\Models\SettingsModel();
         if ($settingsModel->getSetting('ship_to_all', '0') === '1') {
-            return $this->response->setJSON(['status' => 'success']);
+            return $this->response->setJSON(['status' => 'success', 'token' => csrf_hash()]);
         }
 
         $shippingModel = new ShippingLocationModel();
@@ -107,9 +109,9 @@ class Checkout extends BaseController
         }
 
         if ($location) {
-            return $this->response->setJSON(['status' => 'success']);
+            return $this->response->setJSON(['status' => 'success', 'token' => csrf_hash()]);
         }
 
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Location not supported']);
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Location not supported', 'token' => csrf_hash()]);
     }
 }

@@ -23,6 +23,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     
     // --- Dashboard Overview ---
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('dashboard/todaySales', 'Dashboard::getTodaySalesData');
 
     // --- User Management ---
     $routes->get('users', 'AdminController::users'); 
