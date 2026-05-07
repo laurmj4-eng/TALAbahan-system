@@ -601,7 +601,14 @@
                 padding: 10px; /* Slightly smaller inputs */
             }
         }
-    </style>
+        .btn-buy:disabled {
+        background: #333 !important;
+        color: rgba(255,255,255,0.3) !important;
+        cursor: not-allowed;
+        box-shadow: none;
+        border-color: rgba(255,255,255,0.05);
+    }
+</style>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -783,34 +790,36 @@
                                 <i class="fas fa-location-crosshairs"></i> Get Current Location
                             </button>
 
-                            <div id="locationError" class="location-status"></div>
+                        <div id="locationError" class="location-status"></div>
+                        
+                        <!-- Supported Areas Link -->
+                        <div id="supportedAreasHint" style="display: none; margin-top: -10px; margin-bottom: 20px; text-align: center; animation: fadeIn 0.3s ease;">
+                            <a href="javascript:void(0)" onclick="openModal('supportedAreasModal')" style="color: #818cf8; font-size: 0.85rem; text-decoration: underline; font-weight: 600;">
+                                <i class="fas fa-list-ul"></i> See where we deliver
+                            </a>
+                        </div>
 
-                            <div class="map-container" id="mapContainer">
-                                <div class="map-placeholder" id="mapPlaceholder">
-                                    <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
-                                    Waiting for location...
-                                </div>
+                        <div class="map-container" id="mapContainer" style="position: relative;">
+                            <div id="checkoutMap" style="width: 100%; height: 100%; border-radius: 20px; z-index: 1;"></div>
+                            <div class="map-placeholder" id="mapPlaceholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                                <i class="fas fa-map-location-dot" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                                Waiting for location...
                             </div>
+                            <!-- Subtle GPS Coordinates -->
+                            <div id="gpsCoords" style="position: absolute; bottom: 10px; right: 10px; z-index: 3; font-size: 0.65rem; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; pointer-events: none; display: none;"></div>
+                        </div>
 
                             <div class="location-input-group">
                                 <label>Detected Barangay / Area</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="flex: 1;">
-                                    <button class="btn-location" onclick="toggleManualSelect()" style="margin-bottom: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </div>
+                                <input type="text" id="detectedBarangay" readonly placeholder="Detecting..." style="width: 100%;">
                             </div>
 
-                            <div class="location-input-group" id="manualBarangayGroup" style="display: none; animation: slideDown 0.3s ease;">
-                                <label style="color: #818cf8;">Select Correct Barangay Manually</label>
-                                <select id="manualBarangay" onchange="handleManualSelect(this.value)" style="width: 100%; padding: 12px; border-radius: 10px; background: #2d1b4e; border: 1px solid #818cf8; color: #fff; appearance: none; cursor: pointer; outline: none;">
-                                    <option value="" style="background: #1e1b4b; color: #fff;">-- Choose your Barangay --</option>
-                                    <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
-                                        <option value="<?= esc($loc['barangay_name']) ?>" style="background: #1e1b4b; color: #fff; padding: 10px;"><?= esc($loc['barangay_name']) ?></option>
-                                    <?php endforeach; endif; ?>
-                                </select>
-                                <small style="color: rgba(255,255,255,0.4); margin-top: 5px; display: block;">Use this if auto-detection is incorrect.</small>
+                            <!-- Full Address Display (Geocoding Result) -->
+                            <div id="geocodedAddressContainer" style="display: none; margin-top: 15px; padding: 15px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; animation: slideDown 0.3s ease;">
+                                <label style="color: #10b981; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block;">Full Delivery Address:</label>
+                                <div id="fullGeocodedAddress" style="color: #fff; font-size: 0.95rem; line-height: 1.4; font-weight: 500;"></div>
+                                <input type="hidden" id="geocodedCity">
+                                <input type="hidden" id="geocodedStreet">
                             </div>
                         <?php endif; ?>
                     </div>
@@ -908,11 +917,36 @@
         </div>
     </main>
 
+    <!-- Supported Areas Modal -->
+    <div id="supportedAreasModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; border-radius: 25px;">
+            <button class="modal-close-btn" onclick="closeModal('supportedAreasModal')">&times;</button>
+            <div class="modal-header">
+                <i class="fas fa-truck-fast" style="color: #a855f7; margin-right: 10px;"></i> Supported Areas
+            </div>
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 20px;">We currently deliver to these specific barangays:</p>
+            
+            <div style="max-height: 300px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-right: 10px;">
+                <?php if(!empty($shippingLocations)): foreach($shippingLocations as $loc): ?>
+                    <div class="glass-panel" style="padding: 10px; border-radius: 12px; font-size: 0.85rem; color: #fff; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <?= esc($loc['barangay_name']) ?>
+                    </div>
+                <?php endforeach; else: ?>
+                    <p style="grid-column: span 2; text-align: center; color: rgba(255,255,255,0.3);">No areas listed yet.</p>
+                <?php endif; ?>
+            </div>
+            
+            <button class="btn-buy" style="width: 100%; margin-top: 25px;" onclick="closeModal('supportedAreasModal')">Got it!</button>
+        </div>
+    </div>
+
     <script>
         let cart = [];
         let selectedPayment = null;
         let checkoutQuote = null;
         let toastTimer = null;
+        let leafletMap = null;
+        let mapMarker = null;
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -1112,24 +1146,14 @@
             document.getElementById('checkoutCart').classList.add('active');
         }
 
-        function toggleManualSelect() {
-            const group = document.getElementById('manualBarangayGroup');
-            group.style.display = group.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function handleManualSelect(val) {
-            if(val) {
-                document.getElementById('detectedBarangay').value = val;
-                validateBarangay(val);
-            }
-        }
-
         async function getLocation() {
             const status = document.getElementById('locationError');
             const placeholder = document.getElementById('mapPlaceholder');
             const detectedInput = document.getElementById('detectedBarangay');
+            const btn = document.getElementById('btnConfirmLocation');
             
             status.style.display = 'none';
+            btn.disabled = true; // Disable button while detecting
             placeholder.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Detecting Location...</p>';
 
             if (!navigator.geolocation) {
@@ -1142,28 +1166,70 @@
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 
-                placeholder.innerHTML = `<p style="font-size: 0.8rem; color: #86efac;">GPS LOCK: ${lat.toFixed(4)}, ${lon.toFixed(4)}</p>`;
+                // Hide placeholder and show coordinates subtly
+                placeholder.style.display = 'none';
+                const coordsDiv = document.getElementById('gpsCoords');
+                coordsDiv.innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                coordsDiv.style.display = 'block';
+
+                // Initialize or update Leaflet Map
+                if (!leafletMap) {
+                    leafletMap = L.map('checkoutMap').setView([lat, lon], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap'
+                    }).addTo(leafletMap);
+                } else {
+                    leafletMap.setView([lat, lon], 16);
+                }
+
+                // Add or move marker
+                if (mapMarker) {
+                    mapMarker.setLatLng([lat, lon]);
+                } else {
+                    mapMarker = L.marker([lat, lon]).addTo(leafletMap);
+                }
+
+                // Ensure map renders correctly in modal
+                setTimeout(() => leafletMap.invalidateSize(), 200);
                 
                 try {
                     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
                     const data = await response.json();
                     const addr = data.address;
-                    const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
                     
+                    // Extract components
+                    const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
+                    const city = addr.city || addr.town || addr.municipality;
+                    const street = addr.road || addr.residential;
+                    const state = addr.province || addr.state;
+
                     if(bgy) {
                         detectedInput.value = bgy;
+                        
+                        // Update full address display
+                        const fullAddr = [street, bgy, city, state].filter(Boolean).join(', ');
+                        document.getElementById('fullGeocodedAddress').innerText = fullAddr;
+                        document.getElementById('geocodedAddressContainer').style.display = 'block';
+                        
+                        // Store detailed parts for checkout
+                        document.getElementById('geocodedCity').value = city || '';
+                        document.getElementById('geocodedStreet').value = street || '';
+
                         validateBarangay(bgy);
                     } else {
-                        status.innerText = "Could not pinpoint Barangay. Please select manually.";
+                        status.innerText = "Could not pinpoint Barangay. Please try again.";
                         status.style.display = 'block';
+                        btn.disabled = true;
                     }
                 } catch (e) {
-                    status.innerText = "Reverse Geocoding failed. Select manually.";
+                    status.innerText = "Reverse Geocoding failed. Please try again.";
                     status.style.display = 'block';
+                    btn.disabled = true;
                 }
             }, (err) => {
                 status.innerText = "Permission Denied or Timeout.";
                 status.style.display = 'block';
+                btn.disabled = true;
             });
         }
 
@@ -1188,12 +1254,34 @@
                 if(result.status === 'success') {
                     btn.disabled = false;
                     status.style.display = 'none';
+                    document.getElementById('supportedAreasHint').style.display = 'none';
                     document.getElementById('detectedBarangay').style.borderColor = '#10b981';
+                    
+                    // Reset address box to success state
+                    const addrBox = document.getElementById('geocodedAddressContainer');
+                    addrBox.style.background = 'rgba(16, 185, 129, 0.1)';
+                    addrBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                    addrBox.querySelector('label').style.color = '#10b981';
+
+                    if (mapMarker) {
+                        mapMarker.getElement().style.filter = "hue-rotate(0deg)";
+                    }
                 } else {
                     btn.disabled = true;
-                    status.innerText = "Sorry, we don't deliver to this location yet.";
+                    status.innerText = `It looks like you're a bit outside our current range. We're working hard to reach ${bgy} soon!`;
                     status.style.display = 'block';
+                    document.getElementById('supportedAreasHint').style.display = 'block';
                     document.getElementById('detectedBarangay').style.borderColor = '#ef4444';
+                    
+                    // Change address box to error state (Amber/Red)
+                    const addrBox = document.getElementById('geocodedAddressContainer');
+                    addrBox.style.background = 'rgba(245, 158, 11, 0.1)';
+                    addrBox.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                    addrBox.querySelector('label').style.color = '#fbbf24';
+
+                    if (mapMarker) {
+                        mapMarker.getElement().style.filter = "hue-rotate(140deg) saturate(3)";
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -1276,6 +1364,9 @@
                 }
             } else {
                 barangay = document.getElementById('detectedBarangay').value.trim();
+                city = document.getElementById('geocodedCity')?.value.trim();
+                street = document.getElementById('geocodedStreet')?.value.trim();
+
                 if (!barangay) {
                     return { status: 'error', message: 'Please select or detect your barangay.' };
                 }
@@ -1327,6 +1418,8 @@
                 street = document.getElementById('manualStreet')?.value.trim();
             } else {
                 barangay = document.getElementById('detectedBarangay').value.trim();
+                city = document.getElementById('geocodedCity')?.value.trim();
+                street = document.getElementById('geocodedStreet')?.value.trim();
             }
 
             const voucherCode = document.getElementById('voucherCode').value.trim();
