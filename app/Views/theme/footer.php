@@ -196,15 +196,17 @@
         // Ensure Chatbot opens even if scripts are re-run by AJAX
         document.addEventListener('click', function(e) {
             const btn = e.target.closest('#chat-button');
-            if (btn && typeof openChat === 'function') {
+            if (btn && (typeof openChat === 'function' || typeof window.openChat === 'function')) {
                 e.preventDefault();
-                openChat();
+                if (typeof openChat === 'function') openChat();
+                else window.openChat();
             }
             
             const closeBtn = e.target.closest('#close-chat');
-            if (closeBtn && typeof closeChatFn === 'function') {
+            if (closeBtn && (typeof closeChatFn === 'function' || typeof window.closeChatFn === 'function')) {
                 e.preventDefault();
-                closeChatFn();
+                if (typeof closeChatFn === 'function') closeChatFn();
+                else window.closeChatFn();
             }
         });
 

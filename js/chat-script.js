@@ -19,18 +19,23 @@ let isSoundEnabled = true;
 
 const inferBaseUrl = () => {
     if (window.CHAT_API_BASE_URL) return window.CHAT_API_BASE_URL;
-    if (window.location.hostname === 'mjtalabahan.page.gd') {
-        return `${window.location.protocol}//mjtalabahan.page.gd`;
+    const host = window.location.hostname;
+    if (host === 'mjtalabahan.page.gd' || host === 'mj-talabahan.infy.uk' || host.endsWith('.page.gd') || host.endsWith('.infy.uk')) {
+        return `${window.location.protocol}//${host}`;
     }
     return 'http://localhost:3000';
 };
 const BASE_URL = inferBaseUrl();
 
+// Global function declarations for visibility from theme/footer.php
+window.openChat = null;
+window.closeChatFn = null;
+
 if (!chatButton || !chatContainer || !closeChat || !chatInput || !sendBtn || !chatMessages || !modelSelect || !toggleSoundBtn) {
     console.warn('Chat UI elements are missing from the page.');
 } else {
 
-const openChat = () => {
+window.openChat = () => {
     chatContainer.classList.add('active');
     if (chatBackdrop) {
         chatBackdrop.style.display = 'block';
@@ -52,7 +57,7 @@ const openChat = () => {
     }, 350);
 };
 
-const closeChatFn = () => {
+window.closeChatFn = () => {
     chatContainer.classList.remove('active');
     if (chatBackdrop) {
         chatBackdrop.style.opacity = '0';
@@ -65,13 +70,13 @@ const closeChatFn = () => {
 if (chatButton) {
     chatButton.onclick = (e) => {
         e.preventDefault();
-        openChat();
+        window.openChat();
     };
     
     // For touch devices, pointerdown is faster than click
     chatButton.onpointerdown = (e) => {
         if (e.pointerType === 'touch') {
-            openChat();
+            window.openChat();
         }
     };
 }
@@ -79,18 +84,18 @@ if (chatButton) {
 if (closeChat) {
     closeChat.onclick = (e) => {
         e.preventDefault();
-        closeChatFn();
+        window.closeChatFn();
     };
 }
 
 if (chatBackdrop) {
-    chatBackdrop.addEventListener('click', closeChatFn);
+    chatBackdrop.addEventListener('click', window.closeChatFn);
 }
 
 // Close chat on escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatContainer.classList.contains('active')) {
-        closeChatFn();
+        window.closeChatFn();
     }
 });
 
