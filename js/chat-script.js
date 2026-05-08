@@ -144,7 +144,9 @@ function appendMessage(sender, text, id = null, time = null, isTyping = false) {
         messageDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
     } else if (sender === 'bot') {
         messageDiv.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        messageDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+        if (typeof hljs !== 'undefined') {
+            messageDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+        }
     } else {
         messageDiv.textContent = text;
     }

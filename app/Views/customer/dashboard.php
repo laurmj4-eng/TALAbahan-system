@@ -1009,588 +1009,602 @@
     </div>
 
     <script>
-        let cart = [];
-        let selectedPayment = null;
-        let checkoutQuote = null;
-        let toastTimer = null;
-        let leafletMap = null;
-        let mapMarker = null;
+        (function() {
+            let cartItems = [];
+            let selectedPayment = null;
+            let checkoutQuote = null;
+            let toastTimer = null;
+            let leafletMap = null;
+            let mapMarker = null;
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const text = document.getElementById('toastText');
-            if (!toast || !text) return;
-            text.textContent = message || 'Added to cart';
-            toast.classList.add('show');
-            if (toastTimer) clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
-        }
-
-        function addToCart(id, name, price, image) {
-            const index = cart.findIndex(item => item.id === id);
-            if (index > -1) {
-                cart[index].quantity += 1;
-            } else {
-                cart.push({ id, name, price, image, quantity: 1 });
+            window.showToast = function(message) {
+                const toast = document.getElementById('toast');
+                const text = document.getElementById('toastText');
+                if (!toast || !text) return;
+                text.textContent = message || 'Added to cart';
+                toast.classList.add('show');
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
             }
-            updateCartUI();
-            showToast(`Added: ${name}`);
-        }
 
-        function buyNow(id, name, price, image) {
-            cart = [{ id, name, price, image, quantity: 1 }];
-            updateCartUI();
-            showToast(`Added: ${name}`);
-            openCheckoutModal();
-        }
-
-        function updateCartUI() {
-            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cartCount').innerText = count;
-        }
-
-        function updateQty(id, delta) {
-            const idx = cart.findIndex(item => item.id === id);
-            if (idx === -1) return;
-            cart[idx].quantity += delta;
-            if (cart[idx].quantity <= 0) {
-                cart.splice(idx, 1);
-            }
-            updateCartUI();
-            if (cart.length === 0) {
-                closeCheckoutModal();
-                return;
-            }
-            renderCartItems();
-        }
-
-        function removeFromCart(id) {
-            const idx = cart.findIndex(item => item.id === id);
-            if (idx !== -1) {
-                const name = cart[idx].name;
-                cart.splice(idx, 1);
+            window.addToCart = function(id, name, price, image) {
+                const index = cartItems.findIndex(item => item.id === id);
+                if (index > -1) {
+                    cartItems[index].quantity += 1;
+                } else {
+                    cartItems.push({ id, name, price, image, quantity: 1 });
+                }
                 updateCartUI();
-                showToast(`Removed: ${name}`);
-                if (cart.length === 0) {
+                showToast(`Added: ${name}`);
+            }
+
+            window.buyNow = function(id, name, price, image) {
+                cartItems = [{ id, name, price, image, quantity: 1 }];
+                updateCartUI();
+                showToast(`Added: ${name}`);
+                openCheckoutModal();
+            }
+
+            function updateCartUI() {
+                const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+                const countEl = document.getElementById('cartCount');
+                if (countEl) countEl.innerText = count;
+            }
+
+            window.updateQty = function(id, delta) {
+                const idx = cartItems.findIndex(item => item.id === id);
+                if (idx === -1) return;
+                cartItems[idx].quantity += delta;
+                if (cartItems[idx].quantity <= 0) {
+                    cartItems.splice(idx, 1);
+                }
+                updateCartUI();
+                if (cartItems.length === 0) {
                     closeCheckoutModal();
-                } else {
-                    renderCartItems();
+                    return;
                 }
-            }
-        }
-
-        // Swipe-to-Delete Logic
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let activeSwipeItem = null;
-
-        function handleTouchStart(e) {
-            touchStartX = e.changedTouches[0].screenX;
-            activeSwipeItem = e.currentTarget;
-            // Reset other open items
-            document.querySelectorAll('.cart-item-content').forEach(item => {
-                if (item !== activeSwipeItem) item.style.transform = 'translateX(0)';
-            });
-        }
-
-        function handleTouchMove(e) {
-            const currentX = e.changedTouches[0].screenX;
-            const diff = touchStartX - currentX;
-            if (diff > 0 && diff <= 70) { // Swiping left
-                activeSwipeItem.style.transform = `translateX(-${diff}px)`;
-            }
-        }
-
-        function handleTouchEnd(e) {
-            touchEndX = e.changedTouches[0].screenX;
-            const diff = touchStartX - touchEndX;
-            if (diff > 35) { // Threshold for keeping it open
-                activeSwipeItem.style.transform = 'translateX(-70px)';
-            } else {
-                activeSwipeItem.style.transform = 'translateX(0)';
-            }
-        }
-
-        function openCheckoutModal() {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-            document.body.classList.add('modal-open');
-            
-            // Hide Chatbot when cart is open
-            const chatbotContainer = document.getElementById('chat-button-container');
-            if (chatbotContainer) chatbotContainer.style.display = 'none';
-            
-            renderCartItems();
-            document.getElementById('checkoutModal').classList.add('show');
-            document.getElementById('checkoutCart').classList.add('active');
-            preloadCheckoutDefaults();
-        }
-
-        function closeCheckoutModal() {
-            document.getElementById('checkoutModal').classList.remove('show');
-            document.body.classList.remove('modal-open');
-            
-            // Show Chatbot again when cart is closed
-            const chatbotContainer = document.getElementById('chat-button-container');
-            if (chatbotContainer) chatbotContainer.style.display = 'flex';
-            
-            // Reset steps
-            document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
-            document.getElementById('checkoutCart').classList.add('active');
-        }
-
-        function renderCartItems() {
-            const list = document.getElementById('cartItemsList');
-            let subtotal = 0;
-            list.innerHTML = '';
-            
-            cart.forEach((item, index) => {
-                const lineSubtotal = item.price * item.quantity;
-                subtotal += lineSubtotal;
-                const imgSrc = item.image ? `<?= base_url('uploads/products/') ?>${item.image}` : `<?= base_url('images/pic1.jpg') ?>`;
-                list.innerHTML += `
-                    <div class="cart-item-row" data-index="${index}">
-                        <div class="cart-item-delete-action" onclick="removeFromCart(${item.id})">
-                            <i class="fas fa-trash-alt"></i>
-                        </div>
-                        <div class="cart-item-content" 
-                             ontouchstart="handleTouchStart(event)" 
-                             ontouchmove="handleTouchMove(event)" 
-                             ontouchend="handleTouchEnd(event)">
-                            <div class="cart-item-thumb">
-                                <img src="${imgSrc}" alt="${item.name}" onerror="this.src='<?= base_url('images/pic1.jpg') ?>'">
-                            </div>
-                            <div class="cart-item-info">
-                                <div style="font-weight: 700; color: #fff;">${item.name}</div>
-                                <div class="qty-controls">
-                                    <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                                    <span style="font-size:0.9rem; color: rgba(255,255,255,0.75);">${item.quantity}</span>
-                                    <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-                                    <span style="font-size:0.85rem; color: rgba(255,255,255,0.5); margin-left: 8px;">₱${item.price.toFixed(2)} each</span>
-                                </div>
-                            </div>
-                            <div style="font-weight: 800; color: #818cf8;">₱${lineSubtotal.toFixed(2)}</div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            const shipping = checkoutQuote?.shipping_fee ?? 0;
-            const voucherDiscount = checkoutQuote?.voucher_discount ?? 0;
-            const total = checkoutQuote?.final_total ?? Math.max(0, subtotal + shipping - voucherDiscount);
-            document.getElementById('cartSubtotal').innerText = '₱' + subtotal.toFixed(2);
-            document.getElementById('cartShippingFee').innerText = '₱' + Number(shipping).toFixed(2);
-            document.getElementById('cartVoucher').innerText = '-₱' + Number(voucherDiscount).toFixed(2);
-            document.getElementById('cartTotal').innerText = '₱' + total.toFixed(2);
-        }
-
-        function preloadCheckoutDefaults() {
-            const savedPhone = localStorage.getItem('quick_checkout_phone');
-            const savedBarangay = localStorage.getItem('quick_checkout_barangay');
-            const savedPayment = localStorage.getItem('quick_checkout_payment');
-            const normalizedPayment = savedPayment && savedPayment.toUpperCase() === 'GCASH' ? 'GCASH' : savedPayment;
-
-            if (savedPhone) document.getElementById('deliveryPhone').value = savedPhone;
-            if (savedBarangay) {
-                document.getElementById('detectedBarangay').value = savedBarangay;
-                validateBarangay(savedBarangay);
-            }
-            if (normalizedPayment && ['COD', 'GCASH'].includes(normalizedPayment)) {
-                selectPayment(normalizedPayment);
-            } else {
-                selectPayment('COD');
-            }
-        }
-
-        function goToLocation() {
-            document.getElementById('checkoutCart').classList.remove('active');
-            document.getElementById('checkoutLocation').classList.add('active');
-            
-            // Refresh map size if it already exists
-            if (leafletMap) {
-                setTimeout(() => {
-                    leafletMap.invalidateSize();
-                }, 300);
-            }
-        }
-
-        function backToCart() {
-            document.getElementById('checkoutLocation').classList.remove('active');
-            document.getElementById('checkoutCart').classList.add('active');
-        }
-
-        async function getLocation() {
-            const status = document.getElementById('locationError');
-            const placeholder = document.getElementById('mapPlaceholder');
-            const detectedInput = document.getElementById('detectedBarangay');
-            const btn = document.getElementById('btnConfirmLocation');
-            
-            status.style.display = 'none';
-            btn.disabled = true; // Disable button while detecting
-            placeholder.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Detecting Location...</p>';
-
-            if (!navigator.geolocation) {
-                status.innerText = "Geolocation not supported by your browser.";
-                status.style.display = 'block';
-                return;
+                renderCartItems();
             }
 
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                
-                // Hide placeholder and show coordinates subtly
-                placeholder.style.opacity = '0';
-                placeholder.style.pointerEvents = 'none';
-                setTimeout(() => placeholder.style.display = 'none', 300);
-                const coordsDiv = document.getElementById('gpsCoords');
-                coordsDiv.innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-                coordsDiv.style.display = 'block';
-
-                // Initialize or update Leaflet Map
-                if (!leafletMap) {
-                    leafletMap = L.map('checkoutMap', {
-                        zoomControl: true,
-                        dragging: true,
-                        touchZoom: true
-                    }).setView([lat, lon], 16);
-                    
-                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    }).addTo(leafletMap);
-                } else {
-                    leafletMap.setView([lat, lon], 16);
-                }
-
-                // Add or move marker
-                if (mapMarker) {
-                    mapMarker.setLatLng([lat, lon]);
-                } else {
-                    mapMarker = L.marker([lat, lon]).addTo(leafletMap);
-                }
-
-                // Ensure map renders correctly in modal
-                setTimeout(() => leafletMap.invalidateSize(), 200);
-                
-                try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                    const data = await response.json();
-                    const addr = data.address;
-                    
-                    // Extract components
-                    const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
-                    const city = addr.city || addr.town || addr.municipality;
-                    const street = addr.road || addr.residential;
-                    const state = addr.province || addr.state;
-
-                    if(bgy) {
-                        detectedInput.value = bgy;
-                        
-                        // Update full address display
-                        const fullAddr = [street, bgy, city, state].filter(Boolean).join(', ');
-                        document.getElementById('fullGeocodedAddress').innerText = fullAddr;
-                        document.getElementById('geocodedAddressContainer').style.display = 'block';
-                        
-                        // Store detailed parts for checkout
-                        document.getElementById('geocodedCity').value = city || '';
-                        document.getElementById('geocodedStreet').value = street || '';
-
-                        validateBarangay(bgy);
+            window.removeFromCart = function(id) {
+                const idx = cartItems.findIndex(item => item.id === id);
+                if (idx !== -1) {
+                    const name = cartItems[idx].name;
+                    cartItems.splice(idx, 1);
+                    updateCartUI();
+                    showToast(`Removed: ${name}`);
+                    if (cartItems.length === 0) {
+                        closeCheckoutModal();
                     } else {
-                        status.innerText = "Could not pinpoint Barangay. Please try again.";
+                        renderCartItems();
+                    }
+                }
+            }
+
+            // Swipe-to-Delete Logic
+            let touchStartX = 0;
+            let touchEndX = 0;
+            let activeSwipeItem = null;
+
+            window.handleTouchStart = function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+                activeSwipeItem = e.currentTarget;
+                // Reset other open items
+                document.querySelectorAll('.cart-item-content').forEach(item => {
+                    if (item !== activeSwipeItem) item.style.transform = 'translateX(0)';
+                });
+            }
+
+            window.handleTouchMove = function(e) {
+                const currentX = e.changedTouches[0].screenX;
+                const diff = touchStartX - currentX;
+                if (diff > 0 && diff <= 70) { // Swiping left
+                    activeSwipeItem.style.transform = `translateX(-${diff}px)`;
+                }
+            }
+
+            window.handleTouchEnd = function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
+                if (diff > 35) { // Threshold for keeping it open
+                    activeSwipeItem.style.transform = 'translateX(-70px)';
+                } else {
+                    activeSwipeItem.style.transform = 'translateX(0)';
+                }
+            }
+
+            window.openCheckoutModal = function() {
+                if (cartItems.length === 0) {
+                    alert('Your cart is empty!');
+                    return;
+                }
+                document.body.classList.add('modal-open');
+                
+                // Hide Chatbot when cart is open
+                const chatbotContainer = document.getElementById('chat-button-container');
+                if (chatbotContainer) chatbotContainer.style.display = 'none';
+                
+                renderCartItems();
+                document.getElementById('checkoutModal').classList.add('show');
+                document.getElementById('checkoutCart').classList.add('active');
+                preloadCheckoutDefaults();
+            }
+
+            window.closeCheckoutModal = function() {
+                document.getElementById('checkoutModal').classList.remove('show');
+                document.body.classList.remove('modal-open');
+                
+                // Show Chatbot again when cart is closed
+                const chatbotContainer = document.getElementById('chat-button-container');
+                if (chatbotContainer) chatbotContainer.style.display = 'flex';
+                
+                // Reset steps
+                document.querySelectorAll('.location-step').forEach(s => s.classList.remove('active'));
+                document.getElementById('checkoutCart').classList.add('active');
+            }
+
+            function renderCartItems() {
+                const list = document.getElementById('cartItemsList');
+                let subtotal = 0;
+                list.innerHTML = '';
+                
+                cartItems.forEach((item, index) => {
+                    const lineSubtotal = item.price * item.quantity;
+                    subtotal += lineSubtotal;
+                    const imgSrc = item.image ? `<?= base_url('uploads/products/') ?>${item.image}` : `<?= base_url('images/pic1.jpg') ?>`;
+                    list.innerHTML += `
+                        <div class="cart-item-row" data-index="${index}">
+                            <div class="cart-item-delete-action" onclick="removeFromCart(${item.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <div class="cart-item-content" 
+                                 ontouchstart="handleTouchStart(event)" 
+                                 ontouchmove="handleTouchMove(event)" 
+                                 ontouchend="handleTouchEnd(event)">
+                                <div class="cart-item-thumb">
+                                    <img src="${imgSrc}" alt="${item.name}" onerror="this.src='<?= base_url('images/pic1.jpg') ?>'">
+                                </div>
+                                <div class="cart-item-info">
+                                    <div style="font-weight: 700; color: #fff;">${item.name}</div>
+                                    <div class="qty-controls">
+                                        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                                        <span style="font-size:0.9rem; color: rgba(255,255,255,0.75);">${item.quantity}</span>
+                                        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                                        <span style="font-size:0.85rem; color: rgba(255,255,255,0.5); margin-left: 8px;">₱${item.price.toFixed(2)} each</span>
+                                    </div>
+                                </div>
+                                <div style="font-weight: 800; color: #818cf8;">₱${lineSubtotal.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const shipping = checkoutQuote?.shipping_fee ?? 0;
+                const voucherDiscount = checkoutQuote?.voucher_discount ?? 0;
+                const total = checkoutQuote?.final_total ?? Math.max(0, subtotal + shipping - voucherDiscount);
+                document.getElementById('cartSubtotal').innerText = '₱' + subtotal.toFixed(2);
+                document.getElementById('cartShippingFee').innerText = '₱' + Number(shipping).toFixed(2);
+                document.getElementById('cartVoucher').innerText = '-₱' + Number(voucherDiscount).toFixed(2);
+                document.getElementById('cartTotal').innerText = '₱' + total.toFixed(2);
+            }
+
+            function preloadCheckoutDefaults() {
+                const savedPhone = localStorage.getItem('quick_checkout_phone');
+                const savedBarangay = localStorage.getItem('quick_checkout_barangay');
+                const savedPayment = localStorage.getItem('quick_checkout_payment');
+                const normalizedPayment = savedPayment && savedPayment.toUpperCase() === 'GCASH' ? 'GCASH' : savedPayment;
+
+                if (savedPhone) document.getElementById('deliveryPhone').value = savedPhone;
+                if (savedBarangay) {
+                    const bgyEl = document.getElementById('detectedBarangay');
+                    if (bgyEl) {
+                        bgyEl.value = savedBarangay;
+                        validateBarangay(savedBarangay);
+                    }
+                }
+                if (normalizedPayment && ['COD', 'GCASH'].includes(normalizedPayment)) {
+                    selectPayment(normalizedPayment);
+                } else {
+                    selectPayment('COD');
+                }
+            }
+
+            window.goToLocation = function() {
+                document.getElementById('checkoutCart').classList.remove('active');
+                document.getElementById('checkoutLocation').classList.add('active');
+                
+                // Refresh map size if it already exists
+                if (leafletMap) {
+                    setTimeout(() => {
+                        leafletMap.invalidateSize();
+                    }, 300);
+                }
+            }
+
+            window.backToCart = function() {
+                document.getElementById('checkoutLocation').classList.remove('active');
+                document.getElementById('checkoutCart').classList.add('active');
+            }
+
+            window.getLocation = async function() {
+                const status = document.getElementById('locationError');
+                const placeholder = document.getElementById('mapPlaceholder');
+                const detectedInput = document.getElementById('detectedBarangay');
+                const btn = document.getElementById('btnConfirmLocation');
+                
+                status.style.display = 'none';
+                btn.disabled = true; // Disable button while detecting
+                placeholder.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Detecting Location...</p>';
+
+                if (!navigator.geolocation) {
+                    status.innerText = "Geolocation not supported by your browser.";
+                    status.style.display = 'block';
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    // Hide placeholder and show coordinates subtly
+                    placeholder.style.opacity = '0';
+                    placeholder.style.pointerEvents = 'none';
+                    setTimeout(() => placeholder.style.display = 'none', 300);
+                    const coordsDiv = document.getElementById('gpsCoords');
+                    coordsDiv.innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                    coordsDiv.style.display = 'block';
+
+                    // Initialize or update Leaflet Map
+                    if (!leafletMap) {
+                        leafletMap = L.map('checkoutMap', {
+                            zoomControl: true,
+                            dragging: true,
+                            touchZoom: true
+                        }).setView([lat, lon], 16);
+                        
+                        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        }).addTo(leafletMap);
+                    } else {
+                        leafletMap.setView([lat, lon], 16);
+                    }
+
+                    // Add or move marker
+                    if (mapMarker) {
+                        mapMarker.setLatLng([lat, lon]);
+                    } else {
+                        mapMarker = L.marker([lat, lon]).addTo(leafletMap);
+                    }
+
+                    // Ensure map renders correctly in modal
+                    setTimeout(() => leafletMap.invalidateSize(), 200);
+                    
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                        const data = await response.json();
+                        const addr = data.address;
+                        
+                        // Extract components
+                        const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
+                        const city = addr.city || addr.town || addr.municipality;
+                        const street = addr.road || addr.residential;
+                        const state = addr.province || addr.state;
+
+                        if(bgy) {
+                            detectedInput.value = bgy;
+                            
+                            // Update full address display
+                            const fullAddr = [street, bgy, city, state].filter(Boolean).join(', ');
+                            document.getElementById('fullGeocodedAddress').innerText = fullAddr;
+                            document.getElementById('geocodedAddressContainer').style.display = 'block';
+                            
+                            // Store detailed parts for checkout
+                            document.getElementById('geocodedCity').value = city || '';
+                            document.getElementById('geocodedStreet').value = street || '';
+
+                            validateBarangay(bgy);
+                        } else {
+                            status.innerText = "Could not pinpoint Barangay. Please try again.";
+                            status.style.display = 'block';
+                            btn.disabled = true;
+                        }
+                    } catch (e) {
+                        status.innerText = "Reverse Geocoding failed. Please try again.";
                         status.style.display = 'block';
                         btn.disabled = true;
                     }
-                } catch (e) {
-                    status.innerText = "Reverse Geocoding failed. Please try again.";
+                }, (err) => {
+                    status.innerText = "Permission Denied or Timeout.";
                     status.style.display = 'block';
                     btn.disabled = true;
-                }
-            }, (err) => {
-                status.innerText = "Permission Denied or Timeout.";
-                status.style.display = 'block';
-                btn.disabled = true;
-            });
-        }
-
-        async function validateBarangay(bgy) {
-            const btn = document.getElementById('btnConfirmLocation');
-            const status = document.getElementById('locationError');
-            
-            try {
-                const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-
-                const payload = new URLSearchParams();
-                payload.append('barangay', bgy);
-                if (csrfName && csrfToken) payload.append(csrfName, csrfToken);
-
-                const response = await fetch('<?= site_url('customer/validate-location') ?>', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        [csrfHeader]: csrfToken
-                    },
-                    body: payload.toString()
                 });
-                
-                // Update CSRF token if returned in headers or body
-                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
-                if (newToken) {
-                    document.querySelector('meta[name="csrf-token"]').content = newToken;
-                }
-
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    btn.disabled = false;
-                    status.style.display = 'none';
-                    document.getElementById('supportedAreasHint').style.display = 'none';
-                    document.getElementById('detectedBarangay').style.borderColor = '#10b981';
-                    
-                    // Reset address box to success state
-                    const addrBox = document.getElementById('geocodedAddressContainer');
-                    addrBox.style.background = 'rgba(16, 185, 129, 0.1)';
-                    addrBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
-                    addrBox.querySelector('label').style.color = '#10b981';
-
-                    if (mapMarker) {
-                        mapMarker.getElement().style.filter = "hue-rotate(0deg)";
-                    }
-                } else {
-                    btn.disabled = true;
-                    status.innerHTML = "We currently only deliver our fresh catch to <strong style='color: #2dd4bf;'>Bocana</strong> and nearby spots. Check back soon as we expand our route!";
-                    status.style.display = 'block';
-                    document.getElementById('supportedAreasHint').style.display = 'block';
-                    document.getElementById('detectedBarangay').style.borderColor = '#ef4444';
-                    
-                    // Change address box to error state (Amber/Red)
-                    const addrBox = document.getElementById('geocodedAddressContainer');
-                    addrBox.style.background = 'rgba(245, 158, 11, 0.1)';
-                    addrBox.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-                    addrBox.querySelector('label').style.color = '#fbbf24';
-
-                    if (mapMarker) {
-                        mapMarker.getElement().style.filter = "hue-rotate(140deg) saturate(3)";
-                    }
-                }
-            } catch (e) {
-                console.error(e);
             }
-        }
 
-        async function goToPayment() {
-            const quoteOk = await refreshQuote();
-            if (!quoteOk) return;
-            document.getElementById('checkoutLocation').classList.remove('active');
-            document.getElementById('checkoutPayment').classList.add('active');
-        }
+            async function validateBarangay(bgy) {
+                const btn = document.getElementById('btnConfirmLocation');
+                const status = document.getElementById('locationError');
+                
+                try {
+                    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
 
-        function backToLocation() {
-            document.getElementById('checkoutPayment').classList.remove('active');
-            document.getElementById('checkoutLocation').classList.add('active');
-        }
+                    const payload = new URLSearchParams();
+                    payload.append('barangay', bgy);
+                    if (csrfName && csrfToken) payload.append(csrfName, csrfToken);
 
-        function selectPayment(method) {
-            selectedPayment = method;
-            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
-            document.getElementById('pay' + method).classList.add('selected');
-            document.getElementById('btnPlaceOrder').disabled = false;
-            localStorage.setItem('quick_checkout_payment', method);
-        }
+                    const response = await fetch('<?= site_url('customer/validate-location') ?>', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: payload.toString()
+                    });
+                    
+                    // Update CSRF token if returned in headers or body
+                    const data = await response.clone().json();
+                    const newToken = response.headers.get('X-CSRF-TOKEN') || data.token;
+                    if (newToken) {
+                        const meta = document.querySelector('meta[name="csrf-token"]');
+                        if (meta) meta.content = newToken;
+                    }
 
-        function initiateOrder() {
-            if (selectedPayment === 'GCASH') {
-                document.getElementById('checkoutPayment').style.display = 'none';
-                document.getElementById('gcashMock').style.display = 'block';
-            } else {
+                    const result = data;
+                    
+                    if(result.status === 'success') {
+                        btn.disabled = false;
+                        status.style.display = 'none';
+                        document.getElementById('supportedAreasHint').style.display = 'none';
+                        document.getElementById('detectedBarangay').style.borderColor = '#10b981';
+                        
+                        // Reset address box to success state
+                        const addrBox = document.getElementById('geocodedAddressContainer');
+                        addrBox.style.background = 'rgba(16, 185, 129, 0.1)';
+                        addrBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                        addrBox.querySelector('label').style.color = '#10b981';
+
+                        if (mapMarker) {
+                            mapMarker.getElement().style.filter = "hue-rotate(0deg)";
+                        }
+                    } else {
+                        btn.disabled = true;
+                        status.innerHTML = "We currently only deliver our fresh catch to <strong style='color: #2dd4bf;'>Bocana</strong> and nearby spots. Check back soon as we expand our route!";
+                        status.style.display = 'block';
+                        document.getElementById('supportedAreasHint').style.display = 'block';
+                        document.getElementById('detectedBarangay').style.borderColor = '#ef4444';
+                        
+                        // Change address box to error state (Amber/Red)
+                        const addrBox = document.getElementById('geocodedAddressContainer');
+                        addrBox.style.background = 'rgba(245, 158, 11, 0.1)';
+                        addrBox.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                        addrBox.querySelector('label').style.color = '#fbbf24';
+
+                        if (mapMarker) {
+                            mapMarker.getElement().style.filter = "hue-rotate(140deg) saturate(3)";
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            window.goToPayment = async function() {
+                const quoteOk = await refreshQuote();
+                if (!quoteOk) return;
+                document.getElementById('checkoutLocation').classList.remove('active');
+                document.getElementById('checkoutPayment').classList.add('active');
+            }
+
+            window.backToLocation = function() {
+                document.getElementById('checkoutPayment').classList.remove('active');
+                document.getElementById('checkoutLocation').classList.add('active');
+            }
+
+            window.selectPayment = function(method) {
+                selectedPayment = method;
+                document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+                const payEl = document.getElementById('pay' + method);
+                if (payEl) payEl.classList.add('selected');
+                const placeBtn = document.getElementById('btnPlaceOrder');
+                if (placeBtn) placeBtn.disabled = false;
+                localStorage.setItem('quick_checkout_payment', method);
+            }
+
+            window.initiateOrder = function() {
+                if (selectedPayment === 'GCASH') {
+                    document.getElementById('checkoutPayment').style.display = 'none';
+                    document.getElementById('gcashMock').style.display = 'block';
+                } else {
+                    placeOrder();
+                }
+            }
+
+            window.confirmGcashPayment = function() {
+                alert('GCash Payment Simulated Successfully!');
                 placeOrder();
             }
-        }
 
-        function confirmGcashPayment() {
-            alert('GCash Payment Simulated Successfully!');
-            placeOrder();
-        }
-
-        function cancelGcash() {
-            document.getElementById('gcashMock').style.display = 'none';
-            document.getElementById('checkoutPayment').style.display = 'block';
-        }
-
-        async function refreshQuote() {
-            const result = await requestCheckoutQuote();
-            if (!result || result.status !== 'success') {
-                checkoutQuote = null;
-                alert((result && result.message) ? result.message : 'Unable to validate checkout details.');
-                return false;
+            window.cancelGcash = function() {
+                document.getElementById('gcashMock').style.display = 'none';
+                document.getElementById('checkoutPayment').style.display = 'block';
             }
 
-            checkoutQuote = result.data;
-            document.getElementById('paySubtotal').innerText = '₱' + Number(checkoutQuote.subtotal || 0).toFixed(2);
-            document.getElementById('payShipping').innerText = '₱' + Number(checkoutQuote.shipping_fee || 0).toFixed(2);
-            document.getElementById('payVoucher').innerText = '-₱' + Number(checkoutQuote.voucher_discount || 0).toFixed(2);
-            document.getElementById('payTotal').innerText = '₱' + Number(checkoutQuote.final_total || 0).toFixed(2);
-            document.getElementById('voucherHint').innerText = checkoutQuote.applied_vouchers?.length
-                ? 'Applied: ' + checkoutQuote.applied_vouchers.map(v => `${v.code} (-₱${Number(v.discount).toFixed(2)})`).join(', ')
-                : 'No eligible vouchers applied for this checkout.';
-            renderCartItems();
-            return true;
-        }
+            window.refreshQuote = async function() {
+                const result = await requestCheckoutQuote();
+                if (!result || result.status !== 'success') {
+                    checkoutQuote = null;
+                    alert((result && result.message) ? result.message : 'Unable to validate checkout details.');
+                    return false;
+                }
 
-        async function requestCheckoutQuote() {
-            const name = document.getElementById('deliveryName').value.trim();
-            const phone = document.getElementById('deliveryPhone').value.trim();
-            
-            let barangay, city, street;
-            const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
+                checkoutQuote = result.data;
+                document.getElementById('paySubtotal').innerText = '₱' + Number(checkoutQuote.subtotal || 0).toFixed(2);
+                document.getElementById('payShipping').innerText = '₱' + Number(checkoutQuote.shipping_fee || 0).toFixed(2);
+                document.getElementById('payVoucher').innerText = '-₱' + Number(checkoutQuote.voucher_discount || 0).toFixed(2);
+                document.getElementById('payTotal').innerText = '₱' + Number(checkoutQuote.final_total || 0).toFixed(2);
+                document.getElementById('voucherHint').innerText = checkoutQuote.applied_vouchers?.length
+                    ? 'Applied: ' + checkoutQuote.applied_vouchers.map(v => `${v.code} (-₱${Number(v.discount).toFixed(2)})`).join(', ')
+                    : 'No eligible vouchers applied for this checkout.';
+                renderCartItems();
+                return true;
+            }
 
-            if (shipToAll) {
-                city = document.getElementById('manualCity')?.value.trim();
-                barangay = document.getElementById('manualBarangayInput')?.value.trim();
-                street = document.getElementById('manualStreet')?.value.trim();
+            async function requestCheckoutQuote() {
+                const name = document.getElementById('deliveryName').value.trim();
+                const phone = document.getElementById('deliveryPhone').value.trim();
                 
-                if (!city || !barangay || !street) {
-                    return { status: 'error', message: 'Please fill in all address fields.' };
-                }
-            } else {
-                barangay = document.getElementById('detectedBarangay').value.trim();
-                city = document.getElementById('geocodedCity')?.value.trim();
-                street = document.getElementById('geocodedStreet')?.value.trim();
+                let barangay, city, street;
+                const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
 
-                if (!barangay) {
-                    return { status: 'error', message: 'Please select or detect your barangay.' };
-                }
-            }
+                if (shipToAll) {
+                    city = document.getElementById('manualCity')?.value.trim();
+                    barangay = document.getElementById('manualBarangayInput')?.value.trim();
+                    street = document.getElementById('manualStreet')?.value.trim();
+                    
+                    if (!city || !barangay || !street) {
+                        return { status: 'error', message: 'Please fill in all address fields.' };
+                    }
+                } else {
+                    barangay = document.getElementById('detectedBarangay').value.trim();
+                    city = document.getElementById('geocodedCity')?.value.trim();
+                    street = document.getElementById('geocodedStreet')?.value.trim();
 
-            const voucherCode = document.getElementById('voucherCode').value.trim();
-            const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-
-            const payload = {
-                items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
-                payment_method: selectedPayment || 'COD',
-                voucher_code: voucherCode,
-                shipping_details: {
-                    name: name || 'Customer',
-                    phone,
-                    barangay,
-                    city,
-                    street
-                }
-            };
-
-            const formData = new FormData();
-            formData.append('order_data', JSON.stringify(payload));
-            if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
-
-            try {
-                const response = await fetch('<?= site_url('customer/precheckout') ?>', {
-                    method: 'POST',
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest',
-                        [csrfHeader]: csrfToken
-                    },
-                    body: formData
-                });
-
-                // Update CSRF token if returned in headers or body
-                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
-                if (newToken) {
-                    document.querySelector('meta[name="csrf-token"]').content = newToken;
+                    if (!barangay) {
+                        return { status: 'error', message: 'Please select or detect your barangay.' };
+                    }
                 }
 
-                return await response.json();
-            } catch (error) {
-                return { status: 'error', message: 'Connection error while validating checkout.' };
-            }
-        }
-
-        async function placeOrder() {
-            const name = document.getElementById('deliveryName').value.trim();
-            const phone = document.getElementById('deliveryPhone').value.trim();
-            
-            let barangay, city, street;
-            const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
-
-            if (shipToAll) {
-                city = document.getElementById('manualCity')?.value.trim();
-                barangay = document.getElementById('manualBarangayInput')?.value.trim();
-                street = document.getElementById('manualStreet')?.value.trim();
-            } else {
-                barangay = document.getElementById('detectedBarangay').value.trim();
-                city = document.getElementById('geocodedCity')?.value.trim();
-                street = document.getElementById('geocodedStreet')?.value.trim();
-            }
-
-            const voucherCode = document.getElementById('voucherCode').value.trim();
-
-            const quoteOk = await refreshQuote();
-            if (!quoteOk) return;
-
-            const orderData = {
-                items: cart.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity
-                })),
-                payment_method: selectedPayment || 'COD',
-                voucher_code: voucherCode,
-                shipping_details: {
-                    name: name || 'Customer',
-                    phone: phone,
-                    barangay: barangay,
-                    city: city,
-                    street: street
-                }
-            };
-
-            try {
+                const voucherCode = document.getElementById('voucherCode').value.trim();
                 const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                 const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-                
+
+                const payload = {
+                    items: cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
+                    payment_method: selectedPayment || 'COD',
+                    voucher_code: voucherCode,
+                    shipping_details: {
+                        name: name || 'Customer',
+                        phone,
+                        barangay,
+                        city,
+                        street
+                    }
+                };
+
                 const formData = new FormData();
-                formData.append('order_data', JSON.stringify(orderData));
+                formData.append('order_data', JSON.stringify(payload));
                 if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
 
-                const response = await fetch('<?= site_url('customer/placeOrder') ?>', {
-                    method: 'POST',
-                    headers: { 
-                        'X-Requested-With': 'XMLHttpRequest',
-                        [csrfHeader]: csrfToken
-                    },
-                    body: formData
-                });
+                try {
+                    const response = await fetch('<?= site_url('customer/precheckout') ?>', {
+                        method: 'POST',
+                        headers: { 
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: formData
+                    });
 
-                // Update CSRF token if returned in headers or body
-                const newToken = response.headers.get('X-CSRF-TOKEN') || (await response.clone().json()).token;
-                if (newToken) {
-                    document.querySelector('meta[name="csrf-token"]').content = newToken;
-                }
+                    // Update CSRF token if returned in headers or body
+                    const data = await response.clone().json();
+                    const newToken = response.headers.get('X-CSRF-TOKEN') || data.token;
+                    if (newToken) {
+                        const meta = document.querySelector('meta[name="csrf-token"]');
+                        if (meta) meta.content = newToken;
+                    }
 
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    localStorage.setItem('quick_checkout_phone', phone);
-                    localStorage.setItem('quick_checkout_barangay', barangay);
-                    alert('Order placed successfully! Code: ' + (result.transaction_code || 'N/A'));
-                    cart = [];
-                    updateCartUI();
-                    window.location.href = '<?= site_url('customer/order-items') ?>';
-                } else {
-                    alert('Error: ' + result.message);
+                    return data;
+                } catch (error) {
+                    return { status: 'error', message: 'Connection error while validating checkout.' };
                 }
-            } catch (e) {
-                alert('Connection Error. Try again.');
             }
-        }
+
+            async function placeOrder() {
+                const name = document.getElementById('deliveryName').value.trim();
+                const phone = document.getElementById('deliveryPhone').value.trim();
+                
+                let barangay, city, street;
+                const shipToAll = '<?= $ship_to_all ?? '0' ?>' === '1';
+
+                if (shipToAll) {
+                    city = document.getElementById('manualCity')?.value.trim();
+                    barangay = document.getElementById('manualBarangayInput')?.value.trim();
+                    street = document.getElementById('manualStreet')?.value.trim();
+                } else {
+                    barangay = document.getElementById('detectedBarangay').value.trim();
+                    city = document.getElementById('geocodedCity')?.value.trim();
+                    street = document.getElementById('geocodedStreet')?.value.trim();
+                }
+
+                const voucherCode = document.getElementById('voucherCode').value.trim();
+
+                const quoteOk = await refreshQuote();
+                if (!quoteOk) return;
+
+                const orderData = {
+                    items: cartItems.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        quantity: item.quantity
+                    })),
+                    payment_method: selectedPayment || 'COD',
+                    voucher_code: voucherCode,
+                    shipping_details: {
+                        name: name || 'Customer',
+                        phone: phone,
+                        barangay: barangay,
+                        city: city,
+                        street: street
+                    }
+                };
+
+                try {
+                    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+                    
+                    const formData = new FormData();
+                    formData.append('order_data', JSON.stringify(orderData));
+                    if (csrfName && csrfToken) formData.append(csrfName, csrfToken);
+
+                    const response = await fetch('<?= site_url('customer/placeOrder') ?>', {
+                        method: 'POST',
+                        headers: { 
+                            'X-Requested-With': 'XMLHttpRequest',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: formData
+                    });
+
+                    // Update CSRF token if returned in headers or body
+                    const data = await response.clone().json();
+                    const newToken = response.headers.get('X-CSRF-TOKEN') || data.token;
+                    if (newToken) {
+                        const meta = document.querySelector('meta[name="csrf-token"]');
+                        if (meta) meta.content = newToken;
+                    }
+
+                    const result = data;
+                    
+                    if(result.status === 'success') {
+                        localStorage.setItem('quick_checkout_phone', phone);
+                        localStorage.setItem('quick_checkout_barangay', barangay);
+                        alert('Order placed successfully! Code: ' + (result.transaction_code || 'N/A'));
+                        cartItems = [];
+                        updateCartUI();
+                        window.location.href = '<?= site_url('customer/order-items') ?>';
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (e) {
+                    alert('Connection Error. Try again.');
+                }
+            }
+        })();
     </script>
 
 <?php if (!($isAJAX ?? false)): ?>

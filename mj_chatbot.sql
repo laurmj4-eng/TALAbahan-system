@@ -243,10 +243,33 @@ INSERT INTO `users` (`id`, `username`, `email`, `role`, `password`, `prompt_coun
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `settings`
+--
+
+CREATE TABLE IF NOT EXISTS `settings` (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `key` varchar(100) NOT NULL,
+  `value` text DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `key` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`key`, `value`, `created_at`, `updated_at`) VALUES
+('ship_to_all', '0', NOW(), NOW());
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `vouchers`
 --
 
-CREATE TABLE `vouchers` (
+CREATE TABLE IF NOT EXISTS `vouchers` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `code` varchar(40) NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -279,7 +302,7 @@ INSERT INTO `vouchers` (`code`, `name`, `scope`, `discount_type`, `discount_valu
 -- Table structure for table `voucher_redemptions`
 --
 
-CREATE TABLE `voucher_redemptions` (
+CREATE TABLE IF NOT EXISTS `voucher_redemptions` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `voucher_id` int(11) UNSIGNED NOT NULL,
   `order_id` int(11) UNSIGNED NOT NULL,
@@ -297,7 +320,7 @@ CREATE TABLE `voucher_redemptions` (
 -- Table structure for table `payment_attempts`
 --
 
-CREATE TABLE `payment_attempts` (
+CREATE TABLE IF NOT EXISTS `payment_attempts` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` int(11) UNSIGNED NOT NULL,
   `payment_method` varchar(30) NOT NULL,
@@ -317,7 +340,7 @@ CREATE TABLE `payment_attempts` (
 -- Table structure for table `cod_compliance`
 --
 
-CREATE TABLE `cod_compliance` (
+CREATE TABLE IF NOT EXISTS `cod_compliance` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `customer_name` varchar(120) NOT NULL,
   `failed_cod_count` int(11) DEFAULT 0,
@@ -336,7 +359,7 @@ CREATE TABLE `cod_compliance` (
 -- Table structure for table `product_payment_constraints`
 --
 
-CREATE TABLE `product_payment_constraints` (
+CREATE TABLE IF NOT EXISTS `product_payment_constraints` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `product_id` int(11) UNSIGNED NOT NULL,
   `payment_method` varchar(30) NOT NULL,
@@ -351,7 +374,7 @@ CREATE TABLE `product_payment_constraints` (
 -- Table structure for table `order_status_history`
 --
 
-CREATE TABLE `order_status_history` (
+CREATE TABLE IF NOT EXISTS `order_status_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) NOT NULL,
   `status_from` varchar(50) NOT NULL,
@@ -368,7 +391,7 @@ CREATE TABLE `order_status_history` (
 -- Table structure for table `order_reviews`
 --
 
-CREATE TABLE `order_reviews` (
+CREATE TABLE IF NOT EXISTS `order_reviews` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` int(11) UNSIGNED NOT NULL,
   `customer_name` varchar(120) NOT NULL,
@@ -386,7 +409,7 @@ CREATE TABLE `order_reviews` (
 -- Table structure for table `refund_requests`
 --
 
-CREATE TABLE `refund_requests` (
+CREATE TABLE IF NOT EXISTS `refund_requests` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `order_id` int(11) UNSIGNED NOT NULL,
   `customer_name` varchar(120) NOT NULL,
@@ -461,43 +484,43 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for table `migrations`
 --
-ALTER TABLE `migrations`
+ALTER TABLE `migrations` 
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
-ALTER TABLE `orders`
+ALTER TABLE `orders` 
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
-ALTER TABLE `order_items`
+ALTER TABLE `order_items` 
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
-ALTER TABLE `products`
+ALTER TABLE `products` 
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `sales_history`
 --
-ALTER TABLE `sales_history`
+ALTER TABLE `sales_history` 
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `shipping_locations`
 --
-ALTER TABLE `shipping_locations`
+ALTER TABLE `shipping_locations` 
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
-ALTER TABLE `users`
+ALTER TABLE `users` 
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
@@ -507,7 +530,7 @@ ALTER TABLE `users`
 --
 -- Constraints for table `order_items`
 --
-ALTER TABLE `order_items`
+ALTER TABLE `order_items` 
   ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 COMMIT;
 

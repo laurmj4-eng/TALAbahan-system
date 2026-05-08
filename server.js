@@ -47,6 +47,21 @@ app.use('/api/chat', chatLimiter);
 
 const SYS_INSTRUCT = "You are Mj, a friendly, intelligent, and helpful AI assistant. Always provide complete, well-thought-out sentences. Format securely with emojis. You speak English and Tagalog. 🤖✨";
 
+async function getSalesData() {
+    if (!process.env.PHP_BRIDGE_URL || !process.env.SECRET_TOKEN) return null;
+    try {
+        const response = await fetch(`${process.env.PHP_BRIDGE_URL}?action=summary`, {
+            headers: { 'Authorization': process.env.SECRET_TOKEN }
+        });
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result.status === 'success' ? result.data : null;
+    } catch (e) {
+        console.error("Bridge Fetch Error:", e.message);
+        return null;
+    }
+}
+
 app.post('/api/chat', async (req, res) => {
     const { uid, history, modelName } = req.body;
     
@@ -100,7 +115,21 @@ app.post('/api/chat', async (req, res) => {
         // ⭐ THE FIX: Simple, clean model string. No arrays.
         let safeModel = modelName || "openrouter/auto"; 
 
-        let aiMemoryArray = [{ role: "system", content: SYS_INSTRUCT }];
+        let dynamicInstruct = SYS_INSTRUCT;
+        const salesKeywords = ["sales", "benta", "kita", "sold", "revenue", "income", "magkano"];
+        if (salesKeywords.some(word => lastUserMessageText.includes(word))) {
+            const salesData = await getSalesData();
+            if (salesData) {
+                dynamicInstruct += `\n\nCURRENT SALES DATA (FOR YOUR EYES ONLY):
+                - Today's Revenue: ₱${salesData.today_revenue}
+                - Today's Transactions: ${salesData.today_transactions}
+                - Total Revenue (All Time): ₱${salesData.total_revenue}
+                - Total Transactions: ${salesData.total_transactions}
+                Use this data to answer the user's question accurately. Do not mention the bridge or the technical process.`;
+            }
+        }
+
+        let aiMemoryArray = [{ role: "system", content: dynamicInstruct }];
         history.slice(-5).forEach(msg => aiMemoryArray.push({ role: msg.role, content: typeof msg.content === "string" ? msg.content : " " }));
 
         // CONNECT TO OPENROUTER (Restored to 100% working version)

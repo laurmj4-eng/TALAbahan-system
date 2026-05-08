@@ -25,7 +25,11 @@ class App extends BaseConfig
         // Automatic BaseURL Detection
         if (isset($_SERVER['HTTP_HOST'])) {
             $host = $_SERVER['HTTP_HOST'];
-            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            
+            // Handle Proxy/InfinityFree HTTPS detection
+            $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+                        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            $protocol = $isSecure ? 'https' : 'http';
             
             if (strpos($host, 'mjtalabahan.page.gd') !== false || strpos($host, 'mj-talabahan.infy.uk') !== false) {
                 $this->baseURL = $protocol . '://' . $host . '/';
