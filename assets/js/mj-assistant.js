@@ -143,7 +143,15 @@ function appendMessage(sender, text, id = null, time = null, isTyping = false) {
     if (isTyping) {
         messageDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
     } else if (sender === 'bot') {
-        messageDiv.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        // Fix for live rendering: Ensure marked and DOMPurify are handled safely
+        try {
+            const rawHtml = typeof marked !== 'undefined' ? marked.parse(text) : text;
+            messageDiv.innerHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
+        } catch (e) {
+            console.error('Markdown rendering error:', e);
+            messageDiv.textContent = text;
+        }
+        
         if (typeof hljs !== 'undefined') {
             messageDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
         }
@@ -161,7 +169,8 @@ function appendMessage(sender, text, id = null, time = null, isTyping = false) {
     }
 
     chatMessages.appendChild(wrapper);
-    setTimeout(() => chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' }), 50);
+    // Smooth scroll to bottom
+    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
     return messageDiv; 
 }
 

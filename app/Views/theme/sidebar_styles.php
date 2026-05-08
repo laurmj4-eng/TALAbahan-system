@@ -172,6 +172,11 @@
         transform: scale(1.1);
     }
 
+    .sidebar-menu a:active {
+        transform: scale(0.98);
+        background: rgba(168, 85, 247, 0.2);
+    }
+
     .sidebar-menu a.active { 
         background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.15)); 
         color: #fff !important;
