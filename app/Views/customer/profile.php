@@ -1,7 +1,7 @@
 <?php if (!($isAJAX ?? false)): ?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
-<div id="page-content">
+<main id="main-content" class="main-content">
 <?php endif; ?>
 
 <style>
@@ -158,8 +158,7 @@
     }
 </style>
 
-<main class="main-content">
-    <div class="profile-header">
+<div class="profile-header">
         <div class="profile-title">
             <h1>Profile</h1>
             <p>Welcome, <strong><?= esc($username ?? 'Customer') ?></strong>. Manage your purchases quickly.</p>
@@ -241,10 +240,9 @@
             </a>
         </div>
     </div>
-</main>
 
 <?php if (!($isAJAX ?? false)): ?>
-</div>
+</main>
 <?= $this->include('theme/customer_bottom_nav') ?>
 <?= $this->include('theme/footer') ?>
 <?php endif; ?>

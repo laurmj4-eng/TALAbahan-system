@@ -134,7 +134,7 @@
                     e.preventDefault();
                     
                     // Add loading state
-                    const content = document.getElementById('page-content');
+                    const content = document.getElementById('main-content');
                     if (!content) return;
                     content.style.opacity = '0.5';
                     
@@ -148,6 +148,7 @@
                         return response.text();
                     })
                     .then(html => {
+                        const content = document.getElementById('main-content');
                         content.innerHTML = html;
                         content.style.opacity = '1';
                         

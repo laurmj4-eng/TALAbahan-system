@@ -1,7 +1,7 @@
 <?php if (!($isAJAX ?? false)): ?>
 <?= $this->include('theme/header') ?>
 <?= $this->include('theme/sidebar') ?>
-<div id="page-content">
+<main id="main-content" class="main-content">
 <?php endif; ?>
 
     <style>
@@ -555,8 +555,7 @@
     </script>
 
 <?php if (!($isAJAX ?? false)): ?>
-</div>
+</main>
 <?= $this->include('theme/customer_bottom_nav') ?>
-</body>
-</html>
+<?= $this->include('theme/footer') ?>
 <?php endif; ?>

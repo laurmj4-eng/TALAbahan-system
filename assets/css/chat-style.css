@@ -11,13 +11,6 @@
     --shadow-heavy: 0 20px 40px rgba(0,0,0,0.2);
 }
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main);
-}
-header { background: var(--text-main); color: white; padding: 2rem; text-align: center; }
-main { padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
-
 /* Scrollbars */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
