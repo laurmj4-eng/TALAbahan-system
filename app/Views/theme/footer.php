@@ -191,6 +191,9 @@
         </div>
     </div>
 
+    <script>
+        window.CHAT_API_BASE_URL = 'https://talabahan-system.onrender.com';
+    </script>
     <script src="<?= base_url('js/chat-script.js') ?>?v=<?= time() ?>"></script>
     <script>
         // Ensure Chatbot opens even if scripts are re-run by AJAX
