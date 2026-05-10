@@ -21,6 +21,7 @@
     $is_shipping = (strpos($current_path, 'admin/shipping') === 0);
     $is_vouchers = (strpos($current_path, 'admin/vouchers') === 0);
     $is_database = (strpos($current_path, 'admin/users') === 0);
+    $is_activity_logs = (strpos($current_path, 'admin/activity') === 0);
 
     // Staff specific
     $is_staff_orders = (strpos($current_path, 'staff/orders') === 0);
@@ -135,6 +136,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?= site_url('admin/activity') ?>" class="<?= $is_activity_logs ? 'active' : '' ?>">
+                            <i class="fas fa-history"></i> 
+                            <span>Activity Log</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?= site_url('admin/shipping') ?>" class="<?= $is_shipping ? 'active' : '' ?>">
                             <i class="fas fa-map-marker-alt"></i> 
                             <span>Shipping</span>
@@ -212,11 +219,4 @@
             }
         });
     });
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-    }
 </script>

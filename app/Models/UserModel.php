@@ -16,7 +16,8 @@ class UserModel extends Model
         'password', 
         'role', 
         'prompt_count', 
-        'last_reset'
+        'last_reset',
+        'last_active'
     ];
 
     protected $returnType = 'array';

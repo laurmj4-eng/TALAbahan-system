@@ -7,6 +7,7 @@ use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\OrderModel; // Add OrderModel
 use App\Models\ProductModel; // Add ProductModel
+use App\Models\ActivityLogModel; // Add ActivityLogModel
 
 class AdminController extends BaseController
 {

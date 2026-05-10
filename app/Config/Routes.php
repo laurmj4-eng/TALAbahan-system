@@ -25,6 +25,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('dashboard/todaySales', 'Dashboard::getTodaySalesData');
 
+    // --- Activity Monitoring ---
+    $routes->get('activity', 'ActivityLogController::index');
+    $routes->get('activity/user/(:num)', 'ActivityLogController::userTimeline/$1');
+
     // --- User Management ---
     $routes->get('users', 'AdminController::users'); 
     $routes->post('saveUser', 'AdminController::saveUser', ['filter' => 'csrf']);

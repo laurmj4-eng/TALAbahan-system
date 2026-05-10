@@ -455,11 +455,19 @@
         .main-content { 
             flex: 1; 
             padding: 40px; 
-            overflow-y: auto; /* Content scrolls beautifully inside this container */
+            overflow-y: auto; 
+            overflow-x: hidden; /* Prevent horizontal scroll on the main container */
             height: 100vh;
-            max-width: none !important; /* Overrides the 800px limit from chat-style.css */
+            max-width: none !important;
             width: 100% !important;
             margin: 0 !important;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 80px 15px 15px 15px; /* Added top padding for mobile toggle space */
+            }
         }
 
         .tab-section { display: none; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -467,7 +475,23 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* UI/UX Remains exactly the same below */
-        .card { border-radius: 24px; padding: 35px; margin-bottom: 25px; position: relative; overflow: hidden; }
+        .card { 
+            border-radius: 24px; 
+            padding: 35px; 
+            margin-bottom: 25px; 
+            position: relative; 
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box; /* Crucial for glassmorphism with padding */
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+                border-radius: 16px;
+                margin-bottom: 15px;
+            }
+        }
         .card::before { content: ""; position: absolute; top: 0; left: -50%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-25deg); animation: shine 6s infinite; }
         @keyframes shine { 0% { left: -50%; } 100% { left: 150%; } }
         .card h2 { margin-top: 0; font-weight: 700; font-size: 2rem; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
@@ -616,6 +640,57 @@
                 overflow-x: auto; /* Ensure horizontal swipe */
                 -webkit-overflow-scrolling: touch;
             }
+
+            /* STACKED TABLE (CARD VIEW) FOR MOBILE */
+            @media (max-width: 600px) {
+                .premium-table, .premium-table thead, .premium-table tbody, .premium-table th, .premium-table td, .premium-table tr { 
+                    display: block; 
+                }
+                
+                .premium-table thead tr { 
+                    position: absolute;
+                    top: -9999px;
+                    left: -9999px;
+                }
+                
+                .premium-table tr { 
+                    margin-bottom: 15px;
+                    background: rgba(255, 255, 255, 0.03);
+                    border-radius: 16px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    padding: 10px;
+                }
+                
+                .premium-table td { 
+                    border: none;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+                    position: relative;
+                    padding-left: 45% !important; 
+                    text-align: right;
+                    min-height: 45px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                
+                .premium-table td:last-child {
+                    border-bottom: none;
+                }
+                
+                .premium-table td:before { 
+                    position: absolute;
+                    left: 15px;
+                    width: 40%; 
+                    padding-right: 10px; 
+                    white-space: nowrap;
+                    content: attr(data-label);
+                    text-align: left;
+                    font-weight: 700;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    color: rgba(255, 255, 255, 0.4);
+                }
+            }
         }
 
         @media (max-width: 576px) {
@@ -659,33 +734,61 @@
         .premium-table th, .premium-table td { padding: 12px 10px; font-size: 0.85rem; }
         .modal-content { scrollbar-width: thin; scrollbar-color: rgba(168, 85, 247, 0.5) transparent; }
     </style>
-    <button class="mobile-toggle" onclick="toggleSidebar()">
+</head>
+<body>
+    <!-- MOBILE MENU TOGGLE -->
+    <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
         <i class="fas fa-bars"></i>
     </button>
 
     <script>
+        /**
+         * Global Sidebar Toggle Logic
+         * Handles both the sidebar and the background overlay
+         */
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             const icon = document.querySelector('.mobile-toggle i');
             
             if (sidebar) {
-                sidebar.classList.toggle('active');
-                if (overlay) overlay.classList.toggle('active');
+                const isActive = sidebar.classList.toggle('active');
                 
+                // Sync overlay
+                if (overlay) {
+                    overlay.classList.toggle('active', isActive);
+                }
+                
+                // Sync icon
                 if (icon) {
-                    if (sidebar.classList.contains('active')) {
+                    if (isActive) {
                         icon.classList.replace('fa-bars', 'fa-times');
+                        // Prevent body scroll when sidebar is open on mobile
+                        document.body.style.overflow = 'hidden';
                     } else {
                         icon.classList.replace('fa-times', 'fa-bars');
+                        document.body.style.overflow = '';
                     }
                 }
             }
         }
-    </script>
 
-    <?php /* Global pagination cleanup: remove white bullets and style links */ ?>
+        // Close sidebar when clicking overlay
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar && sidebar.classList.contains('active')) {
+                        toggleSidebar();
+                    }
+                });
+            }
+        });
+     </script>
+
     <style>
+        /* Global pagination cleanup: remove white bullets and style links */
         nav[aria-label="Page navigation"] { margin-top: 14px; }
         ul.pagination {
             list-style: none !important;
@@ -750,5 +853,3 @@
             pointer-events: none;
         }
     </style>
-</head>
-<body>

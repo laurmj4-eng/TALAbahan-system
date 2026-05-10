@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'adminGuard'    => \App\Filters\AdminGuard::class,    // Role: Admin
         'staffGuard'    => \App\Filters\StaffGuard::class,    // Role: Staff
         'customerGuard' => \App\Filters\CustomerGuard::class, // Role: Customer
+        'activityLogger' => \App\Filters\ActivityLogger::class,
     ];
 
     /**
@@ -65,6 +66,7 @@ class Filters extends BaseFilters
         'after' => [
             // 'honeypot',
             // 'secureheaders',
+            'activityLogger',
         ],
     ];
 
