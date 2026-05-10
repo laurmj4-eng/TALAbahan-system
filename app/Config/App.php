@@ -34,8 +34,9 @@ class App extends BaseConfig
             if (strpos($host, 'mjtalabahan.page.gd') !== false || strpos($host, 'mj-talabahan.infy.uk') !== false) {
                 $this->baseURL = $protocol . '://' . $host . '/';
                 $this->indexPage = '';
-            } elseif (strpos($host, 'localhost') !== false || $host === '127.0.0.1') {
-                $this->baseURL = 'http://localhost:8080/';
+            } else {
+                // Fallback for local development (localhost, 127.0.0.1, or local IP)
+                $this->baseURL = $protocol . '://' . $host . '/';
                 $this->indexPage = '';
             }
         } else {

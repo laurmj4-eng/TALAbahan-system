@@ -29,7 +29,15 @@ class Auth extends BaseController
             $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
 
             // 2. Verify reCAPTCHA (Server-side) - Using CURL for better compatibility on InfinityFree
-            if ($provider !== 'google' && !empty($recaptchaResponse)) {
+            if ($provider !== 'google') {
+                if (empty($recaptchaResponse)) {
+                    return $this->response->setJSON([
+                        'status'  => 'error',
+                        'message' => 'Please complete the reCAPTCHA verification.',
+                        'token'   => csrf_hash()
+                    ])->setStatusCode(400);
+                }
+
                 $secret = env('RECAPTCHA_SECRET_KEY'); 
                 
                 $ch = curl_init();

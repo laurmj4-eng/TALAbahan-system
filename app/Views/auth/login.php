@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">      
     <title>Mj AI Chatbot - Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>        
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">      
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script> 
 </head>
 <body>
 
@@ -25,7 +25,7 @@
         authDomain: "<?= env('FIREBASE_AUTH_DOMAIN') ?>",
         projectId: "<?= env('FIREBASE_PROJECT_ID') ?>",
         storageBucket: "<?= env('FIREBASE_STORAGE_BUCKET') ?>",
-        messagingSenderId: "<?= env('FIREBASE_MESSAGING_SENDER_ID') ?>",
+        messagingSenderId: "<?= env('FIREBASE_MESSAGING_SENDER_ID') ?>",        
         appId: "<?= env('FIREBASE_APP_ID') ?>",
         measurementId: "<?= env('FIREBASE_MEASUREMENT_ID') ?>"
     };
@@ -43,27 +43,69 @@
             analytics = getAnalytics(app);
 
             // --- HANDLE REDIRECT RESULT (For Mobile) ---
+            console.log("Checking for redirect result...");
             getRedirectResult(auth)
                 .then((result) => {
                     if (result) {
                         const user = result.user;
-                        const googleBtn = document.getElementById('googleBtn');
-                        const originalContent = googleBtn.innerHTML;
-                        googleBtn.textContent = "Verifying...";
-                        googleBtn.disabled = true;
-                        verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
+                        console.log("Redirect Result Found:", user.email);
+                        sessionStorage.removeItem('mj_expecting_google_redirect');
+                        handleGoogleLogin(user);
+                    } else {
+                        console.log("No redirect result found.");
+                        // Fallback: If we were expecting a redirect, check if user is already signed in
+                        if (sessionStorage.getItem('mj_expecting_google_redirect')) {
+                            console.log("Was expecting redirect, checking currentUser...");
+                            const user = auth.currentUser;
+                            if (user) {
+                                sessionStorage.removeItem('mj_expecting_google_redirect');
+                                handleGoogleLogin(user);
+                            }
+                        }
                     }
                 })
                 .catch((error) => {
                     console.error("Redirect Auth Error:", error);
-                    // No alert here to avoid annoying users on every page load
+                    sessionStorage.removeItem('mj_expecting_google_redirect');
+                    if (error.code !== 'auth/web-storage-unsupported') {
+                        alert("Google Sign-In Error: " + error.message);
+                    }
                 });
+
+            // --- FALLBACK: AUTH STATE OBSERVER ---
+            auth.onAuthStateChanged((user) => {
+                if (user && sessionStorage.getItem('mj_expecting_google_redirect')) {
+                    console.log("Auth State Changed: User detected, verifying...");
+                    sessionStorage.removeItem('mj_expecting_google_redirect');
+                    handleGoogleLogin(user);
+                }
+            });
 
         } catch (error) {
             console.error("Firebase Initialization Error:", error);
         }
     } else {
         console.warn("Firebase API Key is missing. Google Sign-In will be disabled.");
+    }
+
+    function handleGoogleLogin(user) {
+        const handleBackendVerification = () => {
+            const googleBtn = document.getElementById('googleBtn');
+            const originalContent = googleBtn ? googleBtn.innerHTML : "Sign in with Google";
+            
+            if (googleBtn) {
+                googleBtn.textContent = "Verifying...";
+                googleBtn.disabled = true;
+            }
+            
+            verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', handleBackendVerification);
+        } else {
+            handleBackendVerification();
+        }
     }
 
     const emailInput = document.getElementById('email');
@@ -88,21 +130,20 @@
     });
 
     // --- 1. NORMAL EMAIL & PASSWORD LOGIN ---
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+    document.getElementById('loginForm').addEventListener('submit', (e) => {    
         e.preventDefault(); 
 
         const email = emailInput.value.trim().toLowerCase();
         const password = document.getElementById('password').value;
-        const rememberMe = document.getElementById('rememberMe').checked;
+        const rememberMe = document.getElementById('rememberMe').checked;       
         const loginBtn = document.getElementById('loginBtn');
 
         let recaptchaResponse = "";
-        const recaptchaWidget = captchaBox.querySelector('.g-recaptcha');
+        const recaptchaWidget = captchaBox.querySelector('.g-recaptcha');       
         if (recaptchaWidget.style.visibility !== 'hidden') {
             recaptchaResponse = grecaptcha.getResponse();
             if (recaptchaResponse.length === 0) {
-                alert("Please complete the reCAPTCHA to verify you are human.");
-                return; 
+                alert("Please complete the reCAPTCHA to verify you are human.");                return;
             }
         }
 
@@ -126,11 +167,21 @@
         googleBtn.disabled = true;
 
         // Detect Mobile
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        console.log("Mobile Detection:", isMobile, "User Agent:", navigator.userAgent);
 
         if (isMobile) {
-            // Use Redirect for Mobile to stay in the same tab
-            signInWithRedirect(auth, provider);
+            console.log("Using signInWithRedirect for mobile");
+            try {
+                sessionStorage.setItem('mj_expecting_google_redirect', 'true');
+                signInWithRedirect(auth, provider);
+            } catch (err) {
+                console.error("signInWithRedirect error:", err);
+                sessionStorage.removeItem('mj_expecting_google_redirect');
+                alert("Error starting Google Sign-In: " + err.message);
+                googleBtn.innerHTML = originalContent;
+                googleBtn.disabled = false;
+            }
         } else {
             // Use Popup for Desktop
             signInWithPopup(auth, provider)
@@ -140,20 +191,20 @@
                 })
                 .catch((error) => {
                     console.error("Full Error Object:", error);
-                    
+
                     let friendlyMessage = "Google Sign-In failed or was cancelled.";
-                    
+
                     if (error.code === 'auth/operation-not-allowed') {
-                        friendlyMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it under Authentication > Sign-in method.";
+                        friendlyMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it under Authentication > Sign-in method.";    
                     } else if (error.code === 'auth/popup-blocked') {
                         friendlyMessage = "The login popup was blocked by your browser. Please allow popups for this site.";
                     } else if (error.code === 'auth/unauthorized-domain') {
                         friendlyMessage = "This domain (localhost) is not authorized in your Firebase Console. Add it under Authentication > Settings > Authorized domains.";
-                    } else if (error.code === 'auth/popup-closed-by-user') {
+                    } else if (error.code === 'auth/popup-closed-by-user') {    
                         friendlyMessage = "Login cancelled: The popup was closed before finishing.";
                     }
 
-                    alert(friendlyMessage + "\n\nError Code: " + error.code);
+                    alert(friendlyMessage + "\n\nError Code: " + error.code);   
                     googleBtn.innerHTML = originalContent;
                     googleBtn.disabled = false;
                 });
@@ -161,28 +212,50 @@
     });
 
     // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND ---
-    function verifyWithBackend(email, password, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email", recaptchaToken = "") {
+    function verifyWithBackend(email, password, rememberMe, buttonElement, originalButtonText, displayName = "", provider = "email", recaptchaToken = "") {     
         let formData = new FormData();
-        
+
         // ADD CSRF TOKEN (Crucial to fix "Action not allowed")
-        const csrfHash = document.querySelector('input[name="' + csrfTokenName + '"]').value;
+        const csrfInput = document.querySelector('input[name="' + csrfTokenName + '"]');
+        if (!csrfInput) {
+            console.error("CSRF token input not found");
+            alert("Security Error: CSRF token missing. Please refresh the page.");
+            if (buttonElement) {
+                buttonElement.innerHTML = originalButtonText;
+                buttonElement.disabled = false;
+            }
+            return;
+        }
+        const csrfHash = csrfInput.value;
         formData.append(csrfTokenName, csrfHash);
 
         formData.append('email', email);
         formData.append('password', password);
-        formData.append('remember', rememberMe); 
-        formData.append('name', displayName); 
-        formData.append('provider', provider); 
-        formData.append('g-recaptcha-response', recaptchaToken); // Added for backend verification
+        formData.append('remember', rememberMe);
+        formData.append('name', displayName);
+        formData.append('provider', provider);
+        formData.append('g-recaptcha-response', recaptchaToken);
 
-        fetch('<?= base_url('auth/verify') ?>', {
+        const verifyUrl = '<?= base_url('auth/verify') ?>';
+        console.log("Verifying with backend at:", verifyUrl);
+
+        fetch(verifyUrl, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // Tells CI this is an AJAX request
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json()) 
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errData => {
+                    throw new Error(errData.message || `Server responded with ${response.status}`);
+                }).catch(() => {
+                    throw new Error(`Server responded with ${response.status}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 if (data.trust_device === true) {
@@ -192,44 +265,42 @@
                         localStorage.setItem('mj_trusted_emails', JSON.stringify(trustedEmails));
                     }
                 }
+                console.log("Login successful, redirecting to:", data.redirect);
                 window.location.href = data.redirect;
             } else {
-                // UPDATE CSRF TOKEN ON FAILURE (So the next click doesn't get "Action not allowed")
-                if (data.token) {
-                    document.querySelector('input[name="' + csrfTokenName + '"]').value = data.token;
+                // UPDATE CSRF TOKEN ON FAILURE
+                if (data.token && csrfInput) {
+                    csrfInput.value = data.token;
                 }
 
                 alert(data.message || "Account not found.");
-                
-                // Use innerHTML if it contains HTML (like the Google icon), else textContent
-                if (originalButtonText.includes('<svg')) {
-                    buttonElement.innerHTML = originalButtonText;
-                } else {
-                    buttonElement.textContent = originalButtonText;
+
+                if (buttonElement) {
+                    if (originalButtonText.includes('<svg')) {
+                        buttonElement.innerHTML = originalButtonText;
+                    } else {
+                        buttonElement.textContent = originalButtonText;
+                    }
+                    buttonElement.disabled = false;
                 }
-                
-                buttonElement.disabled = false;
-                
-                if (typeof grecaptcha !== 'undefined') { 
-                    grecaptcha.reset(); 
+
+                if (typeof grecaptcha !== 'undefined') {
+                    grecaptcha.reset();
                 }
             }
         })
         .catch(err => {
             console.error("Verification Error:", err);
-            let errorMsg = "System Error: Could not verify user.";
-            if (err.message) {
-                errorMsg += "\n\nDetails: " + err.message;
+            alert("System Error: " + err.message);
+
+            if (buttonElement) {
+                if (originalButtonText.includes('<svg')) {
+                    buttonElement.innerHTML = originalButtonText;
+                } else {
+                    buttonElement.textContent = originalButtonText;
+                }
+                buttonElement.disabled = false;
             }
-            alert(errorMsg);
-            
-            if (originalButtonText.includes('<svg')) {
-                buttonElement.innerHTML = originalButtonText;
-            } else {
-                buttonElement.textContent = originalButtonText;
-            }
-            
-            buttonElement.disabled = false;
         });
     }
 </script>
@@ -238,25 +309,26 @@
     <!-- ADDED: CSRF Field (Required by CodeIgniter) -->
     <?= csrf_field() ?>
 
-    <img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="form-logo">
+    <img src="<?= base_url('images/pic3.jpg') ?>" alt="Logo" class="form-logo"> 
     <h2>Sign In to Mj AI</h2>
-    
+
     <input type="email" id="email" name="email" placeholder="Email Address" autocomplete="username" required>
-    <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
-    
+    <input type="password" id="password" name="password" placeholder="Password" 
+autocomplete="current-password" required>
+
     <div class="remember-me-container">
         <input type="checkbox" id="rememberMe">
         <label for="rememberMe">Remember Me (Trust this device for this email)</label>
     </div>
-    
+
     <!-- reCAPTCHA Container -->
     <div id="captcha-container" style="margin-bottom: 15px; display: flex; justify-content: center; height: 80px; overflow: hidden;">
         <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" style="transition: opacity 0.3s ease;"></div>
     </div>
-    
+
     <button type="submit" id="loginBtn">Login</button>
     <a href="<?= site_url('register') ?>"><button type="button">Create Account</button></a>
-    
+
     <div class="links">
         <a id="forgotPasswordBtn" href="#">Forgot Password?</a>
     </div>
