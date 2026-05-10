@@ -16,7 +16,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
     // Firebase Config
@@ -41,6 +41,24 @@
             auth = getAuth(app);
             provider = new GoogleAuthProvider();
             analytics = getAnalytics(app);
+
+            // --- HANDLE REDIRECT RESULT (For Mobile) ---
+            getRedirectResult(auth)
+                .then((result) => {
+                    if (result) {
+                        const user = result.user;
+                        const googleBtn = document.getElementById('googleBtn');
+                        const originalContent = googleBtn.innerHTML;
+                        googleBtn.textContent = "Verifying...";
+                        googleBtn.disabled = true;
+                        verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Redirect Auth Error:", error);
+                    // No alert here to avoid annoying users on every page load
+                });
+
         } catch (error) {
             console.error("Firebase Initialization Error:", error);
         }
@@ -107,32 +125,39 @@
         googleBtn.textContent = "Please wait...";
         googleBtn.disabled = true;
 
-        // Optimize for mobile: check if screen is small and use redirect instead of popup if preferred,
-        // but for now we'll keep popup and ensure it's handled.
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                const user = result.user;
-                verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
-            })
-            .catch((error) => {
-                console.error("Full Error Object:", error);
-                
-                let friendlyMessage = "Google Sign-In failed or was cancelled.";
-                
-                if (error.code === 'auth/operation-not-allowed') {
-                    friendlyMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it under Authentication > Sign-in method.";
-                } else if (error.code === 'auth/popup-blocked') {
-                    friendlyMessage = "The login popup was blocked by your browser. Please allow popups for this site.";
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    friendlyMessage = "This domain (localhost) is not authorized in your Firebase Console. Add it under Authentication > Settings > Authorized domains.";
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    friendlyMessage = "Login cancelled: The popup was closed before finishing.";
-                }
+        // Detect Mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-                alert(friendlyMessage + "\n\nError Code: " + error.code);
-                googleBtn.innerHTML = originalContent;
-                googleBtn.disabled = false;
-            });
+        if (isMobile) {
+            // Use Redirect for Mobile to stay in the same tab
+            signInWithRedirect(auth, provider);
+        } else {
+            // Use Popup for Desktop
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    verifyWithBackend(user.email, "", true, googleBtn, originalContent, user.displayName, "google", "");
+                })
+                .catch((error) => {
+                    console.error("Full Error Object:", error);
+                    
+                    let friendlyMessage = "Google Sign-In failed or was cancelled.";
+                    
+                    if (error.code === 'auth/operation-not-allowed') {
+                        friendlyMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it under Authentication > Sign-in method.";
+                    } else if (error.code === 'auth/popup-blocked') {
+                        friendlyMessage = "The login popup was blocked by your browser. Please allow popups for this site.";
+                    } else if (error.code === 'auth/unauthorized-domain') {
+                        friendlyMessage = "This domain (localhost) is not authorized in your Firebase Console. Add it under Authentication > Settings > Authorized domains.";
+                    } else if (error.code === 'auth/popup-closed-by-user') {
+                        friendlyMessage = "Login cancelled: The popup was closed before finishing.";
+                    }
+
+                    alert(friendlyMessage + "\n\nError Code: " + error.code);
+                    googleBtn.innerHTML = originalContent;
+                    googleBtn.disabled = false;
+                });
+        }
     });
 
     // --- HELPER FUNCTION: SEND DATA TO PHP BACKEND ---

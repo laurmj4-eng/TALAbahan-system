@@ -5,7 +5,7 @@ body {
     text-size-adjust: 100%;
     
     /* Background Image Additions */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/pic1.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../images/pic1.jpg'); 
     background-size: cover;                      
     background-position: center;                 
     background-repeat: no-repeat;                
@@ -71,10 +71,10 @@ body {
     }
 
     .login-container {
-        padding: 30px 20px !important; /* Slightly more padding for better balance */
-        border-radius: 24px !important;
-        width: 95% !important; /* More width on small screens */
-        max-width: 360px !important; /* Increased for better layout on mobile */
+        padding: 20px 15px !important; /* More compact padding */
+        border-radius: 20px !important;
+        width: 90% !important; /* Slightly less width */
+        max-width: 320px !important; /* Reduced width for a smaller feel */
         margin: auto !important;
         /* Ensure it floats clearly over background */
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
@@ -83,32 +83,32 @@ body {
     }
 
     h2 {
-        font-size: 1.5rem !important; /* Slightly larger */
-        margin-bottom: 20px !important;
-    }
-
-    .form-logo {
-        width: 110px !important; /* Adjusted size */
+        font-size: 1.25rem !important; /* Smaller header */
         margin-bottom: 15px !important;
     }
 
+    .form-logo {
+        width: 80px !important; /* Smaller logo */
+        margin-bottom: 10px !important;
+    }
+
     input:not([type="checkbox"]), button {
-        padding: 12px 15px !important;
-        margin: 8px 0 !important;
-        font-size: 14px !important;
-        min-height: 44px !important; /* Better touch target */
+        padding: 10px 12px !important; /* Smaller padding */
+        margin: 6px 0 !important; /* Tighter margins */
+        font-size: 13px !important; /* Smaller text */
+        min-height: 40px !important; /* Smaller touch target but still usable */
     }
 
     .remember-me-container {
-        margin: 10px 0 20px 0 !important;
+        margin: 8px 0 15px 0 !important;
     }
 
     label {
-        font-size: 13px !important;
+        font-size: 12px !important;
     }
 
     .divider {
-        margin: 20px 0 !important;
+        margin: 15px 0 !important;
     }
 
     /* Scale reCAPTCHA and its container to fit perfectly */
