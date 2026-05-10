@@ -148,14 +148,14 @@
             </span>
         </div>
 
-        <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
+        <div class="glass-table-container">
             <table class="premium-table">
                 <thead>
                     <tr>
                         <th>BARANGAY NAME</th>
                         <th>CITY / MUNICIPALITY</th>
                         <th>STATUS</th>
-                        <th>ACTIONS</th>
+                        <th class="action-cell">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -172,10 +172,10 @@
                             </td>
                             <td class="action-cell">
                                 <div class="action-btns">
-                                    <button class="btn-edit" onclick="editLocation(<?= $l['id'] ?>)">
+                                    <button type="button" class="btn-edit" onclick="editLocation(<?= $l['id'] ?>)">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button class="btn-delete" onclick="deleteLocation(<?= $l['id'] ?>)">
+                                    <button type="button" class="btn-delete" onclick="deleteLocation(<?= $l['id'] ?>)">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>
                                 </div>

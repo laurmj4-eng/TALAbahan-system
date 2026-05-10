@@ -86,24 +86,25 @@
     background: var(--primary-gradient);
     color: white; padding: 12px 16px; 
     display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; min-height: 80px; /* Increased to prevent overlap */
+    flex-shrink: 0; min-height: 85px; /* Slightly increased */
     border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: relative;
 }
-.header-left { display: flex; align-items: center; gap: 12px; width: 60%; }
-.ai-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.ai-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; flex: 1; }
 .ai-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Selector Details */
 #model-select {
     background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px; padding: 4px 8px; font-size: 11px; font-weight: 500;
-    outline: none; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 140px;
+    outline: none; cursor: pointer; transition: all 0.2s; width: auto; max-width: 160px;
 }
 #model-select:hover { background: rgba(255, 255, 255, 0.25); }
 #model-select option { background-color: #ffffff !important; color: #000000 !important; }
 
 /* UI Tools / Icons (Trash etc) */
-#header-controls { display: flex; gap: 8px; align-items: center; }
+#header-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .header-btn {
     background: rgba(255,255,255,0.15) !important; 
     border: none !important; 
@@ -124,6 +125,30 @@
 }
 .header-btn:hover { background: rgba(255,255,255,0.3) !important; transform: scale(1.05); }
 .close-btn { font-size: 20px !important; }
+
+/* Delete History Trash Button - Red Glassmorphism */
+.trash-btn {
+    background: rgba(239, 68, 68, 0.15) !important; 
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+    backdrop-filter: blur(4px);
+}
+.trash-btn:hover { 
+    background: rgba(239, 68, 68, 0.35) !important; 
+    color: #ffffff !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Fade Out Animation for Bubbles */
+.fade-out {
+    animation: fadeOutDown 0.5s ease forwards !important;
+}
+
+@keyframes fadeOutDown {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(20px); }
+}
 
 /* Messages Area */
 #chat-messages {
@@ -287,6 +312,21 @@
     #chat-header {
         border-radius: 0;
         padding-top: env(safe-area-inset-top); /* Support for notched phones (iPhone) */
+        padding-left: 10px;
+        padding-right: 10px;
+        min-height: 90px;
+    }
+    .header-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+    .ai-title {
+        font-size: 13px !important;
+    }
+    #model-select {
+        font-size: 10px !important;
+        max-width: 130px !important;
     }
     #chat-input-area {
         padding-bottom: env(safe-area-inset-bottom);

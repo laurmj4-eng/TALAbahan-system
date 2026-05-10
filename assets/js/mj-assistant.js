@@ -179,10 +179,30 @@ async function getBotResponse(userText) {
     appendMessage('bot', '', typingWrapperId, null, true); 
     sendBtn.disabled = true; 
     
+    // --- LOCAL RESPONSE INTERCEPTION ---
+    const lowerText = userText.toLowerCase();
+    const devKeywords = ['developer', 'creator', 'who made', 'who develop', 'gumawa', 'sino ang gumawa'];
+    
+    if (devKeywords.some(keyword => lowerText.includes(keyword))) {
+        // Natural 500ms delay for the 'Typing...' animation
+        setTimeout(() => {
+            document.getElementById(typingWrapperId)?.remove();
+            const localReply = "The developer or the creator of this is MJ the Pogi 😎🔥";
+            appendMessage('bot', localReply, null, getTimestamp());
+            chatHistory.push({ role: "user", content: userText, timestamp: getTimestamp() });
+            chatHistory.push({ role: "assistant", content: localReply, timestamp: getTimestamp() });
+            saveHistory();
+            sendBtn.disabled = false;
+            chatInput.focus();
+            playPopSound();
+        }, 500);
+        return;
+    }
+
     chatHistory.push({ role: "user", content: userText, timestamp: getTimestamp() });
 
     try {
-        const response = await fetch(`${BASE_URL}/api/chat`, {
+        const response = await fetch(`${BASE_URL}/admin/chatbot/process`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -288,6 +308,75 @@ if (clearChatBtn) {
             chatHistory = [];
             saveHistory();
             loadHistoryUI();
+        }
+    });
+}
+
+// --- DELETE HISTORY SYSTEM (ADMIN ONLY) ---
+const clearHistoryBtn = document.getElementById('clear-chat-history');
+if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', async () => {
+        const result = await Swal.fire({
+            title: 'Wipe Memory?',
+            text: 'MJ, this will permanently delete your chat logs from the system.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Wipe it!',
+            background: '#1e1b4b',
+            color: '#ffffff',
+            backdrop: `rgba(0,0,123,0.4)`
+        });
+
+        if (result.isConfirmed) {
+            // 1. Fade out effect
+            const bubbles = chatMessages.querySelectorAll('.message-wrapper');
+            bubbles.forEach((bubble, index) => {
+                setTimeout(() => {
+                    bubble.classList.add('fade-out');
+                }, index * 50); // Staggered fade out
+            });
+
+            // 2. Wait for animation to finish then clear UI
+            setTimeout(async () => {
+                chatHistory = [];
+                saveHistory();
+                loadHistoryUI();
+
+                // 3. Backend call to log activity
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    const csrfName = document.querySelector('meta[name="csrf-name"]').getAttribute('content');
+                    
+                    const formData = new FormData();
+                    formData.append(csrfName, csrfToken);
+
+                    const response = await fetch(`${BASE_URL}/admin/chatbot/deleteHistory`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: 'Wiped!',
+                            text: 'Memory has been cleared and logged.',
+                            icon: 'success',
+                            background: '#1e1b4b',
+                            color: '#ffffff',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error clearing history:', error);
+                }
+            }, bubbles.length > 0 ? 600 : 0);
         }
     });
 }

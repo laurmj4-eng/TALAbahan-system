@@ -681,3 +681,93 @@ button[type="button"]:not(.google-btn):hover {
         overflow-x: hidden !important;
     }
 }
+
+/* =========================================
+   GLASS TABLE SYSTEM - RESPONSIVE FIXES
+   ========================================= */
+.glass-table-container {
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 15px;
+    margin: 20px 0;
+    position: relative; /* Needed for sticky positioning of children */
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* Ensure the table itself can expand */
+.glass-table-container table {
+    width: 100%;
+    min-width: 800px; /* Force overflow on mobile to enable horizontal scroll */
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Sticky Actions Column */
+.premium-table th:last-child,
+.premium-table td:last-child,
+.premium-table th.action-cell,
+.premium-table td.action-cell {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 10 !important;
+    background: rgba(30, 20, 60, 0.8) !important; /* Solid-ish dark base for glass */
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hover effect for sticky cell */
+.premium-table tr:hover td:last-child,
+.premium-table tr:hover td.action-cell {
+    background: rgba(40, 30, 80, 0.9) !important;
+}
+
+/* Mobile Specific Adjustments */
+@media (max-width: 768px) {
+    .glass-table-container {
+        margin: 10px 0;
+    }
+
+    .premium-table td:last-child,
+    .premium-table td.action-cell {
+        padding: 8px !important;
+    }
+
+    /* Reduce button padding and hide text on mobile */
+    .action-cell button, 
+    .action-cell .btn-edit, 
+    .action-cell .btn-delete, 
+    .action-cell .btn-action,
+    .action-btns button,
+    .action-btns a {
+        padding: 0 !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0 !important; /* Hide text */
+        border-radius: 10px !important;
+        margin: 2px !important;
+    }
+
+    .action-cell button i, 
+    .action-cell .btn-edit i, 
+    .action-cell .btn-delete i,
+    .action-cell .btn-action i,
+    .action-btns button i,
+    .action-btns a i {
+        font-size: 14px !important; /* Keep icons visible */
+        margin: 0 !important;
+    }
+
+    /* Handle buttons that don't have icons but have text (fallback) */
+    .action-cell button:not(:has(i)) {
+        font-size: 10px !important;
+    }
+}

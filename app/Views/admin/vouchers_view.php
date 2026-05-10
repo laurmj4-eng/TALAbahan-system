@@ -40,7 +40,7 @@
             </button>
         </div>
 
-        <div class="table-responsive glass-panel" style="padding: 16px; border-radius: 14px;">
+        <div class="glass-table-container">
             <table class="premium-table">
                 <thead>
                     <tr>
@@ -51,7 +51,7 @@
                         <th>Minimum</th>
                         <th>Payment Limit</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th class="action-cell">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,9 +75,9 @@
                                     <span class="badge-inactive">INACTIVE</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td class="action-cell">
                                 <button class="btn-toggle" onclick="toggleVoucher(<?= (int) $v['id'] ?>)">
-                                    <?= (int) $v['is_active'] === 1 ? 'Deactivate' : 'Activate' ?>
+                                    <i class="fas fa-power-off"></i> <?= (int) $v['is_active'] === 1 ? 'Deactivate' : 'Activate' ?>
                                 </button>
                             </td>
                         </tr>

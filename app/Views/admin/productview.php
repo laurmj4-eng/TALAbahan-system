@@ -88,7 +88,7 @@
             </button>
         </div>
 
-        <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
+        <div class="glass-table-container">
             <table class="premium-table">
                 <thead>
                     <tr>
@@ -98,7 +98,7 @@
                         <th>SELLING PRICE</th>
                         <th>STOCK LEVEL</th>
                         <th>STATUS</th>
-                        <th>ACTIONS</th>
+                        <th class="action-cell">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>

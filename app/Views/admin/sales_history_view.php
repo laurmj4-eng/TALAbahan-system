@@ -25,7 +25,7 @@
         }
     </style>
 
-    <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
+    <div class="glass-table-container">
         <table class="premium-table" id="sales-table">
             <thead>
                 <tr>

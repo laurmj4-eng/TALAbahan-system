@@ -124,7 +124,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
 
-<div class="card glass-panel" id="order-card-container">
+<div class="card glass-panel" id="order-card-container" style="padding: 40px; border-radius: 30px;">
     <div class="flex-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px;">
         <div>
             <h2 class="order-view-title">Customer Orders &#128209; <span class="order-tag">Order</span></h2>
@@ -132,7 +132,7 @@
         </div>
     </div>
 
-    <div class="table-responsive glass-panel" style="padding: 20px; border-radius: 15px;">
+    <div class="glass-table-container">
         <table class="premium-table">
         <thead>
             <tr>
@@ -142,7 +142,7 @@
                 <th>Tracking</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th class="action-cell">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -194,7 +194,7 @@
                                 <option value="Cancelled" <?= $o['status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                             </select>
                         </td>
-                        <td>
+                        <td class="action-cell">
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <?= $actionBtn ?>
                                 <button class="btn-details" onclick="editTracking(<?= $o['id'] ?>)" title="Update Tracking">

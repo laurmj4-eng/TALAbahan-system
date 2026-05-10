@@ -6,7 +6,7 @@
         <h2 style="font-size: 2.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">Order Items 🧾</h2>
         <p style="color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 30px;">Line-by-line product receipts from customer orders.</p>
 
-        <div class="table-responsive glass-panel">
+        <div class="glass-table-container">
             <table class="premium-table">
                 <thead>
                     <tr>

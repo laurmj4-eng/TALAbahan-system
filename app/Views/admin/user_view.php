@@ -46,9 +46,9 @@
             <button type="submit" class="btn-primary">Add+</button>
         </form>
 
-        <div class="table-responsive glass-panel">
+        <div class="glass-table-container">
             <table class="premium-table">
-                <thead><tr><th>ID</th><th>Email Address</th><th>Role</th><th class="action-cell"> Edit/Delete</th></tr></thead>
+                <thead><tr><th>ID</th><th>Email Address</th><th>Role</th><th class="action-cell">ACTIONS</th></tr></thead>
                 <tbody>
                     <?php if(!empty($users)): foreach($users as $user): ?>
                     <tr>
@@ -57,8 +57,12 @@
                         <td><span class="role-badge role-<?= esc($user['role']) ?>"><?= esc($user['role']) ?></span></td>
                         <td class="action-cell">
                             <div class="action-btns">
-                                <button onclick="openEditModal(<?= $user['id'] ?>, '<?= esc($user['username']) ?>', '<?= esc($user['email']) ?>', '<?= esc($user['role']) ?>')" class="btn-edit">EDIT</button>
-                                <a href="<?= site_url('admin/deleteUser/'.$user['id']) ?>" class="btn-delete" onclick="return confirm('Confirm Termination?')">DELETE</a>
+                                <button onclick="openEditModal(<?= $user['id'] ?>, '<?= esc($user['username']) ?>', '<?= esc($user['email']) ?>', '<?= esc($user['role']) ?>')" class="btn-edit">
+                                    <i class="fas fa-edit"></i> EDIT
+                                </button>
+                                <a href="<?= site_url('admin/deleteUser/'.$user['id']) ?>" class="btn-delete" onclick="return confirm('Confirm Termination?')">
+                                    <i class="fas fa-trash-alt"></i> DELETE
+                                </a>
                             </div>
                         </td>
                     </tr>

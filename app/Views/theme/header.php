@@ -487,9 +487,18 @@
         
         @media (max-width: 768px) {
             .card {
-                padding: 20px;
+                padding: 15px;
                 border-radius: 16px;
                 margin-bottom: 15px;
+            }
+        }
+        @media (max-width: 480px) {
+            .card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+            .main-content {
+                padding: 70px 10px 10px 10px;
             }
         }
         .card::before { content: ""; position: absolute; top: 0; left: -50%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-25deg); animation: shine 6s infinite; }
@@ -640,57 +649,6 @@
                 overflow-x: auto; /* Ensure horizontal swipe */
                 -webkit-overflow-scrolling: touch;
             }
-
-            /* STACKED TABLE (CARD VIEW) FOR MOBILE */
-            @media (max-width: 600px) {
-                .premium-table, .premium-table thead, .premium-table tbody, .premium-table th, .premium-table td, .premium-table tr { 
-                    display: block; 
-                }
-                
-                .premium-table thead tr { 
-                    position: absolute;
-                    top: -9999px;
-                    left: -9999px;
-                }
-                
-                .premium-table tr { 
-                    margin-bottom: 15px;
-                    background: rgba(255, 255, 255, 0.03);
-                    border-radius: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.08);
-                    padding: 10px;
-                }
-                
-                .premium-table td { 
-                    border: none;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
-                    position: relative;
-                    padding-left: 45% !important; 
-                    text-align: right;
-                    min-height: 45px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: flex-end;
-                }
-                
-                .premium-table td:last-child {
-                    border-bottom: none;
-                }
-                
-                .premium-table td:before { 
-                    position: absolute;
-                    left: 15px;
-                    width: 40%; 
-                    padding-right: 10px; 
-                    white-space: nowrap;
-                    content: attr(data-label);
-                    text-align: left;
-                    font-weight: 700;
-                    font-size: 0.75rem;
-                    text-transform: uppercase;
-                    color: rgba(255, 255, 255, 0.4);
-                }
-            }
         }
 
         @media (max-width: 576px) {
@@ -711,7 +669,7 @@
             .premium-logout-btn { max-width: 100%; }
             .premium-info-section { grid-template-columns: 1fr; }
             .premium-quick-actions { grid-template-columns: 1fr; }
-            .main-content { padding: 70px 15px 15px 15px; }
+        }
             
             /* Support for small height devices in landscape */
             @media (max-height: 450px) {

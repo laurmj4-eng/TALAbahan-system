@@ -60,7 +60,7 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            'csrf', // Keeps CSRF active for security
+            'csrf' => ['except' => ['admin/chatbot/process']], // Exclude Admin Chatbot from CSRF
             // 'invalidchars',
         ],
         'after' => [

@@ -7,6 +7,9 @@ use CodeIgniter\Router\RouteCollection;
  */
 
 // --- 1. SHARED ROUTES ---
+// Chatbot remains shared but is now handled by the Admin namespace with internal role checks
+$routes->post('admin/chatbot/process', '\App\Controllers\Admin\Chatbot::process');
+$routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::deleteHistory', ['filter' => 'csrf']);
 // Removed 'throttle' from here to fix the error
 $routes->get('/', 'Auth::index', ['filter' => 'guest']);
 $routes->get('login', 'Auth::index', ['filter' => 'guest']);

@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <div class="table-responsive" style="margin-top: 30px;">
+        <div class="glass-table-container" style="margin-top: 30px;">
             <table class="premium-table">
                 <thead>
                     <tr>

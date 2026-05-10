@@ -46,11 +46,19 @@
                 <div class="ai-info">
                     <span class="ai-title">Mj AI Assistant</span>
                     <select id="model-select">
-                        <option value="openrouter/free">Optimum Protocol (Stable)</option>
+                        <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Fast)</option>
+                        <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Smart)</option>
+                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Classic)</option>
+                        <option value="openrouter/auto">Auto Select (Best)</option>
                     </select>
                 </div>
             </div>
             <div id="header-controls">
+                <?php if (session()->get('role') === 'admin'): ?>
+                    <button id="clear-chat-history" class="header-btn trash-btn" title="Wipe Memory">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                <?php endif; ?>
                 <button id="toggle-sound" class="header-btn" title="Toggle Sound">🔊</button>
                 <button id="close-chat" class="header-btn close-btn" title="Close Chat">&times;</button>
             </div>
@@ -68,8 +76,9 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        window.CHAT_API_BASE_URL = 'https://talabahan-system.onrender.com';
+        window.CHAT_API_BASE_URL = '<?= base_url() ?>';
     </script>
     <script src="<?= base_url('assets/js/mj-assistant.js') ?>"></script>
     <script>
