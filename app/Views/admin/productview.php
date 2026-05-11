@@ -59,6 +59,100 @@
     .modal .form-group {
         margin-bottom: 5px;
     }
+
+    /* --- LIVE STATUS TOGGLE SWITCH --- */
+    .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        display: inline-block;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 26px;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toggle-slider::before {
+        content: '';
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 2px;
+        bottom: 2px;
+        background: #fff;
+        border-radius: 50%;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .toggle-switch input:checked + .toggle-slider {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        border-color: #22c55e;
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(22px);
+    }
+    .toggle-switch input:disabled + .toggle-slider {
+        opacity: 0.5;
+        cursor: wait;
+    }
+
+    /* --- LIVE INDICATOR BADGE --- */
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-top: 6px;
+    }
+    .live-indicator.live {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .live-indicator.hidden {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .live-indicator.live .live-dot {
+        background: #4ade80;
+        box-shadow: 0 0 6px #4ade80;
+        animation: livePulse 1.5s ease-in-out infinite;
+    }
+    .live-indicator.hidden .live-dot {
+        background: #f87171;
+    }
+    @keyframes livePulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .live-status-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
 </style>
 
 <!-- 3. Main Content Wrapper -->
@@ -98,6 +192,7 @@
                         <th>SELLING PRICE</th>
                         <th>STOCK LEVEL</th>
                         <th>STATUS</th>
+                        <th>LIVE STATUS</th>
                         <th class="action-cell">ACTIONS</th>
                     </tr>
                 </thead>
@@ -126,6 +221,20 @@
                                     <span class="status-badge status-danger">Out of Stock</span>
                                 <?php endif; ?>
                             </td>
+                            <td>
+                                <div class="live-status-cell">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="toggleAvail_<?= $p['id'] ?>" 
+                                               <?= ($p['is_available'] ?? 1) ? 'checked' : '' ?> 
+                                               onchange="toggleAvailability(<?= $p['id'] ?>, this)">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="live-indicator <?= ($p['is_available'] ?? 1) ? 'live' : 'hidden' ?>" id="liveLabel_<?= $p['id'] ?>">
+                                        <span class="live-dot"></span>
+                                        <?= ($p['is_available'] ?? 1) ? 'Live' : 'Hidden' ?>
+                                    </span>
+                                </div>
+                            </td>
                             <td class="action-cell">
                                 <button class="btn-edit" onclick="editProduct(<?= $p['id'] ?>)">
                                     <i class="fas fa-edit"></i> Edit
@@ -136,7 +245,7 @@
                             </td>
                         </tr>
                     <?php endforeach; else: ?>
-                        <tr><td colspan="7" style="text-align: center; color: #777; padding: 40px;">No products found in inventory.</td></tr>
+                        <tr><td colspan="8" style="text-align: center; color: #777; padding: 40px;">No products found in inventory.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -353,6 +462,57 @@
         } catch (error) {
             console.error('Error deleting product:', error);
             alert('An error occurred while deleting the product.');
+        }
+    }
+
+    /**
+     * AJAX Toggle: Flip product Live Availability without page reload
+     */
+    async function toggleAvailability(productId, toggleEl) {
+        toggleEl.disabled = true;
+
+        const csrfTokenName = document.querySelector('meta[name="csrf-name"]').getAttribute('content');
+        const csrfHash = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const formData = new FormData();
+        formData.append(csrfTokenName, csrfHash);
+
+        try {
+            const response = await fetch(`<?= site_url('admin/products/toggleStatus/') ?>${productId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                // Update the live indicator badge
+                const label = document.getElementById('liveLabel_' + productId);
+                if (result.is_available === 1) {
+                    label.className = 'live-indicator live';
+                    label.innerHTML = '<span class="live-dot"></span> Live';
+                } else {
+                    label.className = 'live-indicator hidden';
+                    label.innerHTML = '<span class="live-dot"></span> Hidden';
+                }
+            } else {
+                // Revert the toggle on failure
+                toggleEl.checked = !toggleEl.checked;
+                alert('Error: ' + (result.message || 'Unknown error'));
+            }
+
+            // Update CSRF token if returned
+            if (result.token) {
+                document.querySelector('meta[name="csrf-token"]').setAttribute('content', result.token);
+            }
+        } catch (error) {
+            console.error('Toggle error:', error);
+            toggleEl.checked = !toggleEl.checked;
+            alert('An error occurred while toggling availability.');
+        } finally {
+            toggleEl.disabled = false;
         }
     }
 </script>

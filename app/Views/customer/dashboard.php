@@ -67,25 +67,26 @@
         }
 
         .product-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .product-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #818cf8;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .product-image-container {
             width: 100%;
-            aspect-ratio: 1 / 1.1; /* Slightly taller for more impact */
+            height: 320px; /* Adjusted to be roughly half of the card height on desktop */
             overflow: hidden;
             position: relative;
             background: rgba(255, 255, 255, 0.02); /* Placeholder bg */
@@ -93,21 +94,20 @@
 
         .product-image-container img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .product-card:hover .product-image-container img {
-            transform: scale(1.08);
+            height: 100%; /* Force fill container */
+            object-fit: cover; /* Fill without distortion */
+            display: block;
+            border-radius: 24px 24px 0 0; /* Match card radius */
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
         .product-info {
-            padding: 12px 14px; /* Reduced internal padding */
-            flex: 1;
+            padding: 15px;
+            flex: 1; /* Grow to fill remaining space */
             display: flex;
             flex-direction: column;
-            gap: 4px; /* Consistent spacing between elements */
+            gap: 6px; 
+            min-height: 210px; /* Match image height for 50/50 look */
         }
 
         .product-name {
@@ -504,6 +504,37 @@
             border: 2px solid rgba(255,255,255,0.3);
         }
 
+        /* --- NOT AVAILABLE (Admin toggled off) --- */
+        .not-available {
+            opacity: 0.6;
+            filter: grayscale(100%);
+            pointer-events: none;
+            position: relative;
+        }
+        .not-available .product-image-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1;
+        }
+        .badge-not-available {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            cursor: not-allowed;
+        }
+
         @media (max-width: 768px) {
             .welcome-card { 
                 padding: 25px; 
@@ -523,9 +554,28 @@
                 transform: rotate(15deg); 
             }
             .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .product-card { border-radius: 16px; }
-            .product-info { padding: 10px; gap: 4px; }
-            .product-name { font-size: 0.85rem; height: 2.4rem; line-height: 1.25; }
+            .product-card { border-radius: 16px; min-height: 320px; }
+            
+            .product-image-container, .product-image-container img {
+                height: 150px !important;
+                width: 100% !important;
+                object-fit: cover !important;
+            }
+
+            /* Remove horizontal padding so image can touch the card edges */
+            .product-info { 
+                padding: 10px !important; 
+                gap: 4px !important; 
+                min-height: auto; 
+            }
+            .product-name, .product-price-row, .product-social-proof,
+            .btn-buy, .btn-add-cart, .badge-not-available {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            /* Sync image top corners with mobile card border-radius (16px) */
+            .product-image-container img { border-radius: 16px 16px 0 0; }
+            .product-name { font-size: 0.85rem; height: 2.4rem; line-height: 1.25; margin-bottom: 4px; }
             .product-price { font-size: 1rem; }
             .product-unit { font-size: 0.7rem; }
             .product-social-proof { font-size: 0.65rem; gap: 6px; }
@@ -628,6 +678,11 @@
                 margin-top: 8px !important;
             }
         }
+
+        /* --- VERY NARROW SCREENS: single column so images fill full width --- */
+        @media (max-width: 349px) {
+            .product-grid { grid-template-columns: 1fr; gap: 12px; }
+        }
         .btn-buy:disabled {
         background: #333 !important;
         color: rgba(255,255,255,0.3) !important;
@@ -666,7 +721,14 @@
         <div class="product-grid">
             <?php if (!empty($products)): ?>
                 <?php foreach ($products as $p): ?>
-                    <div class="product-card <?= ($p['current_stock'] <= 0) ? 'out-of-stock' : '' ?>">
+                    <?php 
+                        $isOutOfStock = ($p['current_stock'] <= 0);
+                        $isNotAvailable = (isset($p['is_available']) && (int)$p['is_available'] === 0);
+                        $cardClass = '';
+                        if ($isOutOfStock) $cardClass = 'out-of-stock';
+                        elseif ($isNotAvailable) $cardClass = 'not-available';
+                    ?>
+                    <div class="product-card <?= $cardClass ?>">
                         <div class="product-image-container">
                             <?php if ($p['image']): ?>
                                 <img
@@ -698,7 +760,11 @@
                                 </div>
                             </div>
                             
-                            <?php if ($p['current_stock'] > 0): ?>
+                            <?php if ($isNotAvailable): ?>
+                                <div class="badge-not-available">
+                                    <i class="fas fa-ban"></i> Not Available
+                                </div>
+                            <?php elseif ($p['current_stock'] > 0): ?>
                                 <button class="btn-buy" onclick="buyNow(<?= $p['id'] ?>, '<?= esc($p['name']) ?>', <?= $p['selling_price'] ?>, '<?= esc($p['image']) ?>')">
                                     <i class="fas fa-bolt"></i> Buy Now
                                 </button>

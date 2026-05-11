@@ -230,4 +230,39 @@ class ProductController extends BaseController
             'message' => 'Product deleted successfully!'
         ]);
     }
+
+    /**
+     * Toggle Live Availability status of a Product (AJAX)
+     */
+    public function toggleStatus($id = null)
+    {
+        if (session()->get('role') !== 'admin' || !$this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+        }
+
+        $productModel = new ProductModel();
+        $product = $productModel->find((int) $id);
+
+        if (!$product) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Product not found.'])->setStatusCode(404);
+        }
+
+        // Flip the value: 1 → 0 or 0 → 1
+        $newStatus = ((int) $product['is_available'] === 1) ? 0 : 1;
+
+        if (!$productModel->update((int) $id, ['is_available' => $newStatus])) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Failed to update availability.'
+            ])->setStatusCode(500);
+        }
+
+        log_message('info', 'Admin ' . session()->get('username') . ' toggled product ID ' . $id . ' availability to ' . ($newStatus ? 'LIVE' : 'HIDDEN'));
+
+        return $this->response->setJSON([
+            'status'       => 'success',
+            'message'      => $newStatus ? 'Product is now LIVE.' : 'Product is now HIDDEN from customers.',
+            'is_available' => $newStatus,
+        ]);
+    }
 }

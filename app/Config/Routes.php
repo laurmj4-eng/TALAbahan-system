@@ -49,6 +49,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->get('products/getDetails/(:num)', 'ProductController::getDetails/$1');
     $routes->post('products/update', 'ProductController::update', ['filter' => 'csrf']);
     $routes->post('products/delete', 'ProductController::delete', ['filter' => 'csrf']);
+    $routes->post('products/toggleStatus/(:num)', 'ProductController::toggleStatus/$1', ['filter' => 'csrf']);
 
     // --- Order Routes ---
     $routes->get('orders', 'Orders::index');
