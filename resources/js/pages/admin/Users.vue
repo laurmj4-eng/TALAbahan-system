@@ -212,10 +212,12 @@ const getRoleClass = (role) => {
 
 const fetchUsers = async () => {
   try {
-    const response = await axios.get('/api/admin/users'); // Use existing route if possible or create new
-    users.value = response.data.data || response.data;
+    const response = await axios.get('/api/admin/users');
+    const data = response.data.data || response.data;
+    users.value = Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Failed to fetch users:', error);
+    users.value = [];
   }
 };
 
@@ -230,7 +232,7 @@ const saveUser = async () => {
       formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
     }
 
-    const response = await axios.post('/admin/saveUser', formData);
+    const response = await axios.post('/api/admin/users/save', formData);
     if (response.data.status === 'success') {
       fetchUsers();
       addForm.value = { username: '', email: '', password: '', role: 'customer' };
@@ -239,7 +241,7 @@ const saveUser = async () => {
     }
   } catch (error) {
     console.error('Failed to save user:', error);
-    alert('Failed to save user');
+    alert(error.response?.data?.message || 'Failed to save user');
   } finally {
     isSubmitting.value = false;
   }
@@ -261,7 +263,7 @@ const updateUser = async () => {
       formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
     }
 
-    const response = await axios.post('/admin/updateUser', formData);
+    const response = await axios.post('/api/admin/users/update', formData);
     if (response.data.status === 'success') {
       fetchUsers();
       editingUser.value = null;
@@ -270,21 +272,25 @@ const updateUser = async () => {
     }
   } catch (error) {
     console.error('Failed to update user:', error);
-    alert('Failed to update user');
+    alert(error.response?.data?.message || 'Failed to update user');
   } finally {
     isSubmitting.value = false;
   }
 };
 
 const deleteUser = async (id) => {
-  if (!confirm('Confirm Termination?')) return;
+  if (!confirm('Are you sure you want to terminate this node?')) return;
+
   try {
-    const response = await axios.get(`/admin/deleteUser/${id}`);
-    if (response.data.status === 'success' || response.status === 200) {
+    const response = await axios.post(`/api/admin/users/delete/${id}`);
+    if (response.data.status === 'success') {
       fetchUsers();
+    } else {
+      alert(response.data.message);
     }
   } catch (error) {
     console.error('Failed to delete user:', error);
+    alert(error.response?.data?.message || 'Failed to delete user');
   }
 };
 

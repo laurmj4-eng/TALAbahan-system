@@ -37,6 +37,20 @@ class Orders extends BaseController
         return view('admin/orders_standalone', $data);
     }
 
+    /**
+     * Get Orders (JSON) for SPA
+     */
+    public function getOrders()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $orderModel = new OrderModel();
+        $orders = $orderModel->getOrdersWithItemCount();
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Orders fetched.', 'data' => $orders, 'token' => csrf_hash()]);
+    }
+
     public function show($id)
     {
         $orderModel = new OrderModel();

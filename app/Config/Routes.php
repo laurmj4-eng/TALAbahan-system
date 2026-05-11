@@ -21,6 +21,7 @@ $routes->get('customer/(:any)', 'Home::spa');
 // --- API ROUTES (JSON) ---
 $routes->group('api', function($routes) {
     $routes->post('auth/verify', '\App\Controllers\Auth::verify');
+    $routes->post('auth/register', '\App\Controllers\Auth::createAccountApi');
     $routes->get('admin/products/list', '\App\Controllers\Admin\ProductController::list');
     $routes->post('admin/products/toggleStatus/(:num)', '\App\Controllers\Admin\ProductController::toggleStatus/$1');
     $routes->post('admin/products/delete', '\App\Controllers\Admin\ProductController::delete');
@@ -28,10 +29,21 @@ $routes->group('api', function($routes) {
     $routes->post('staff/updateOrderStatus', '\App\Controllers\Staff\Orders::updateOrderStatus');
     $routes->get('customer/dashboard/data', '\App\Controllers\Customer\Dashboard::getData');
     
-    // Missing Admin API Routes
+    // Admin API Routes
     $routes->get('admin/dashboard/data', '\App\Controllers\Admin\Dashboard::getData');
     $routes->get('admin/getProducts', '\App\Controllers\Admin\PosController::getProducts');
     $routes->get('admin/getHistory', '\App\Controllers\Admin\PosController::getHistory');
+    $routes->get('admin/orders', '\App\Controllers\Admin\Orders::getOrders');
+    $routes->post('admin/orders/updateStatus', '\App\Controllers\Admin\Orders::updateStatus');
+    $routes->post('admin/orders/updateTracking', '\App\Controllers\Admin\Orders::updateTracking');
+    $routes->get('admin/activity', '\App\Controllers\Admin\ActivityLogController::getLogs');
+    $routes->get('admin/activity/user/(:num)', '\App\Controllers\Admin\ActivityLogController::userTimelineApi/$1');
+    $routes->get('admin/shipping', '\App\Controllers\Admin\ShippingController::getLocations');
+    $routes->get('admin/vouchers', '\App\Controllers\Admin\VoucherController::getVouchers');
+    $routes->get('admin/users', '\App\Controllers\Admin\AdminController::getUsers');
+    $routes->post('admin/users/save', '\App\Controllers\Admin\AdminController::saveUser');
+    $routes->post('admin/users/update', '\App\Controllers\Admin\AdminController::updateUser');
+    $routes->post('admin/users/delete/(:num)', '\App\Controllers\Admin\AdminController::deleteUser/$1');
 });
 
 // Keep existing routes for now but they should eventually be migrated to api group

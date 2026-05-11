@@ -81,7 +81,7 @@
         </form>
 
         <div class="mt-10 text-center">
-          <p class="text-white/40 text-sm font-medium">Don't have an account? <a href="/register" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Register here</a></p>
+          <p class="text-white/40 text-sm font-medium">Don't have an account? <router-link to="/register" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Register here</router-link></p>
         </div>
       </div>
     </div>

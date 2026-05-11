@@ -27,6 +27,24 @@ class ShippingController extends BaseController
         return view('admin/shipping_view', $data);
     }
 
+    /**
+     * Get all shipping locations (JSON) for SPA
+     */
+    public function getLocations()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $model = new ShippingLocationModel();
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Locations fetched.',
+            'data' => $model->findAll(),
+            'token' => csrf_hash()
+        ]);
+    }
+
     public function updateGlobalShipping()
     {
         if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {

@@ -1,15 +1,21 @@
 <template>
-  <div class="flex h-screen bg-[#0f172a] overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
-    <!-- Mobile Menu Toggle -->
-    <button @click="isSidebarOpen = !isSidebarOpen" class="lg:hidden fixed top-5 left-5 z-[100000] w-10 h-10 bg-violet-500/80 text-white rounded-lg flex items-center justify-center backdrop-blur-md shadow-lg border-none cursor-pointer">
-      <Menu class="w-6 h-6" />
-    </button>
+  <div class="flex min-h-screen lg:h-screen bg-[#0f172a] lg:overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
+    <!-- Mobile Top Bar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-black/40 backdrop-blur-xl border-b border-white/10 z-[50] flex items-center px-4 gap-4">
+      <button @click="isSidebarOpen = !isSidebarOpen" class="w-10 h-10 bg-violet-500/20 text-white rounded-lg flex items-center justify-center border border-violet-500/30 cursor-pointer active:scale-95 transition-all">
+        <Menu class="w-6 h-6" />
+      </button>
+      <div class="flex items-center gap-3">
+        <Gem class="text-[#a855f7] w-6 h-6" />
+        <h2 class="text-lg font-bold text-white tracking-wide">Mj Pogi</h2>
+      </div>
+    </div>
 
     <!-- Sidebar Overlay -->
     <div
       v-if="isSidebarOpen"
       @click="isSidebarOpen = false"
-      class="fixed inset-0 z-[99998] bg-black/50 backdrop-blur-[4px] lg:hidden transition-all duration-300"
+      class="fixed inset-0 z-[99998] bg-black/60 backdrop-blur-[4px] lg:hidden transition-all duration-300 touch-none"
     ></div>
 
     <!-- Sidebar -->
@@ -18,10 +24,10 @@
         'fixed inset-y-0 left-0 z-[99999] w-[260px] transition-all duration-400 cubic-bezier(0.16,1,0.3,1) lg:static lg:translate-x-0',
         isSidebarOpen ? 'translate-x-0 shadow-[20px_0_50px_rgba(0,0,0,0.5)]' : '-translate-x-full'
       ]"
-      class="bg-black/30 backdrop-blur-[20px] border-right border-white/[0.08] flex flex-col min-h-screen"
+      class="bg-[#0f172a] border-r border-white/10 flex flex-col min-h-screen"
     >
       <!-- Header -->
-      <div class="p-7 px-5 text-center border-b-2 border-violet-500/20 bg-violet-500/[0.08]">
+      <div class="p-7 px-5 text-center border-b border-white/10 bg-white/[0.02]">
         <div class="flex items-center justify-center gap-3 mb-1.5">
           <Gem class="text-[#a855f7] w-6 h-6 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
           <h2 class="m-0 text-[1.3rem] font-bold text-white tracking-wide">Mj Pogi</h2>
@@ -32,7 +38,7 @@
       <!-- Menu -->
       <nav class="flex-1 px-2 py-5 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-violet-500/20 scrollbar-track-transparent">
         <div v-for="section in navSections" :key="section.title" class="mb-4">
-          <div class="px-4 pb-3 flex items-center gap-2 text-[0.7rem] font-bold tracking-[1.2px] text-violet-500/60 uppercase">
+          <div class="px-4 pb-3 flex items-center gap-2 text-[0.7rem] font-bold tracking-[1.2px] text-slate-500 uppercase">
             <component :is="section.icon" class="w-3.5 h-3.5" />
             <span>{{ section.title }}</span>
           </div>
@@ -41,12 +47,11 @@
             <li v-for="item in section.items" :key="item.path">
               <router-link
                 :to="item.path"
-                class="flex items-center gap-3 px-4 py-3 text-white/70 font-medium text-[0.9rem] rounded-xl border border-transparent transition-all duration-300 hover:bg-violet-500/10 hover:text-white hover:border-violet-500/20 hover:pl-5 group relative"
-                active-class="bg-gradient-to-r from-violet-500/25 to-indigo-500/15 text-white font-semibold border-violet-500/30 shadow-lg"
+                class="flex items-center gap-3 px-4 py-3 text-white/70 font-medium text-[0.9rem] rounded-xl border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
+                active-class="bg-white/5 text-white font-semibold border-l-4 !border-indigo-500 shadow-lg"
               >
                 <component :is="item.icon" class="w-6 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7] group-[.router-link-active]:text-violet-300" />
                 <span>{{ item.name }}</span>
-                <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-5 bg-[#a855f7] rounded-r-full shadow-[0_0_10px_#a855f7] opacity-0 group-[.router-link-active]:opacity-100 transition-opacity"></div>
               </router-link>
             </li>
           </ul>
@@ -73,13 +78,13 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden relative">
+    <div class="flex-1 flex flex-col relative">
       <!-- Background Gradient (Matching header.php) -->
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]"></div>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto md:overflow-hidden p-6 lg:p-10 relative flex flex-col">
-        <div class="flex-1 flex flex-col min-h-0 space-y-4">
+      <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative">
+        <div class="space-y-4">
           <slot></slot>
         </div>
       </main>
@@ -171,6 +176,39 @@ const handleLogout = () => {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+/* Staggered delays for stat cards */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
 
 /* Custom Scrollbar */
 .scrollbar-thin::-webkit-scrollbar {

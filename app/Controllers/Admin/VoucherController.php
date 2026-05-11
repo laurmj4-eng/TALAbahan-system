@@ -23,6 +23,24 @@ class VoucherController extends BaseController
         return view('admin/vouchers_view', $data);
     }
 
+    /**
+     * Get all vouchers (JSON) for SPA
+     */
+    public function getVouchers()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $model = new VoucherModel();
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Vouchers fetched.',
+            'data' => $model->orderBy('created_at', 'DESC')->findAll(),
+            'token' => csrf_hash()
+        ]);
+    }
+
     public function store()
     {
         if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {

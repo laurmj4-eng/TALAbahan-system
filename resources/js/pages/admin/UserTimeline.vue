@@ -105,10 +105,12 @@ const formatTime = (dateStr) => {
 const fetchData = async () => {
   try {
     const response = await axios.get(`/api/admin/activity/user/${route.params.id}`);
-    user.value = response.data.user;
-    logs.value = response.data.logs;
+    user.value = response.data.user || {};
+    logs.value = Array.isArray(response.data.logs) ? response.data.logs : [];
   } catch (error) {
     console.error('Failed to fetch user timeline:', error);
+    user.value = {};
+    logs.value = [];
   }
 };
 

@@ -38,6 +38,36 @@ class ActivityLogController extends BaseController
         return view('admin/activity/index', $data);
     }
 
+    /**
+     * Get activity logs (JSON) for SPA
+     */
+    public function getLogs()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $logModel = new ActivityLogModel();
+        
+        $db = \Config\Database::connect();
+        $subQuery = $db->table('activity_logs')
+                       ->select('MAX(id) as max_id')
+                       ->groupBy('user_identity')
+                       ->getCompiledSelect();
+
+        $logs = $logModel->select('activity_logs.*, users.last_active, users.username as user_name')
+                         ->join("($subQuery) as latest_logs", "latest_logs.max_id = activity_logs.id")
+                         ->join('users', 'users.id = activity_logs.user_id', 'left')
+                         ->orderBy('activity_logs.created_at', 'DESC')
+                         ->findAll();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => $logs,
+            'token'  => csrf_hash()
+        ]);
+    }
+
     public function userTimeline($userId)
     {
         $userModel = new UserModel();
@@ -59,5 +89,36 @@ class ActivityLogController extends BaseController
         ];
 
         return view('admin/activity/timeline', $data);
+    }
+
+    /**
+     * Get user timeline (JSON) for SPA
+     */
+    public function userTimelineApi($userId)
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $userModel = new UserModel();
+        $logModel = new ActivityLogModel();
+
+        $user = $userModel->find($userId);
+        if (!$user) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'User not found.', 'token' => csrf_hash()])->setStatusCode(404);
+        }
+
+        $logs = $logModel->where('user_id', $userId)
+                         ->orderBy('created_at', 'DESC')
+                         ->findAll();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => [
+                'user' => $user,
+                'logs' => $logs
+            ],
+            'token'  => csrf_hash()
+        ]);
     }
 }

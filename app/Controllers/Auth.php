@@ -196,6 +196,78 @@ class Auth extends BaseController
         }
     }
 
+    public function createAccountApi()
+    {
+        try {
+            // 1. Verify reCAPTCHA (Server-side)
+            $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+            if (empty($recaptchaResponse)) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Please complete the reCAPTCHA verification.',
+                    'token'   => csrf_hash()
+                ])->setStatusCode(400);
+            }
+
+            $secret = env('RECAPTCHA_SECRET_KEY');
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                'secret'   => $secret,
+                'response' => $recaptchaResponse
+            ]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+            $verify = curl_exec($ch);
+            curl_close($ch);
+            
+            if ($verify !== false) {
+                $captchaData = json_decode($verify);
+                if (!$captchaData || !$captchaData->success) {
+                    return $this->response->setJSON([
+                        'status'  => 'error',
+                        'message' => 'reCAPTCHA verification failed. Please try again.',
+                        'token'   => csrf_hash()
+                    ])->setStatusCode(400);
+                }
+            }
+
+            $userModel = new UserModel();
+
+            $data = [
+                'username' => trim((string)$this->request->getPost('username')),
+                'email'    => strtolower(trim((string)$this->request->getPost('email'))),
+                'password' => (string)$this->request->getPost('password'), 
+                'role'     => 'customer' 
+            ];
+
+            if ($userModel->insert($data)) {
+                return $this->response->setJSON([
+                    'status'  => 'success',
+                    'message' => 'Account created successfully!',
+                    'token'   => csrf_hash()
+                ])->setStatusCode(200);
+            } else {
+                $errors = $userModel->errors();
+                $errorMessage = !empty($errors) ? implode(' ', $errors) : 'Registration failed.';
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => $errorMessage,
+                    'token'   => csrf_hash()
+                ])->setStatusCode(400);
+            }
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'System Error: ' . $e->getMessage(),
+                'token'   => csrf_hash()
+            ])->setStatusCode(500);
+        }
+    }
+
     private function _getRedirectUrl($role)
     {
         if ($role === 'admin') return 'admin/dashboard';

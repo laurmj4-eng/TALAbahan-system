@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '../pages/LoginPage.vue';
+import RegisterPage from '../pages/RegisterPage.vue';
 import AdminDashboard from '../pages/admin/Dashboard.vue';
 import AdminProducts from '../pages/admin/Products.vue';
 import AdminOrders from '../pages/admin/Orders.vue';
@@ -24,6 +25,12 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginPage,
+    meta: { guest: true }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: RegisterPage,
     meta: { guest: true }
   },
   {

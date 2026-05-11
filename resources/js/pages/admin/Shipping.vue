@@ -146,11 +146,12 @@ const form = ref({
 
 const fetchLocations = async () => {
   try {
-    const response = await axios.get('/api/admin/shipping'); // You'll need this endpoint
-    locations.value = response.data.locations;
+    const response = await axios.get('/api/admin/shipping');
+    locations.value = response.data.locations || [];
     isGlobalShipping.value = response.data.ship_to_all === '1';
   } catch (error) {
     console.error('Failed to fetch locations:', error);
+    locations.value = [];
   }
 };
 

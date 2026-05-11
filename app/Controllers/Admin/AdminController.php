@@ -130,6 +130,23 @@ class AdminController extends BaseController
     }
 
     /**
+     * Get all users (JSON) for SPA
+     */
+    public function getUsers()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+        }
+
+        $userModel = new UserModel();
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => $userModel->findAll(),
+            'token'  => csrf_hash()
+        ]);
+    }
+
+    /**
      * Save a new User (Append Entity)
      */
     public function saveUser()
@@ -139,15 +156,21 @@ class AdminController extends BaseController
         $data = [
             'username' => $this->request->getPost('username'), 
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'), // Ideally use password_hash() in Model
+            'password' => $this->request->getPost('password'),
             'role'     => $this->request->getPost('role'),
         ];
         
         if (! $userModel->insert($data)) {
-            return redirect()->back()->with('error', implode(' ', $userModel->errors()))->withInput();
+            $errorMsg = implode(' ', $userModel->errors());
+            if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $errorMsg, 'token' => csrf_hash()])->setStatusCode(400);
+            }
+            return redirect()->back()->with('error', $errorMsg)->withInput();
         }
         
-        // REDIRECT FIX: Go back to the Users page, not the dashboard
+        if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User successfully added!', 'token' => csrf_hash()]);
+        }
         return redirect()->to('/admin/users')->with('msg', 'User successfully added to the database!');
     }
 
@@ -165,16 +188,21 @@ class AdminController extends BaseController
             'role'     => $this->request->getPost('role'),
         ];
 
-        // Only update password if the admin typed a new one
         if(!empty($this->request->getPost('password'))) {
             $data['password'] = $this->request->getPost('password');
         }
 
         if (! $userModel->update($id, $data)) {
-            return redirect()->back()->with('error', implode(' ', $userModel->errors()))->withInput();
+            $errorMsg = implode(' ', $userModel->errors());
+            if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $errorMsg, 'token' => csrf_hash()])->setStatusCode(400);
+            }
+            return redirect()->back()->with('error', $errorMsg)->withInput();
         }
 
-        // REDIRECT FIX: Stay on the Users page
+        if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User updated successfully!', 'token' => csrf_hash()]);
+        }
         return redirect()->to('/admin/users')->with('msg', 'User protocol updated successfully!');
     }
 
@@ -184,13 +212,19 @@ class AdminController extends BaseController
     public function deleteUser($id)
     {
         if ((int) session()->get('user_id') === (int) $id) {
-            return redirect()->to('/admin/users')->with('error', 'You cannot delete your own active account.');
+            $errorMsg = 'You cannot delete your own active account.';
+            if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $errorMsg, 'token' => csrf_hash()])->setStatusCode(400);
+            }
+            return redirect()->to('/admin/users')->with('error', $errorMsg);
         }
 
         $userModel = new UserModel();
         $userModel->delete($id);
         
-        // REDIRECT FIX: Stay on the Users page
+        if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User terminated from the system.', 'token' => csrf_hash()]);
+        }
         return redirect()->to('/admin/users')->with('msg', 'User terminated from the system.');
     }
 }

@@ -34,7 +34,8 @@
       <!-- Table -->
       <GlassCard customClass="overflow-hidden border-white/[0.08] flex-1 flex flex-col min-h-0">
         <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-420px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-          <table class="w-full text-left border-collapse">
+          <!-- Desktop Table (Hidden on Mobile) -->
+          <table class="hidden md:table w-full text-left border-collapse">
             <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/[0.02] border-b border-white/10">
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
@@ -46,7 +47,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-white/[0.05]">
-              <tr v-for="product in products" :key="product.id" class="hover:bg-white/[0.02] transition-colors group">
+              <tr v-for="product in products" :key="product.id" class="hover:bg-white/[0.02] transition-colors group animate-slide-in-right">
                 <td class="px-8 py-6">
                   <div class="flex items-center gap-4">
                     <div class="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex items-center justify-center p-1 group-hover:border-violet-500/30 transition-colors">
@@ -84,7 +85,7 @@
                     class="relative inline-flex items-center cursor-pointer transition-all active:scale-90"
                   >
                     <div 
-                      :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]'"
+                      :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-pulse-subtle' : 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]'"
                       class="px-4 py-1.5 rounded-full text-[0.65rem] font-black text-white uppercase tracking-widest border border-white/20"
                     >
                       {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
@@ -112,6 +113,43 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Mobile List View -->
+          <div class="md:hidden divide-y divide-white/[0.05]">
+            <div v-for="product in products" :key="product.id" class="p-4 space-y-4">
+              <div class="flex gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex-shrink-0">
+                  <img v-if="product.image" :src="'/uploads/products/' + product.image" class="w-full h-full object-cover">
+                  <div v-else class="w-full h-full flex items-center justify-center text-2xl opacity-20">🐟</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-white text-lg truncate">{{ product.name }}</div>
+                  <div class="text-[10px] text-white/30 font-mono mb-2 uppercase">{{ product.category || 'Seafood' }}</div>
+                  <div class="font-black text-emerald-400 text-xl">₱{{ formatNumber(product.selling_price) }}</div>
+                </div>
+              </div>
+              
+              <div class="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-white/40 font-bold uppercase">Stock:</span>
+                  <span class="font-bold text-white">{{ product.current_stock }}</span>
+                  <span class="text-[9px] text-green-400/80 font-bold uppercase">units</span>
+                </div>
+                <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/10" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
+                  {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
+                </button>
+              </div>
+
+              <div class="flex gap-2">
+                <button @click="openEditModal(product)" class="flex-1 flex items-center justify-center gap-2 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-xs font-bold text-white/70">
+                  <Edit2 class="w-4 h-4" /> Edit
+                </button>
+                <button @click="deleteProduct(product.id)" class="flex-1 flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400">
+                  <Trash2 class="w-4 h-4" /> Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </GlassCard>
 

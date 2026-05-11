@@ -4,15 +4,15 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
-          <h1 class="text-[3rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight mb-2">
+          <h1 class="text-3xl md:text-[3rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight mb-2">
             Welcome back, {{ username }}!
           </h1>
-          <p class="text-[1.1rem] font-medium text-white/50 mb-1">
+          <p class="text-sm md:text-[1.1rem] font-medium text-white/50 mb-1">
             Manage products, monitor sales, and track order activity in one clean owner dashboard.
           </p>
           <p class="text-[0.8rem] text-white/40">Server Time: <span class="font-mono">{{ serverTime }}</span></p>
         </div>
-        <button @click="printReport" class="flex items-center gap-3 px-6 py-3 bg-white/[0.05] backdrop-blur-[16px] border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group">
+        <button @click="printReport" class="flex items-center gap-3 px-6 py-3 bg-white/[0.05] backdrop-blur-[16px] border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group shadow-lg shadow-indigo-500/20">
           <Printer class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
           <span class="font-bold">Print Daily Report</span>
         </button>
@@ -21,71 +21,71 @@
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Today's Sales -->
-        <div class="group p-[30px] rounded-[24px] border border-white/[0.05] bg-white/[0.02] backdrop-blur-[16px] transition-all duration-400 hover:-translate-y-2 hover:border-emerald-500/40 hover:bg-white/[0.05] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-100">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xl mb-5">
             <Coins />
           </div>
-          <div class="text-[0.9rem] font-bold text-white/50 uppercase tracking-widest mb-2">Today's Sales</div>
-          <div class="text-[2.5rem] font-extrabold text-emerald-500 leading-none tracking-tight mb-2">
+          <div class="text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-2">Today's Sales</div>
+          <div class="text-[2.5rem] font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent leading-none tracking-tight mb-2">
             ₱{{ formatNumber(cards.today_sales) }}
             <span v-if="cards.sales_growth !== undefined" :class="cards.sales_growth >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-sm font-semibold ml-2">
               {{ cards.sales_growth >= 0 ? '↑' : '↓' }} {{ Math.abs(cards.sales_growth) }}%
             </span>
           </div>
-          <div class="text-[0.8rem] text-white/30">Final total for today</div>
+          <div class="text-[0.8rem] text-slate-500">Final total for today</div>
         </div>
 
         <!-- Net Profit -->
-        <div class="group p-[30px] rounded-[24px] border border-white/[0.05] bg-white/[0.02] backdrop-blur-[16px] transition-all duration-400 hover:-translate-y-2 hover:border-violet-500/40 hover:bg-white/[0.05] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-violet-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-200">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 text-xl mb-5">
             <PieChart />
           </div>
-          <div class="text-[0.9rem] font-bold text-white/50 uppercase tracking-widest mb-2">Net Profit</div>
-          <div class="text-[2.5rem] font-extrabold text-violet-500 leading-none tracking-tight mb-2">
+          <div class="text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-2">Net Profit</div>
+          <div class="text-[2.5rem] font-black bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent leading-none tracking-tight mb-2">
             ₱{{ formatNumber(cards.today_profit) }}
           </div>
-          <div class="text-[0.8rem] text-white/30">Earnings after cost</div>
+          <div class="text-[0.8rem] text-slate-500">Earnings after cost</div>
         </div>
 
         <!-- Profit Margin -->
-        <div class="group p-[30px] rounded-[24px] border border-white/[0.05] bg-white/[0.02] backdrop-blur-[16px] transition-all duration-400 hover:-translate-y-2 hover:border-amber-500/40 hover:bg-white/[0.05] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-amber-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-300">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 text-xl mb-5">
             <Percent />
           </div>
-          <div class="text-[0.9rem] font-bold text-white/50 uppercase tracking-widest mb-2">Profit Margin</div>
-          <div class="text-[2.5rem] font-extrabold text-amber-500 leading-none tracking-tight mb-2">
+          <div class="text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-2">Profit Margin</div>
+          <div class="text-[2.5rem] font-black bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent leading-none tracking-tight mb-2">
             {{ cards.profit_margin }}%
           </div>
-          <div class="text-[0.8rem] text-white/30">Profit to sales ratio</div>
+          <div class="text-[0.8rem] text-slate-500">Profit to sales ratio</div>
         </div>
 
         <!-- Today's Orders -->
-        <div class="group p-[30px] rounded-[24px] border border-white/[0.05] bg-white/[0.02] backdrop-blur-[16px] transition-all duration-400 hover:-translate-y-2 hover:border-blue-500/40 hover:bg-white/[0.05] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden relative">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-blue-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-400">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 text-xl mb-5">
             <ShoppingCart />
           </div>
-          <div class="text-[0.9rem] font-bold text-white/50 uppercase tracking-widest mb-2">Today's Orders</div>
-          <div class="text-[2.5rem] font-extrabold text-blue-500 leading-none tracking-tight mb-2">
+          <div class="text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-2">Today's Orders</div>
+          <div class="text-[2.5rem] font-black bg-gradient-to-r from-blue-400 to-sky-400 bg-clip-text text-transparent leading-none tracking-tight mb-2">
             {{ cards.today_orders }}
           </div>
-          <div class="text-[0.8rem] text-white/30">Transactions processed</div>
+          <div class="text-[0.8rem] text-slate-500">Transactions processed</div>
         </div>
       </div>
 
       <!-- Alerts -->
-      <div v-if="cards.stale_orders_count > 0" class="flex items-center justify-between p-6 bg-amber-500/10 backdrop-blur-[16px] border-l-4 border-amber-500 rounded-r-2xl">
+      <div v-if="cards.stale_orders_count > 0" class="flex items-center justify-between p-6 bg-orange-500/10 backdrop-blur-xl border border-orange-500/20 rounded-2xl">
         <div class="flex items-center gap-5">
-          <AlertTriangle class="w-8 h-8 text-amber-500" />
+          <AlertTriangle class="w-8 h-8 text-orange-400" />
           <div>
-            <h4 class="font-extrabold text-amber-500 text-lg">Action Required: {{ cards.stale_orders_count }} Stale Orders</h4>
-            <p class="text-sm text-white/60">Some orders have been pending for more than 24 hours. Please review and update their status.</p>
+            <h4 class="font-extrabold text-orange-400 text-lg">Action Required: {{ cards.stale_orders_count }} Stale Orders</h4>
+            <p class="text-sm text-slate-400">Some orders have been pending for more than 24 hours. Please review and update their status.</p>
           </div>
         </div>
-        <router-link to="/admin/orders" class="px-6 py-2.5 bg-amber-500 text-black text-sm font-extrabold rounded-xl hover:bg-amber-400 transition-all active:scale-95">
+        <router-link to="/admin/orders" class="px-6 py-2.5 bg-orange-500 text-black text-sm font-extrabold rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-lg shadow-orange-500/20">
           View Orders
         </router-link>
       </div>
@@ -287,15 +287,24 @@ const initChart = (data) => {
 const fetchData = async () => {
   try {
     const response = await axios.get('/api/admin/dashboard/data');
-    const data = response.data;
+    const data = response.data || {};
     
-    username.value = data.username;
-    serverTime.value = data.server_time;
-    cards.value = data.cards;
-    topProducts.value = data.top_products;
-    activities.value = data.activities;
+    username.value = data.username || 'Admin';
+    serverTime.value = data.server_time || '';
+    cards.value = data.cards || {
+      today_sales: 0,
+      today_profit: 0,
+      profit_margin: 0,
+      today_orders: 0,
+      sales_growth: 0,
+      stale_orders_count: 0
+    };
+    topProducts.value = data.top_products || [];
+    activities.value = data.activities || [];
     
-    initChart(data.chart);
+    if (data.chart) {
+      initChart(data.chart);
+    }
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error);
   }

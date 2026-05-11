@@ -177,10 +177,12 @@ const formatDiscount = (val) => {
 
 const fetchVouchers = async () => {
   try {
-    const response = await axios.get('/api/admin/vouchers'); // You'll need this endpoint
-    vouchers.value = response.data.data || response.data;
+    const response = await axios.get('/api/admin/vouchers');
+    const data = response.data.data || response.data;
+    vouchers.value = Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Failed to fetch vouchers:', error);
+    vouchers.value = [];
   }
 };
 
