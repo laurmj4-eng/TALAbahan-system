@@ -11,15 +11,30 @@ use CodeIgniter\Router\RouteCollection;
 $routes->post('admin/chatbot/process', '\App\Controllers\Admin\Chatbot::process');
 $routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::deleteHistory', ['filter' => 'csrf']);
 // Removed 'throttle' from here to fix the error
-$routes->get('/', 'Auth::index', ['filter' => 'guest']);
-$routes->get('login', 'Auth::index', ['filter' => 'guest']);
-$routes->get('register', 'Auth::register', ['filter' => 'guest']);
+$routes->get('/', 'Home::spa');
+$routes->get('login', 'Home::spa');
+$routes->get('register', 'Home::spa');
+$routes->get('admin/(:any)', 'Home::spa');
+$routes->get('staff/(:any)', 'Home::spa');
+$routes->get('customer/(:any)', 'Home::spa');
 
-// Added CSRF protection to all POST routes
-$routes->post('auth/verify', 'Auth::verify', ['filter' => 'csrf']);
-$routes->post('auth/create_account', 'Auth::createAccount', ['filter' => 'csrf']);
+// --- API ROUTES (JSON) ---
+$routes->group('api', function($routes) {
+    $routes->post('auth/verify', '\App\Controllers\Auth::verify');
+    $routes->get('admin/products/list', '\App\Controllers\Admin\ProductController::list');
+    $routes->post('admin/products/toggleStatus/(:num)', '\App\Controllers\Admin\ProductController::toggleStatus/$1');
+    $routes->post('admin/products/delete', '\App\Controllers\Admin\ProductController::delete');
+    $routes->get('staff/getOrders', '\App\Controllers\Staff\Orders::getOrders');
+    $routes->post('staff/updateOrderStatus', '\App\Controllers\Staff\Orders::updateOrderStatus');
+    $routes->get('customer/dashboard/data', '\App\Controllers\Customer\Dashboard::getData');
+    
+    // Missing Admin API Routes
+    $routes->get('admin/dashboard/data', '\App\Controllers\Admin\Dashboard::getData');
+    $routes->get('admin/getProducts', '\App\Controllers\Admin\PosController::getProducts');
+    $routes->get('admin/getHistory', '\App\Controllers\Admin\PosController::getHistory');
+});
 
-$routes->get('logout', 'Auth::logout');
+// Keep existing routes for now but they should eventually be migrated to api group
 
 // --- 2. ADMIN GROUP ---
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'adminGuard'], function($routes) {
@@ -45,6 +60,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     
     // --- Daily Inventory (Products) ---
     $routes->get('products', 'ProductController::index');
+    $routes->get('products/list', 'ProductController::list');
     $routes->post('products/store', 'ProductController::store', ['filter' => 'csrf']);
     $routes->get('products/getDetails/(:num)', 'ProductController::getDetails/$1');
     $routes->post('products/update', 'ProductController::update', ['filter' => 'csrf']);

@@ -212,4 +212,133 @@ class Dashboard extends BaseController
             'server_time' => date('M d, Y h:i A')
         ]);
     }
+
+    public function getData()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Unauthorized']);
+        }
+
+        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
+        $db = \Config\Database::connect();
+        $db->query("SET time_zone = '+08:00'");
+
+        $orderModel = new OrderModel();
+        $salesModel = new SalesModel();
+        
+        $today = date('Y-m-d');
+        $todaySales = round((float) $orderModel->getTodayRevenue(), 2);
+        $todayProfit = round((float) $orderModel->getTodayProfit(), 2);
+        $todayOrders = (int) $orderModel
+            ->groupStart()
+                ->where('DATE(created_at)', $today)
+                ->orWhere("created_at LIKE '{$today}%'")
+            ->groupEnd()
+            ->countAllResults();
+
+        $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
+        $growth = 0;
+        if ($yesterdaySales > 0) {
+            $growth = (($todaySales - $yesterdaySales) / $yesterdaySales) * 100;
+        } elseif ($todaySales > 0) {
+            $growth = 100;
+        }
+
+        $profitMargin = 0;
+        if ($todaySales > 0) {
+            $profitMargin = round(($todayProfit / $todaySales) * 100, 1);
+        }
+
+        $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
+        $staleOrdersCount = $orderModel
+            ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
+            ->where('created_at <', $yesterday)
+            ->countAllResults();
+
+        // 7-day trend
+        $chart = [
+            'labels' => [],
+            'sales' => [],
+        ];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} day"));
+            $chart['labels'][] = date('M d', strtotime($date));
+            $chart['sales'][] = round($orderModel->getDailyRevenue($date), 2);
+        }
+
+        // Top 3 products
+        $topProducts = $db->table('order_items oi')
+            ->select('product_name, SUM(quantity) as total_sold')
+            ->join('orders o', 'o.id = oi.order_id')
+            ->where('o.status', OrderModel::STATUS_COMPLETED)
+            ->where('o.created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))
+            ->groupBy('product_name')
+            ->orderBy('total_sold', 'DESC')
+            ->limit(3)
+            ->get()
+            ->getResultArray();
+
+        // Activities
+        $activities = [];
+        try {
+            $recentOrders = $db->table('order_status_history h')
+                ->select('h.*, o.transaction_code')
+                ->join('orders o', 'o.id = h.order_id')
+                ->orderBy('h.created_at', 'DESC')
+                ->limit(3)
+                ->get()
+                ->getResultArray();
+            
+            foreach ($recentOrders as $ro) {
+                $activities[] = [
+                    'title' => 'Order Updated',
+                    'desc'  => "TXN: {$ro['transaction_code']} changed to {$ro['status_to']} by {$ro['changed_by']}",
+                    'time'  => $ro['created_at'],
+                    'icon'  => 'fa-shopping-bag',
+                    'color' => '#818cf8'
+                ];
+            }
+
+            $recentStock = $db->table('products')
+                ->select('name, current_stock, updated_at')
+                ->where('updated_at >=', date('Y-m-d H:i:s', strtotime('-24 hours')))
+                ->orderBy('updated_at', 'DESC')
+                ->limit(3)
+                ->get()
+                ->getResultArray();
+
+            foreach ($recentStock as $rs) {
+                $activities[] = [
+                    'title' => 'Stock Update',
+                    'desc'  => "Product '{$rs['name']}' now has {$rs['current_stock']} units.",
+                    'time'  => $rs['updated_at'],
+                    'icon'  => 'fa-boxes',
+                    'color' => '#10b981'
+                ];
+            }
+
+            usort($activities, function($a, $b) {
+                return strtotime($b['time']) - strtotime($a['time']);
+            });
+            $activities = array_slice($activities, 0, 8);
+        } catch (\Exception $e) {
+            log_message('error', 'Dashboard API Activity Feed Error: ' . $e->getMessage());
+        }
+
+        return $this->response->setJSON([
+            'username' => session()->get('username'),
+            'server_time' => date('M d, Y h:i A'),
+            'cards' => [
+                'today_sales' => $todaySales,
+                'today_profit' => $todayProfit,
+                'profit_margin' => $profitMargin,
+                'today_orders' => $todayOrders,
+                'sales_growth' => round($growth, 1),
+                'stale_orders_count' => $staleOrdersCount
+            ],
+            'chart' => $chart,
+            'top_products' => $topProducts,
+            'activities' => $activities
+        ]);
+    }
 }

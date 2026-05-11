@@ -68,6 +68,35 @@ class Dashboard extends BaseController
         return view('customer/dashboard', $data);
     }
 
+    public function getData()
+    {
+        $productModel = new ProductModel();
+        $orderItemModel = new OrderItemModel();
+        $reviewModel = new OrderReviewModel();
+
+        $products = $productModel->findAll();
+        
+        foreach ($products as &$p) {
+            $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
+            
+            $orderIds = array_column($orderItemModel->where('product_id', $p['id'])->select('order_id')->findAll(), 'order_id');
+            
+            if (!empty($orderIds)) {
+                $ratingResult = $reviewModel->selectAvg('rating')
+                    ->whereIn('order_id', $orderIds)
+                    ->first();
+                $p['real_rating'] = $ratingResult['rating'] ? round((float)$ratingResult['rating'], 1) : null;
+            } else {
+                $p['real_rating'] = null;
+            }
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'products' => $products
+        ]);
+    }
+
     public function getCustomerOrderCounts(string $customerName): array
     {
         $orderModel = new OrderModel();

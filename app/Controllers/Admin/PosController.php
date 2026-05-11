@@ -28,7 +28,7 @@ class PosController extends BaseController
     // 2. Process checkout — writes to orders, order_items, AND sales_history
     public function checkout()
     {
-        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 

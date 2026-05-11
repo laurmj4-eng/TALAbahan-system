@@ -110,7 +110,7 @@ class Orders extends BaseController
 
     public function updateStatus()
     {
-        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Access denied.',
@@ -163,7 +163,7 @@ class Orders extends BaseController
 
     public function updateTracking()
     {
-        if (session()->get('role') !== 'admin' || ! $this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied.'])->setStatusCode(403);
         }
 

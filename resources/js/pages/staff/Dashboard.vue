@@ -1,0 +1,106 @@
+<template>
+  <div class="p-6 md:p-8 space-y-8">
+    <div class="header-section">
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">Staff Portal 🏛️</h1>
+      <p class="text-white/60 font-medium">Welcome back! Here's an overview of the business today.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <GlassCard v-for="stat in stats" :key="stat.label" customClass="p-6 border-white/10 flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
+        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <component :is="stat.icon" class="w-6 h-6" :class="stat.iconColor" />
+        </div>
+        <div class="text-[0.6rem] font-black text-white/40 uppercase tracking-[0.2em] mb-1">{{ stat.label }}</div>
+        <div class="text-2xl font-black text-white">{{ stat.value }}</div>
+      </GlassCard>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <router-link to="/staff/orders" class="group block h-full">
+        <GlassCard customClass="p-8 border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
+          <div class="w-20 h-20 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
+            <ShoppingCart class="w-10 h-10 text-indigo-400" />
+          </div>
+          <div>
+            <h3 class="text-2xl font-black text-white group-hover:text-indigo-300 transition-colors">Manage Orders</h3>
+            <p class="text-white/40 font-medium text-sm mt-1">Fulfill pending deliveries and updates.</p>
+          </div>
+        </GlassCard>
+      </router-link>
+
+      <router-link to="/staff/products" class="group block h-full">
+        <GlassCard customClass="p-8 border-white/10 hover:border-emerald-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
+          <div class="w-20 h-20 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:-rotate-6 transition-transform">
+            <Package class="w-10 h-10 text-emerald-400" />
+          </div>
+          <div>
+            <h3 class="text-2xl font-black text-white group-hover:text-emerald-300 transition-colors">Inventory</h3>
+            <p class="text-white/40 font-medium text-sm mt-1">Check stock levels and availability.</p>
+          </div>
+        </GlassCard>
+      </router-link>
+
+      <router-link to="/staff/sales-history" class="group block h-full">
+        <GlassCard customClass="p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
+          <div class="w-20 h-20 rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
+            <BarChart3 class="w-10 h-10 text-violet-400" />
+          </div>
+          <div>
+            <h3 class="text-2xl font-black text-white group-hover:text-violet-300 transition-colors">Sales History</h3>
+            <p class="text-white/40 font-medium text-sm mt-1">Review past transactions and revenue.</p>
+          </div>
+        </GlassCard>
+      </router-link>
+    </div>
+
+    <!-- Recent Activity Placeholder -->
+    <GlassCard customClass="p-8 border-white/10">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+          <Activity class="w-6 h-6 text-indigo-400" />
+          <span>System Status</span>
+        </h3>
+        <div class="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-1.5 rounded-full text-[0.65rem] font-black uppercase tracking-widest border border-emerald-500/20">
+          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          Operational
+        </div>
+      </div>
+      <div class="py-12 text-center text-white/20">
+        <p class="italic font-medium">No alerts or notifications at this time.</p>
+      </div>
+    </GlassCard>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { ShoppingCart, Package, BarChart3, Activity, Clock, Users, DollarSign, TrendingUp } from 'lucide-vue-next';
+import GlassCard from '../../components/GlassCard.vue';
+
+const stats = ref([
+  { label: 'Pending Orders', value: '0', icon: Clock, iconColor: 'text-amber-400' },
+  { label: 'Active Customers', value: '0', icon: Users, iconColor: 'text-sky-400' },
+  { label: 'Today\'s Sales', value: '₱0.00', icon: DollarSign, iconColor: 'text-emerald-400' },
+  { label: 'Growth', value: '+0%', icon: TrendingUp, iconColor: 'text-indigo-400' }
+]);
+
+const fetchDashboardData = async () => {
+  try {
+    const response = await axios.get('/api/admin/dashboard/stats'); // Reusing admin stats for now
+    if (response.data.status === 'success') {
+      const data = response.data.data;
+      stats.value[0].value = data.pendingOrders || '0';
+      stats.value[1].value = data.activeUsers || '0';
+      stats.value[2].value = '₱' + parseFloat(data.todaySales || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+      stats.value[3].value = '+' + (data.growth || 0) + '%';
+    }
+  } catch (error) {
+    console.error('Failed to fetch dashboard data:', error);
+  }
+};
+
+onMounted(fetchDashboardData);
+</script>

@@ -9,11 +9,11 @@
             position: fixed !important;
             bottom: 120px !important; 
             right: 30px !important;
-            z-index: 2147483647 !important;
+            z-index: 50 !important; /* Chatbot button at z-50 */
         }
 
         #chat-container {
-            z-index: 2147483646 !important;
+            z-index: 50 !important; /* Chat container at z-50 */
         }
 
         @media (max-width: 768px) {
@@ -22,13 +22,13 @@
                 right: 20px !important;
             }
             #chat-container {
-                z-index: 2147483647 !important;
+                z-index: 50 !important;
             }
         }
     </style>
 
     <!-- Mj Assistant Integration -->
-    <div id="chat-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2147483645; transition: opacity 0.3s ease;"></div>
+    <div id="chat-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 45; transition: opacity 0.3s ease;"></div>
     
     <div id="chat-button-container">
         <button id="chat-button" type="button" style="z-index: 10 !important;" aria-label="Open Chatbot">

@@ -123,6 +123,7 @@ class Auth extends BaseController
                 return $this->response->setJSON([
                     'status'       => 'success', 
                     'message'      => 'Login successful.',
+                    'role'         => $role,
                     'data'         => [
                         'redirect'     => $redirectUrl,
                         'trust_device' => ($remember === 'true'),
@@ -197,14 +198,14 @@ class Auth extends BaseController
 
     private function _getRedirectUrl($role)
     {
-        if ($role === 'admin') return base_url('admin/dashboard');
-        if ($role === 'staff') return base_url('staff/dashboard');
-        return base_url('customer/dashboard');
+        if ($role === 'admin') return 'admin/dashboard';
+        if ($role === 'staff') return 'staff/dashboard';
+        return 'customer/dashboard';
     }
 
     private function _redirectByRole($role)
     {
-        return redirect()->to($this->_getRedirectUrl(strtolower($role)));
+        return redirect()->to(base_url($this->_getRedirectUrl(strtolower($role))));
     }
 
     public function logout()

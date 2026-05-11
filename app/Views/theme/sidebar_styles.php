@@ -5,13 +5,13 @@
         min-width: var(--sidebar-width, 260px);
         display: flex; 
         flex-direction: column; 
-        z-index: 99999 !important; /* Force to the front */
+        z-index: 40 !important; /* Sidebar at z-40 */
         position: fixed !important; /* Fixed position for mobile/customer */
         left: -280px; /* Standardized hidden state */
         border-right: 1px solid rgba(255,255,255,0.08);
         background: rgba(0, 0, 0, 0.3); 
         backdrop-filter: blur(20px);
-        height: 100vh;
+        min-height: 100vh;
         transition: 0.3s; /* Transition as requested */
         visibility: visible !important;
     }
@@ -33,8 +33,8 @@
             position: fixed;
             left: -280px; /* Fully off-screen */
             top: 0;
-            z-index: 20000 !important; /* Force on top */
-            height: 100vh;
+            z-index: 40 !important; /* Sidebar at z-40 */
+            min-height: 100vh;
             width: 260px !important;
             min-width: 260px !important;
             box-shadow: 20px 0 50px rgba(0,0,0,0.5);
@@ -50,7 +50,7 @@
     @media (max-width: 768px) {
         .sidebar {
             left: -280px;
-            z-index: 99999 !important; /* Maximum priority */
+            z-index: 40 !important; /* Sidebar at z-40 */
         }
         .sidebar.active, .sidebar.show {
             left: 0 !important;

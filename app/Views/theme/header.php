@@ -77,8 +77,8 @@
             animation: gradientBg 15s ease infinite;
             color: #ffffff; 
             display: flex; 
-            height: 100vh; 
-            overflow: hidden; /* Prevents whole page from scrolling, only main-content scrolls */
+            min-height: 100vh; 
+            overflow-x: hidden;
         }
         
         @keyframes gradientBg {

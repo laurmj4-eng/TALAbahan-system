@@ -25,6 +25,25 @@ class ProductController extends BaseController
     }
 
     /**
+     * Fetch all products as JSON for Vue
+     */
+    public function list()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+        }
+
+        $model = new ProductModel();
+        $products = $model->getDailyInventory();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data' => $products,
+            'token' => csrf_hash()
+        ]);
+    }
+
+    /**
      * Save a new Daily Catch to the inventory
      */
     public function store()
@@ -106,7 +125,7 @@ class ProductController extends BaseController
      */
     public function update()
     {
-        if (session()->get('role') !== 'admin' || !$this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
@@ -183,7 +202,7 @@ class ProductController extends BaseController
      */
     public function delete()
     {
-        if (session()->get('role') !== 'admin' || !$this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
@@ -236,7 +255,7 @@ class ProductController extends BaseController
      */
     public function toggleStatus($id = null)
     {
-        if (session()->get('role') !== 'admin' || !$this->request->isAJAX()) {
+        if (session()->get('role') !== 'admin') {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
