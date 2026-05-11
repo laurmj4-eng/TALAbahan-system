@@ -1,25 +1,30 @@
 <template>
-  <div class="login-page-wrapper"></div>
-  
-  <div class="login-content-container">
+  <div 
+    class="login-page-wrapper"
+    :style="{ 
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('${windowObj.BASE_URL}images/pic1.jpg')`,
+      backgroundColor: '#0f172a'
+    }"
+  >
+    <div class="login-content-container">
     <div class="w-full max-w-[400px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-10 text-center transition-transform hover:-translate-y-1 duration-500">
+      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-6 md:p-8 text-center transition-transform hover:-translate-y-1 duration-500">
         
         <!-- Logo -->
-        <div class="mb-6">
-          <img src="/images/logo.png" alt="TALAbahan Logo" class="w-32 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300">
+        <div class="mb-4 md:mb-6">
+          <img :src="windowObj.BASE_URL + 'images/pic3.jpg'" alt="TALAbahan Logo" class="w-24 md:w-28 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300">
         </div>
 
-        <h2 class="text-3xl font-black text-white mb-2 tracking-tight">TALAbahan System</h2>
-        <p class="text-white/50 font-medium mb-8 text-sm">Welcome back! Please login to your account.</p>
+        <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
+        <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
 
-        <form @submit.prevent="handleLogin" class="space-y-4">
+        <form @submit.prevent="handleLogin" class="space-y-3 md:space-y-4">
           <div class="relative">
             <input
               v-model="email"
               type="email"
               id="email"
-              class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all"
+              class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 md:px-5 md:py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all text-sm md:text-base"
               placeholder="Email Address"
               required
             />
@@ -30,31 +35,31 @@
               v-model="password"
               type="password"
               id="password"
-              class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all"
+              class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 md:px-5 md:py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all text-sm md:text-base"
               placeholder="Password"
               required
             />
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div id="recaptcha-container" class="flex justify-center my-6 min-h-[78px] overflow-hidden rounded-xl"></div>
+          <div id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] overflow-hidden rounded-xl scale-90 md:scale-100"></div>
 
-          <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-3 px-4 rounded-xl text-xs font-bold mb-4">
+          <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-4 rounded-xl text-xs font-bold mb-4">
             {{ error }}
           </div>
 
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-white text-slate-950 font-black py-4 rounded-2xl hover:bg-white/90 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/5"
+            class="w-full bg-white text-slate-950 font-black py-3 md:py-4 rounded-2xl hover:bg-white/90 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/5 text-sm md:text-base"
           >
             {{ loading ? 'Authenticating...' : 'Sign In' }}
           </button>
 
           <!-- Divider -->
-          <div class="flex items-center my-8">
+          <div class="flex items-center my-4 md:my-6">
             <div class="flex-grow border-t border-white/10"></div>
-            <span class="px-4 text-white/30 text-[10px] font-black uppercase tracking-[0.2em]">OR</span>
+            <span class="px-4 text-white/30 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">OR</span>
             <div class="flex-grow border-t border-white/10"></div>
           </div>
 
@@ -63,7 +68,7 @@
             @click="handleGoogleLogin"
             type="button"
             :disabled="loading || googleLoading"
-            class="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-white font-bold py-4 rounded-2xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50"
+            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-3 md:py-4 rounded-2xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-sm md:text-base"
           >
             <svg v-if="!googleLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -80,32 +85,35 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .login-page-wrapper {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/images/pic1.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .login-page-wrapper {
+    background-attachment: scroll;
+  }
 }
 
 .login-content-container {
-  min-height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  position: relative;
-  z-index: 10;
 }
 </style>
 
@@ -118,6 +126,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const router = useRouter();
+const windowObj = window;
 const email = ref('');
 const password = ref('');
 const loading = ref(false);

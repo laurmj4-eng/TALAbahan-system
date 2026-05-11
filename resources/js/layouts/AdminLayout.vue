@@ -78,8 +78,10 @@
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]"></div>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto p-8 lg:p-10 relative">
-        <slot></slot>
+      <main class="flex-1 overflow-y-auto md:overflow-hidden p-6 lg:p-10 relative flex flex-col">
+        <div class="flex-1 flex flex-col min-h-0 space-y-4">
+          <slot></slot>
+        </div>
       </main>
     </div>
   </div>

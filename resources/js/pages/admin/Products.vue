@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6 md:space-y-8">
+    <div class="flex-1 flex flex-col space-y-6 md:space-y-8 min-h-0">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-6">
         <div class="flex-1">
@@ -32,10 +32,10 @@
       </div>
 
       <!-- Table -->
-      <GlassCard customClass="overflow-hidden border-white/[0.08]">
-        <div class="overflow-x-auto">
+      <GlassCard customClass="overflow-hidden border-white/[0.08] flex-1 flex flex-col min-h-0">
+        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-420px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <table class="w-full text-left border-collapse">
-            <thead>
+            <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/[0.02] border-b border-white/10">
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Category</th>

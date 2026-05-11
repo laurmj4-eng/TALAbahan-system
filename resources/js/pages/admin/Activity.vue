@@ -1,15 +1,15 @@
 <template>
   <AdminLayout>
-    <div class="space-y-8">
+    <div class="flex-1 flex flex-col space-y-8 min-h-0">
       <div>
         <h1 class="text-3xl font-bold text-white">Activity Monitor</h1>
         <p class="text-white/60 mt-2">Clean, professional tracking of system interactions.</p>
       </div>
 
-      <GlassCard customClass="overflow-hidden">
-        <div class="overflow-x-auto">
+      <GlassCard customClass="overflow-hidden flex-1 flex flex-col min-h-0">
+        <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-300px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <table class="w-full text-left border-collapse">
-            <thead>
+            <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/5 border-b border-white/10">
                 <th class="px-6 py-4 font-semibold text-white/70">TIME</th>
                 <th class="px-6 py-4 font-semibold text-white/70">USER</th>

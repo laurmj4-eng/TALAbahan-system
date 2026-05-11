@@ -1,15 +1,15 @@
 <template>
   <AdminLayout>
-    <div class="space-y-8">
+    <div class="flex-1 flex flex-col space-y-8 min-h-0">
       <div>
         <h1 class="text-3xl font-bold text-white">System Architecture Database</h1>
         <p class="text-white/60 mt-2">Append, modify, or terminate entity access securely.</p>
       </div>
 
       <!-- Add User Form -->
-      <GlassCard customClass="p-8">
+      <GlassCard customClass="p-6 md:p-8">
         <h3 class="text-lg font-bold text-white mb-6">Add New Entity</h3>
-        <form @submit.prevent="saveUser" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <form @submit.prevent="saveUser" class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 items-end">
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Node Identity (Username)</label>
             <input 
@@ -17,7 +17,7 @@
               type="text" 
               placeholder="Username..." 
               required
-              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-2">
@@ -27,7 +27,7 @@
               type="email" 
               placeholder="Email address..." 
               required
-              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-2">
@@ -37,7 +37,7 @@
               type="password" 
               placeholder="••••••••" 
               required
-              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-2">
@@ -45,7 +45,7 @@
             <select 
               v-model="addForm.role"
               required
-              class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
               <option value="admin">Admin</option>
               <option value="staff">Staff Member</option>
@@ -56,7 +56,7 @@
             <button 
               type="submit"
               :disabled="isSubmitting"
-              class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50"
+              class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50"
             >
               {{ isSubmitting ? 'EXECUTING...' : 'ADD ENTITY+' }}
             </button>
@@ -65,10 +65,10 @@
       </GlassCard>
 
       <!-- Users Table -->
-      <GlassCard customClass="overflow-hidden">
-        <div class="overflow-x-auto">
+      <GlassCard customClass="overflow-hidden flex-1 flex flex-col min-h-0">
+        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-450px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <table class="w-full text-left border-collapse">
-            <thead>
+            <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/5 border-b border-white/10">
                 <th class="px-6 py-4 font-semibold text-white/70">ID</th>
                 <th class="px-6 py-4 font-semibold text-white/70">EMAIL ADDRESS</th>
