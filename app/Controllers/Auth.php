@@ -19,6 +19,12 @@ class Auth extends BaseController
 
     public function verify()
     {
+        // Force CORS headers in the response object directly for this specific method
+        $this->response->setHeader('Access-Control-Allow-Origin', 'https://tal-abahan-system.vercel.app');
+        $this->response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+        $this->response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
+        $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
+
         try {
             // 1. Get POST data
             $email    = strtolower(trim((string)$this->request->getPost('email')));

@@ -1,5 +1,18 @@
 <?php
 
+// --- EXTREMELY PERMISSIVE CORS FOR INFINITYFREE ---
+header("Access-Control-Allow-Origin: https://tal-abahan-system.vercel.app");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Max-Age: 86400");
+
+// Handle preflight OPTIONS request immediately
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header("HTTP/1.1 200 OK");
+    exit();
+}
+
 // Check PHP version.
 if (version_compare(PHP_VERSION, '8.1', '<')) {
     printf('Your PHP version is %s, but CodeIgniter 4 requires at least PHP 8.1.', PHP_VERSION);

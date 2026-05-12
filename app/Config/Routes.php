@@ -19,6 +19,9 @@ $routes->get('staff/(:any)', 'Home::spa');
 $routes->get('customer/(:any)', 'Home::spa');
 
 // --- API ROUTES (JSON) ---
+$routes->options('api/(:any)', function() {
+    return response()->setStatusCode(200);
+});
 $routes->group('api', function($routes) {
     $routes->post('auth/verify', '\App\Controllers\Auth::verify');
     $routes->post('auth/register', '\App\Controllers\Auth::createAccountApi');

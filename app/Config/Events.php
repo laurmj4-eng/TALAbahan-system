@@ -24,6 +24,19 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 Events::on('pre_system', static function (): void {
+    // FORCE CORS HEADERS AT THE ABSOLUTE EARLIEST EVENT
+    if (PHP_SAPI !== 'cli') {
+        header('Access-Control-Allow-Origin: https://tal-abahan-system.vercel.app');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
+        header('Access-Control-Allow-Credentials: true');
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            header('HTTP/1.1 200 OK');
+            exit();
+        }
+    }
+
     if (ENVIRONMENT !== 'testing') {
         if (ini_get('zlib.output_compression')) {
             throw FrameworkException::forEnabledZlibOutputCompression();
