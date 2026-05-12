@@ -39,6 +39,27 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
+        // --- Custom CORS Headers for InfinityFree/Vercel compatibility ---
+        $origin = $request->getHeaderLine('Origin');
+        $allowedOrigins = [
+            'https://tal-abahan-system.vercel.app',
+            'http://localhost:5173',
+            'http://localhost:8080'
+        ];
+
+        if (in_array($origin, $allowedOrigins)) {
+            header("Access-Control-Allow-Origin: $origin");
+            header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+            header("Access-Control-Allow-Credentials: true");
+            
+            // Handle preflight OPTIONS request
+            if ($request->getMethod() === 'options') {
+                exit;
+            }
+        }
+        // -----------------------------------------------------------------
+
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
     }
