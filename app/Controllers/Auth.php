@@ -31,11 +31,11 @@ class Auth extends BaseController
             // 2. Verify reCAPTCHA (Server-side) - Using CURL for better compatibility on InfinityFree
             if ($provider !== 'google') {
                 if (empty($recaptchaResponse)) {
-                    return $this->response->setJSON([
-                        'status'  => 'error',
-                        'message' => 'Please complete the reCAPTCHA verification.',
-                        'token'   => csrf_hash()
-                    ])->setStatusCode(400);
+                    // return $this->response->setJSON([
+                    //     'status'  => 'error',
+                    //     'message' => 'Please complete the reCAPTCHA verification.',
+                    //     'token'   => csrf_hash()
+                    // ])->setStatusCode(400);
                 }
 
                 $secret = env('RECAPTCHA_SECRET_KEY'); 
@@ -55,11 +55,11 @@ class Auth extends BaseController
                 if ($verify !== false) {
                     $captchaData = json_decode($verify);
                     if (!$captchaData || !$captchaData->success) {
-                        return $this->response->setJSON([
-                            'status'  => 'error',
-                            'message' => 'reCAPTCHA verification failed. Please try again.',
-                            'token'   => csrf_hash()
-                        ])->setStatusCode(400);
+                        // return $this->response->setJSON([
+                        //     'status'  => 'error',
+                        //     'message' => 'reCAPTCHA verification failed. Please try again.',
+                        //     'token'   => csrf_hash()
+                        // ])->setStatusCode(400);
                     }
                 }
             }
