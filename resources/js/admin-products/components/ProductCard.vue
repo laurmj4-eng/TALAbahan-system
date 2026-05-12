@@ -82,7 +82,8 @@ defineProps({
 defineEmits(['edit', 'delete', 'toggle-status']);
 
 const getImageUrl = (image) => {
-  return image ? `/uploads/products/${image}` : '/images/logo.png';
+  const base = window.BASE_URL || '/';
+  return image ? `${base.replace(/\/$/, '')}/uploads/products/${image}` : `${base.replace(/\/$/, '')}/images/logo.png`;
 };
 
 const formatPrice = (price) => {

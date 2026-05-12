@@ -18,11 +18,11 @@
 
         @media (max-width: 768px) {
             #chat-button-container {
-                bottom: 165px !important; 
+                bottom: 20px !important; 
                 right: 20px !important;
             }
             #chat-container {
-                z-index: 50 !important;
+                z-index: 100001 !important;
             }
         }
     </style>
@@ -33,7 +33,7 @@
     <div id="chat-button-container">
         <button id="chat-button" type="button" style="z-index: 10 !important;" aria-label="Open Chatbot">
             <div class="chat-button-pulse" style="background-color: #8b5cf6; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; opacity: 0.3; animation: pulse-ring 2s infinite; pointer-events: none !important; z-index: -1;"></div>
-            <img src="<?= base_url('images/logo.png') ?>" alt="MJ" onerror="this.src='<?= base_url('favicon.ico') ?>'">
+            <img src="<?= base_url('/images/logo.png') ?>" alt="MJ" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.35);">
         </button>
     </div>
 
@@ -41,7 +41,7 @@
         <div id="chat-header">
             <div class="header-left">
                 <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.3);">
-                    <img src="<?= base_url('images/logo.png') ?>" alt="MJ" style="width: 120%; height: 120%; object-fit: cover;">
+                    <img src="<?= base_url('/images/logo.png') ?>" alt="MJ" style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.35);">
                 </div>
                 <div class="ai-info">
                     <span class="ai-title">Mj AI Assistant</span>

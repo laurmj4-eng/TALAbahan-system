@@ -27,9 +27,6 @@
     cursor: pointer; box-shadow: var(--shadow-heavy); overflow: hidden;
     transition: transform 0.3s ease; background-color: white; z-index: 2; padding: 0;
     display: flex; align-items: center; justify-content: center;
-    background-size: 70%;
-    background-position: center;
-    background-repeat: no-repeat;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
@@ -37,15 +34,17 @@
     image-rendering: auto;
 }
 #chat-button img { 
-    width: 80%; 
-    height: 80%; 
-    object-fit: contain; 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
     display: block; 
-    margin: 10% auto;
+    transform: scale(1.25);
+    transition: transform 0.3s ease;
     opacity: 1 !important;
     visibility: visible !important;
     filter: contrast(1.15) saturate(1.15) drop-shadow(0 2px 6px rgba(0,0,0,0.18));
 }
+#chat-button:hover img { transform: scale(1.5); }
 #chat-button:hover { transform: scale(1.1) translateY(-5px); }
 
 .chat-button-pulse {
@@ -282,54 +281,36 @@
 /* Responsive adjustments for various devices */
 @media (max-width: 768px) {
     #chat-container {
-        width: 320px;
+        width: calc(100% - 40px);
+        max-width: 360px;
         right: 20px;
         bottom: 95px;
+        border-radius: 1.5rem;
+    }
+    .chat-button-container {
+        bottom: 20px;
+        right: 20px;
     }
 }
 
 @media (max-width: 480px) {
     #chat-container { 
-        bottom: 0; 
-        right: 0; 
-        width: 100%; 
-        height: 100%; 
-        max-height: 100%; 
-        border-radius: 0; 
-        z-index: 100001; /* Ensure it's above everything including mobile sidebar toggle (100000) */
+        bottom: 0 !important; 
+        right: 0 !important; 
+        width: 100% !important; 
+        height: 100% !important; 
+        max-height: 100% !important; 
+        border-radius: 0 !important; 
+        z-index: 100001 !important; 
     }
     .chat-button-container { 
-        bottom: 120px !important; 
-        right: 30px !important; 
-        left: auto !important;
-        z-index: 1000;
-    }
-    #chat-button {
-        width: 55px !important;
-        height: 55px !important;
-        background-size: 65% !important;
+        bottom: 20px !important; 
+        right: 20px !important; 
+        z-index: 1000 !important;
     }
     #chat-header {
-        border-radius: 0;
-        padding-top: env(safe-area-inset-top); /* Support for notched phones (iPhone) */
-        padding-left: 10px;
-        padding-right: 10px;
-        min-height: 90px;
-    }
-    .header-btn {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 12px !important;
-    }
-    .ai-title {
-        font-size: 13px !important;
-    }
-    #model-select {
-        font-size: 10px !important;
-        max-width: 130px !important;
-    }
-    #chat-input-area {
-        padding-bottom: env(safe-area-inset-bottom);
+        min-height: 70px;
+        padding: 10px 15px;
     }
 }
 

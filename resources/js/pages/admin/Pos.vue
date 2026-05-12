@@ -242,8 +242,12 @@ const fetchData = async () => {
       axios.get('/api/admin/getProducts'),
       axios.get('/api/admin/users')
     ]);
-    products.value = pRes.data;
-    customers.value = uRes.data.filter(u => u.role === 'customer');
+    
+    // The backend returns { status: 'success', data: [...] }
+    products.value = pRes.data.data || [];
+    
+    const usersData = uRes.data.data || [];
+    customers.value = Array.isArray(usersData) ? usersData.filter(u => u.role === 'customer') : [];
   } catch (error) {
     console.error('Failed to fetch POS data:', error);
   }

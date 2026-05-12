@@ -83,12 +83,13 @@
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]"></div>
 
       <!-- Page Content -->
-      <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative">
+      <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative smooth-scroll-container">
         <div class="space-y-4">
           <slot></slot>
         </div>
       </main>
     </div>
+    <Chatbot />
   </div>
 </template>
 
@@ -118,6 +119,7 @@ import {
   Ticket,
   FileText
 } from 'lucide-vue-next';
+import Chatbot from '../components/Chatbot.vue';
 
 const router = useRouter();
 const isSidebarOpen = ref(false);
@@ -202,6 +204,35 @@ const handleLogout = () => {
 
 .animate-slide-in-right {
   animation: slideInRight 0.5s ease-out forwards;
+}
+
+.smooth-scroll-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  backface-visibility: hidden;
+  transform: translate3d(0,0,0);
+  will-change: scroll-position;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.4);
+  border: 1px solid transparent;
+  background-clip: content-box;
 }
 
 /* Staggered delays for stat cards */
