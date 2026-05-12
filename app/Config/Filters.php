@@ -62,6 +62,7 @@ class Filters extends BaseFilters
             'cors',
             // 'honeypot',
             'csrf' => ['except' => [
+                'api/*',
                 'admin/chatbot/process',
                 'api/admin/products/toggleStatus/*',
                 'api/admin/products/delete',
