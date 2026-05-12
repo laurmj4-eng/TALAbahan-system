@@ -23,8 +23,13 @@
         };
     </script>
     <!-- Vite Assets -->
-    <script type="module" src="<?= base_url('dist/assets/app.js') ?>"></script>
-    <link rel="stylesheet" href="<?= base_url('dist/assets/app.css') ?>">
+    <?php if (ENVIRONMENT === 'development'): ?>
+        <script type="module" src="http://localhost:5173/@vite/client"></script>
+        <script type="module" src="http://localhost:5173/resources/js/main.js"></script>
+    <?php else: ?>
+        <script type="module" src="<?= base_url('dist/assets/app.js') ?>"></script>
+        <link rel="stylesheet" href="<?= base_url('dist/assets/app.css') ?>">
+    <?php endif; ?>
 </head>
 <body class="bg-slate-950 text-white">
     <div id="app"></div>

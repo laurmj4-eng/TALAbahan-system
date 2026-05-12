@@ -310,17 +310,17 @@ watch(isOpen, (val) => {
 <style scoped>
 .chat-button-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 110px; /* Above mobile bottom nav */
+  right: 25px;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   .chat-button-container {
-    bottom: 30px;
+    bottom: 140px; /* Above desktop floating cart */
     right: 30px;
   }
 }
@@ -380,10 +380,15 @@ watch(isOpen, (val) => {
   pointer-events: none;
   transform: translateY(20px) scale(0.95);
   transform-origin: bottom right;
+  /* Adjust container position too */
+  bottom: 0;
+  right: 0;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   #chat-container {
+    bottom: 210px;
+    right: 30px;
     transform: translateY(40px) scale(0.95);
   }
 }

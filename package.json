@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"node server.js\" \"php -d extension=intl -S 0.0.0.0:8080 system/rewrite.php\"",
+    "dev": "concurrently \"vite\" \"node server.js\" \"php -d extension=intl -S 0.0.0.0:8080 system/rewrite.php\"",
     "build": "vite build"
   },
   "dependencies": {

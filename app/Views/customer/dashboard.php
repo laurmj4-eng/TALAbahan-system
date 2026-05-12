@@ -201,57 +201,6 @@
         }
         .btn-add-cart:hover { background: rgba(129, 140, 248, 0.2); }
 
-        /* --- PROFESSIONAL FLOATING BUTTONS LAYOUT --- */
-        .cart-float {
-            position: fixed;
-            bottom: 30px; /* Moved to bottom position */
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .cart-float:hover {
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-            filter: brightness(1.1);
-        }
-
-        .cart-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: #ef4444;
-            color: #fff;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            font-size: 0.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #1e1b4b;
-            animation: badgeBounce 0.6s cubic-bezier(0.36, 0, 0.66, -0.56) alternate infinite;
-            animation-iteration-count: 2;
-        }
-
-        @keyframes badgeBounce {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.2) translateY(-2px); }
-        }
-
         /* --- TOAST (Quick feedback) --- */
         .toast {
             position: fixed;
@@ -787,12 +736,6 @@
             <?php endif; ?>
         </div>
 
-        <!-- CART FLOATING BUTTON -->
-        <div class="cart-float" onclick="openCheckoutModal()">
-            <i class="fas fa-shopping-cart"></i>
-            <div class="cart-badge" id="cartCount">0</div>
-        </div>
-
         <!-- TOAST -->
         <div class="toast" id="toast">
             <span class="toast-icon"><i class="fas fa-check"></i></span>
@@ -1113,8 +1056,9 @@
 
             function updateCartUI() {
                 const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-                const countEl = document.getElementById('cartCount');
-                if (countEl) countEl.innerText = count;
+                const countEl = document.querySelectorAll('#cartCount');
+                countEl.forEach(el => el.innerText = count);
+                localStorage.setItem('cartCount', count);
             }
 
             window.updateQty = function(id, delta) {

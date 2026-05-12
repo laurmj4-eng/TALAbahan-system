@@ -58,22 +58,52 @@
     </aside>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="lg:hidden fixed bottom-6 left-6 right-6 h-20 bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <nav class="lg:hidden fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-6 right-6 h-20 bg-[#140f2d]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
       <router-link 
         v-for="item in navItems" 
         :key="item.path" 
         :to="item.path"
-        class="flex flex-col items-center gap-1 p-2 transition-all duration-300"
-        active-class="text-violet-400 scale-110"
+        class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
+        active-class="text-violet-400 bg-violet-500/10"
       >
         <component :is="item.icon" class="w-6 h-6" />
-        <span class="text-[0.6rem] font-black uppercase tracking-widest">{{ item.name }}</span>
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">{{ item.name }}</span>
       </router-link>
-      <button @click="handleLogout" class="flex flex-col items-center gap-1 p-2 text-rose-400/60">
-        <LogOut class="w-6 h-6" />
-        <span class="text-[0.6rem] font-black uppercase tracking-widest">Exit</span>
+      
+      <!-- Global Cart Trigger -->
+      <button @click="triggerOpenCart" class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl relative">
+        <div class="relative">
+          <ShoppingBag class="w-6 h-6" />
+          <div v-if="cartCount > 0" class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white w-4 h-4 rounded-full text-[0.6rem] font-black flex items-center justify-center border-2 border-[#140f2d]">
+            {{ cartCount }}
+          </div>
+        </div>
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">Cart</span>
       </button>
+
+      <router-link 
+        to="/customer/profile"
+        class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
+        active-class="text-violet-400 bg-violet-500/10"
+      >
+        <User class="w-6 h-6" />
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">Profile</span>
+      </router-link>
     </nav>
+
+    <!-- Global Floating Cart Button (Hidden on mobile if nav has cart) -->
+    <button 
+      @click="triggerOpenCart"
+      class="hidden lg:flex fixed bottom-12 right-12 w-20 h-20 bg-violet-600 rounded-[2rem] items-center justify-center text-white cursor-pointer shadow-[0_25px_50px_-10px_rgba(139,92,246,0.5)] border border-white/20 transition-all duration-500 hover:scale-110 hover:-translate-y-2 active:scale-95 z-[100] group"
+    >
+      <ShoppingCart class="w-8 h-8 group-hover:scale-110 transition-transform" />
+      <div v-if="cartCount > 0" class="absolute -top-2 -right-2 bg-rose-500 text-white w-8 h-8 rounded-2xl text-[0.8rem] font-black flex items-center justify-center border-4 border-[#0c0616] animate-pulse">
+        {{ cartCount }}
+      </div>
+    </button>
+
+    <!-- Mobile Floating Chatbot Spacer -->
+    <div class="lg:hidden h-10 w-full"></div>
 
     <!-- Main Content Area -->
     <main class="flex-1 relative lg:h-screen lg:overflow-y-auto p-4 md:p-8 lg:p-12 pb-32 lg:pb-12 main-content-glass smooth-scroll-container">
@@ -90,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   LayoutDashboard, 
@@ -98,17 +128,38 @@ import {
   LogOut,
   Gem,
   User,
-  Search
+  Search,
+  ShoppingCart
 } from 'lucide-vue-next';
 import Chatbot from '../components/Chatbot.vue';
 
 const router = useRouter();
 const username = ref(localStorage.getItem('username') || 'Bocana Ilog');
+const cartCount = ref(parseInt(localStorage.getItem('cartCount') || '0'));
 
 const navItems = [
-  { name: 'Dashboard', path: '/customer/dashboard', icon: LayoutDashboard },
-  { name: 'My Orders', path: '/customer/orders', icon: ShoppingBag }
+  { name: 'Shop', path: '/customer/dashboard', icon: LayoutDashboard },
+  { name: 'Orders', path: '/customer/orders', icon: ShoppingBag }
 ];
+
+const triggerOpenCart = () => {
+  // Emit a global event or use a custom event listener
+  window.dispatchEvent(new CustomEvent('open-customer-cart'));
+};
+
+const updateCartCount = () => {
+  cartCount.value = parseInt(localStorage.getItem('cartCount') || '0');
+};
+
+onMounted(() => {
+  window.addEventListener('cart-updated', updateCartCount);
+  window.addEventListener('storage', updateCartCount);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('cart-updated', updateCartCount);
+  window.removeEventListener('storage', updateCartCount);
+});
 
 const handleLogout = () => {
   localStorage.removeItem('isLoggedIn');

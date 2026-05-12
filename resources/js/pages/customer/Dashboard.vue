@@ -135,17 +135,6 @@
           <p class="text-white/30 font-medium">Please check back later for our fresh catch.</p>
         </div>
       </div>
-
-      <!-- Enhanced Floating Cart -->
-      <button 
-        @click="openCart"
-        class="fixed bottom-10 right-10 lg:bottom-12 lg:right-12 w-20 h-20 bg-violet-600 rounded-[2rem] flex items-center justify-center text-white cursor-pointer shadow-[0_25px_50px_-10px_rgba(139,92,246,0.5)] border border-white/20 transition-all duration-500 hover:scale-110 hover:-translate-y-2 active:scale-95 z-[100] group"
-      >
-        <ShoppingCart class="w-8 h-8 group-hover:scale-110 transition-transform" />
-        <div v-if="cartCount > 0" class="absolute -top-2 -right-2 bg-rose-500 text-white w-8 h-8 rounded-2xl text-[0.8rem] font-black flex items-center justify-center border-4 border-[#0c0616] animate-pulse">
-          {{ cartCount }}
-        </div>
-      </button>
     </div>
   </CustomerLayout>
 </template>
@@ -178,7 +167,7 @@ const props = defineProps({
 const router = useRouter();
 const products = ref(props.initialProducts);
 const username = ref(localStorage.getItem('username') || 'Bocana Ilog');
-const cartCount = ref(0);
+const cartCount = ref(parseInt(localStorage.getItem('cartCount') || '0'));
 const fallbackImage = 'https://images.unsplash.com/photo-1551248429-40975aa4de74?q=80&w=800&auto=format&fit=crop';
 
 const greeting = computed(() => {
@@ -195,16 +184,25 @@ const formatNumber = (num) => {
 const getImageUrl = (imagePath) => {
   if (!imagePath) return fallbackImage;
   if (imagePath.startsWith('http')) return imagePath;
-  
   const baseUrl = window.BASE_URL || '';
   const cleanBaseUrl = baseUrl.replace(/\/$/, '');
   const cleanPath = imagePath.replace(/^\//, '').replace(/^uploads\//, '').replace(/^products\//, '');
-  
   return `${cleanBaseUrl}/uploads/products/${cleanPath}`;
 };
 
 const handleImageError = (e) => {
   e.target.src = fallbackImage;
+};
+
+const updateCartCount = (count) => {
+  cartCount.value = count;
+  localStorage.setItem('cartCount', count);
+  window.dispatchEvent(new Event('cart-updated'));
+};
+
+const openCart = () => {
+  // Logic to open cart modal
+  console.log('Opening cart modal...');
 };
 
 const fetchProducts = async () => {
@@ -228,13 +226,16 @@ const buyNow = (product) => {
 
 const addToCart = (product) => {
   cartCount.value++;
+  updateCartCount(cartCount.value);
 };
 
-const openCart = () => {
-  console.log('Opening cart modal');
-};
-
-onMounted(fetchProducts);
+onMounted(() => {
+  fetchProducts();
+  window.addEventListener('open-customer-cart', openCart);
+  
+  // Initial sync
+  updateCartCount(cartCount.value);
+});
 </script>
 
 <style scoped>
