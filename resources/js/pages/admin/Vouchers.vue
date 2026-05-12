@@ -1,29 +1,30 @@
 <template>
   <AdminLayout>
-    <div class="space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h1 class="text-3xl font-bold text-white">Voucher Management</h1>
-          <p class="text-white/60 mt-2">Create and toggle checkout vouchers without manual SQL.</p>
+    <div class="space-y-6 sm:space-y-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div class="w-full">
+          <h1 class="text-2xl sm:text-3xl font-bold text-white">Voucher Management</h1>
+          <p class="text-white/60 mt-1 sm:mt-2 text-xs sm:text-base leading-relaxed">Manage checkout vouchers and discounts.</p>
         </div>
-        <button @click="isAddModalOpen = true" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all">
-          <Plus class="w-4 h-4 inline-block mr-2" /> Add Voucher
+        <button @click="isAddModalOpen = true" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center active:scale-[0.98]">
+          <Plus class="w-4 h-4 mr-2" /> Add Voucher
         </button>
       </div>
 
-      <GlassCard customClass="overflow-hidden">
+      <!-- Desktop Table View -->
+      <GlassCard customClass="hidden sm:block overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-white/5 border-b border-white/10">
-                <th class="px-6 py-4 font-semibold text-white/70">CODE</th>
-                <th class="px-6 py-4 font-semibold text-white/70">NAME</th>
-                <th class="px-6 py-4 font-semibold text-white/70">SCOPE</th>
-                <th class="px-6 py-4 font-semibold text-white/70">DISCOUNT</th>
-                <th class="px-6 py-4 font-semibold text-white/70">MINIMUM</th>
-                <th class="px-6 py-4 font-semibold text-white/70">PAYMENT LIMIT</th>
-                <th class="px-6 py-4 font-semibold text-white/70">STATUS</th>
-                <th class="px-6 py-4 font-semibold text-white/70 text-right">ACTION</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">CODE</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">NAME</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">SCOPE</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">DISCOUNT</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">MINIMUM</th>
+                <th class="hidden md:table-cell px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">PAYMENT LIMIT</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">STATUS</th>
+                <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm text-right">ACTION</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
@@ -48,7 +49,7 @@
                 <td class="px-6 py-4 text-white/60 font-mono text-sm">
                   ₱{{ formatNumber(voucher.min_order_amount) }}
                 </td>
-                <td class="px-6 py-4 text-white/40 text-xs">
+                <td class="hidden md:table-cell px-6 py-4 text-white/40 text-xs">
                   {{ voucher.payment_method_limit || 'Any' }}
                 </td>
                 <td class="px-6 py-4">
@@ -77,18 +78,72 @@
           </table>
         </div>
       </GlassCard>
+
+      <!-- Mobile Card View -->
+      <div class="sm:hidden space-y-4">
+        <div v-for="voucher in vouchers" :key="voucher.id">
+          <GlassCard customClass="p-5 space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-[10px] font-black text-white/40 uppercase tracking-[2px] mb-1">{{ voucher.scope }}</div>
+                <strong class="text-lg text-white font-black tracking-widest block">{{ voucher.code }}</strong>
+                <p class="text-sm text-white/60 mt-0.5">{{ voucher.name }}</p>
+              </div>
+              <span 
+                class="px-2 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase"
+                :class="parseInt(voucher.is_active) === 1 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'"
+              >
+                {{ parseInt(voucher.is_active) === 1 ? 'ACTIVE' : 'INACTIVE' }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 py-4 border-y border-white/5">
+              <div>
+                <label class="text-[9px] font-black text-white/30 uppercase tracking-widest block mb-1">Discount</label>
+                <div class="text-emerald-400 font-bold">
+                  {{ voucher.discount_type === 'percent' ? formatDiscount(voucher.discount_value) + '%' : '₱' + formatNumber(voucher.discount_value) }}
+                </div>
+                <div v-if="voucher.max_discount" class="text-[9px] text-white/30 uppercase mt-0.5">
+                  Max ₱{{ formatNumber(voucher.max_discount) }}
+                </div>
+              </div>
+              <div>
+                <label class="text-[9px] font-black text-white/30 uppercase tracking-widest block mb-1">Min Order</label>
+                <div class="text-white/80 font-mono text-sm">₱{{ formatNumber(voucher.min_order_amount) }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <div class="text-[10px] text-white/30">
+                <span class="uppercase tracking-widest">Limit:</span>
+                <span class="text-white/50 ml-1">{{ voucher.payment_method_limit || 'Any' }}</span>
+              </div>
+              <button 
+                @click="toggleVoucher(voucher)"
+                class="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all"
+              >
+                {{ parseInt(voucher.is_active) === 1 ? 'Deactivate' : 'Activate' }}
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+
+        <div v-if="vouchers.length === 0" class="py-12 text-center text-white/20 italic text-sm">
+          No vouchers found.
+        </div>
+      </div>
     </div>
 
     <!-- Add Voucher Modal -->
-    <div v-if="isAddModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <GlassCard customClass="w-full max-w-2xl p-8 relative">
-        <button @click="isAddModalOpen = false" class="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
-          <X class="w-6 h-6 text-white" />
+    <div v-if="isAddModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
+      <GlassCard customClass="w-full max-w-2xl p-6 sm:p-8 relative max-h-[95vh] overflow-y-auto">
+        <button @click="isAddModalOpen = false" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
+          <X class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </button>
 
-        <h2 class="text-2xl font-bold text-white mb-8">Create Voucher</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8">Create Voucher</h2>
 
-        <form @submit.prevent="saveVoucher" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form @submit.prevent="saveVoucher" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Code</label>
             <input v-model="form.code" type="text" placeholder="PLAT40" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">

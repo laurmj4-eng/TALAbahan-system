@@ -93,27 +93,10 @@ class Database extends Config
             return;
         }
 
-        // Environment Detection Logic
-        $isLocal = false;
-        
-        // Detect if running from CLI or if host is localhost
-        if (is_cli() || (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || $_SERVER['HTTP_HOST'] === '127.0.0.1'))) {
-            $isLocal = true;
-        }
-
-        if ($isLocal) {
-            // Switch to LOCAL (XAMPP) settings
-            $this->default['hostname'] = env('database.default.hostname', 'localhost');
-            $this->default['database'] = env('database.default.database', 'mj_chatbot');
-            $this->default['username'] = env('database.default.username', 'root');
-            $this->default['password'] = env('database.default.password', '');
-        } else {
-            // FORCED LIVE SETTINGS (InfinityFree)
-            // We use the hardcoded defaults directly to avoid any .env issues on free hosting
-            $this->default['hostname'] = 'sql206.infinityfree.com';
-            $this->default['database'] = 'if0_41764652_mj_chatbot';
-            $this->default['username'] = 'if0_41764652';
-            $this->default['password'] = 'yEEY6EnLGIfdD';
-        }
+        // FORCE LOCAL DATABASE SETTINGS FOR DEVELOPMENT
+        $this->default['hostname'] = 'localhost';
+        $this->default['database'] = 'mj_chatbot';
+        $this->default['username'] = 'root';
+        $this->default['password'] = '';
     }
 }

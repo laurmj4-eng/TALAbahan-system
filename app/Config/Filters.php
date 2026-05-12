@@ -66,7 +66,11 @@ class Filters extends BaseFilters
                 'api/admin/products/delete',
                 'api/admin/products/store',
                 'api/admin/products/update',
-                'admin/products/toggleStatus/*'
+                'admin/products/toggleStatus/*',
+                'admin/shipping/store',
+                'admin/shipping/update',
+                'admin/shipping/delete',
+                'admin/shipping/updateGlobal'
             ]], // Exclude API and Admin Product routes from global CSRF as we handle it or use AJAX
             // 'invalidchars',
         ],

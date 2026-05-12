@@ -1,29 +1,32 @@
 <template>
   <AdminLayout>
-    <div class="space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h1 class="text-3xl font-bold text-white">Shipping Locations 📍</h1>
-          <p class="text-white/60 mt-2">Manage specific barangays and places allowed for delivery.</p>
+    <div class="space-y-6 sm:space-y-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div class="w-full">
+          <h1 class="text-2xl sm:text-3xl font-bold text-white">Shipping Locations 📍</h1>
+          <p class="text-white/60 mt-1 sm:mt-2 text-xs sm:text-base leading-relaxed">Manage specific barangays and places allowed for delivery.</p>
         </div>
-        <button @click="isAddModalOpen = true" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all">
-          <Plus class="w-4 h-4 inline-block mr-2" /> Add Location
+        <button @click="isAddModalOpen = true" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center active:scale-[0.98]">
+          <Plus class="w-4 h-4 mr-2" /> Add Location
         </button>
       </div>
 
       <!-- Global Shipping Toggle -->
-      <div class="flex items-center gap-6 bg-white/5 p-6 rounded-2xl border border-white/10">
-        <span class="font-bold text-white">Ship to All Locations (Global)</span>
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 p-5 sm:p-6 rounded-2xl border border-white/10">
+        <div class="flex-1">
+          <span class="font-bold text-white block mb-1">Ship to All Locations (Global)</span>
+          <span class="text-[10px] sm:text-xs text-white/40 uppercase tracking-widest font-black">
+            Currently: <span :class="isGlobalShipping ? 'text-violet-400' : 'text-white/40'">{{ isGlobalShipping ? 'ON (Shipping to all)' : 'OFF (Specific only)' }}</span>
+          </span>
+        </div>
         <label class="relative inline-flex items-center cursor-pointer group">
           <input type="checkbox" v-model="isGlobalShipping" @change="toggleGlobalShipping" class="sr-only peer">
-          <div class="w-12 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
+          <div class="w-14 h-7 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
         </label>
-        <span class="text-sm font-medium" :class="isGlobalShipping ? 'text-violet-400' : 'text-white/40'">
-          Currently: {{ isGlobalShipping ? 'ON (Shipping to all)' : 'OFF (Specific locations only)' }}
-        </span>
       </div>
 
-      <GlassCard customClass="overflow-hidden">
+      <!-- Desktop Table View -->
+      <GlassCard customClass="hidden sm:block overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -70,18 +73,55 @@
           </table>
         </div>
       </GlassCard>
+
+      <!-- Mobile Card View -->
+      <div class="sm:hidden space-y-4">
+        <div v-for="location in locations" :key="location.id">
+          <GlassCard customClass="p-5 space-y-4">
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0 pr-4">
+                <strong class="text-lg text-white font-black tracking-tight block truncate">{{ location.barangay_name }}</strong>
+                <p class="text-xs text-white/40 mt-1 uppercase tracking-wider font-medium">{{ location.city_municipality }}</p>
+              </div>
+              <span 
+                class="shrink-0 px-2 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase"
+                :class="parseInt(location.is_active) ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'"
+              >
+                {{ parseInt(location.is_active) ? 'ACTIVE' : 'INACTIVE' }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-white/5">
+              <div class="text-[10px] text-white/30 uppercase tracking-widest font-black">Quick Actions</div>
+              <div class="flex items-center gap-2">
+                <button @click="openEditModal(location)" class="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all">
+                  <Edit class="w-3.5 h-3.5" />
+                  Edit
+                </button>
+                <button @click="deleteLocation(location.id)" class="p-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl active:bg-red-500 active:text-white transition-all">
+                  <Trash2 class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        <div v-if="locations.length === 0" class="py-12 text-center text-white/20 italic text-sm">
+          No shipping locations found.
+        </div>
+      </div>
     </div>
 
     <!-- Modals -->
-    <div v-if="isAddModalOpen || editingLocation" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <GlassCard customClass="w-full max-w-md p-8 relative">
-        <button @click="closeModals" class="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
-          <X class="w-6 h-6 text-white" />
+    <div v-if="isAddModalOpen || editingLocation" class="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
+      <GlassCard customClass="w-full max-w-md p-6 sm:p-8 relative max-h-[95vh] overflow-y-auto">
+        <button @click="closeModals" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
+          <X class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </button>
 
-        <h2 class="text-2xl font-bold text-white mb-8">{{ editingLocation ? 'Edit Location' : 'Add New Location' }}</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8">{{ editingLocation ? 'Edit Location' : 'Add New Location' }}</h2>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form @submit.prevent="handleSubmit" class="space-y-4 sm:space-y-6">
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Barangay Name</label>
             <input 
@@ -147,8 +187,9 @@ const form = ref({
 const fetchLocations = async () => {
   try {
     const response = await axios.get('/api/admin/shipping');
-    locations.value = response.data.locations || [];
-    isGlobalShipping.value = response.data.ship_to_all === '1';
+    const data = response.data.data || response.data;
+    locations.value = data.locations || data || [];
+    isGlobalShipping.value = (data.ship_to_all || response.data.ship_to_all) === '1';
   } catch (error) {
     console.error('Failed to fetch locations:', error);
     locations.value = [];
