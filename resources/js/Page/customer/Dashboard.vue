@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { 
   ShoppingCart, 
@@ -164,7 +164,6 @@ const props = defineProps({
   }
 });
 
-const router = useRouter();
 const products = ref(props.initialProducts);
 const username = ref(localStorage.getItem('username') || 'Bocana Ilog');
 const cartCount = ref(parseInt(localStorage.getItem('cartCount') || '0'));

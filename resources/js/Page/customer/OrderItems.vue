@@ -76,9 +76,9 @@
           <h2 class="text-2xl font-bold">No orders found</h2>
           <p class="font-medium">No orders match this category yet.</p>
         </div>
-        <router-link to="/customer/dashboard" class="px-8 py-3 bg-white text-violet-900 rounded-2xl font-black text-sm hover:bg-violet-50 transition-all">
+        <Link href="/customer/dashboard" class="px-8 py-3 bg-white text-violet-900 rounded-2xl font-black text-sm hover:bg-violet-50 transition-all">
           Go to Shop
-        </router-link>
+        </Link>
       </div>
 
       <!-- Details Modal -->
@@ -136,6 +136,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Calendar, Wallet, Eye, X, PackageOpen, CreditCard, Truck } from 'lucide-vue-next';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';

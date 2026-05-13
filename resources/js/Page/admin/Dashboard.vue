@@ -85,9 +85,9 @@
             <p class="text-sm text-slate-400">Some orders have been pending for more than 24 hours. Please review and update their status.</p>
           </div>
         </div>
-        <router-link to="/admin/orders" class="px-6 py-2.5 bg-orange-500 text-black text-sm font-extrabold rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-lg shadow-orange-500/20">
+        <Link href="/admin/orders" class="px-6 py-2.5 bg-orange-500 text-black text-sm font-extrabold rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-lg shadow-orange-500/20">
           View Orders
-        </router-link>
+        </Link>
       </div>
 
       <!-- Performance Overview -->
@@ -138,10 +138,10 @@
           <h3 class="text-xl font-bold text-white tracking-tight">Quick Management</h3>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          <router-link v-for="action in quickActions" :key="action.name" :to="action.path" class="group p-6 rounded-[24px] bg-white/[0.02] border border-white/10 backdrop-blur-[16px] flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
+          <Link v-for="action in quickActions" :key="action.name" :href="action.path" class="group p-6 rounded-[24px] bg-white/[0.02] border border-white/10 backdrop-blur-[16px] flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
             <component :is="action.icon" :class="action.color" class="w-8 h-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300" />
             <span class="font-bold text-[1.1rem] tracking-tight group-hover:text-violet-400 transition-colors">{{ action.name }}</span>
-          </router-link>
+          </Link>
         </div>
       </div>
 
@@ -180,6 +180,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 import { 

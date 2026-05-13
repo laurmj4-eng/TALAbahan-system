@@ -13,19 +13,16 @@ $routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::de
 // Removed 'throttle' from here to fix the error
 $routes->get('/', 'Home::index');
 $routes->get('login', 'Home::login');
+$routes->get('logout', 'Auth::logout');
 $routes->get('register', 'Home::register');
-$routes->get('admin/dashboard', '\App\Controllers\Admin\Dashboard::index');
-$routes->get('admin/(:any)', 'Home::index');
-$routes->get('staff/(:any)', 'Home::index');
-$routes->get('customer/(:any)', 'Home::index');
 
 // --- API ROUTES (JSON) ---
 $routes->options('api/(:any)', function() {
     return response()->setStatusCode(200);
 });
 $routes->group('api', function($routes) {
-    $routes->post('auth/verify', '\App\Controllers\Auth::verify');
-    $routes->post('auth/register', '\App\Controllers\Auth::createAccountApi');
+    $routes->post('auth/verify', 'Auth::verify');
+    $routes->post('auth/register', 'Auth::createAccountApi');
     $routes->get('admin/products/list', '\App\Controllers\Admin\ProductController::list');
     $routes->post('admin/products/toggleStatus/(:num)', '\App\Controllers\Admin\ProductController::toggleStatus/$1');
     $routes->post('admin/products/delete', '\App\Controllers\Admin\ProductController::delete');
@@ -146,3 +143,9 @@ $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' 
     $routes->post('review', 'Reviews::submitReview', ['filter' => 'csrf']);
     $routes->post('refund-request', 'Refunds::submitRefundRequest', ['filter' => 'csrf']);
 });
+
+// --- 5. SPA CATCH-ALL ROUTES ---
+// These must be at the very bottom to allow specific routes to match first
+$routes->get('admin/(:any)', 'Home::index');
+$routes->get('staff/(:any)', 'Home::index');
+$routes->get('customer/(:any)', 'Home::index');

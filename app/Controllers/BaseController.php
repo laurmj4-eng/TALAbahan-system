@@ -40,6 +40,10 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
 
         // --- Custom CORS Headers for InfinityFree/Vercel compatibility ---
+        // Setting COOP to unsafe-none to allow Google/Firebase auth popups to communicate and close properly
+        $this->response->setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+        $this->response->setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+        
         $origin = $request->getHeaderLine('Origin');
         $allowedOrigins = [
             'https://tal-abahan-system.vercel.app',
@@ -48,13 +52,14 @@ abstract class BaseController extends Controller
         ];
 
         if (in_array($origin, $allowedOrigins)) {
-            header("Access-Control-Allow-Origin: $origin");
-            header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
-            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
-            header("Access-Control-Allow-Credentials: true");
+            $this->response->setHeader('Access-Control-Allow-Origin', $origin);
+            $this->response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization');
+            $this->response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+            $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
             
             // Handle preflight OPTIONS request
             if ($request->getMethod() === 'options') {
+                $this->response->setStatusCode(200)->send();
                 exit;
             }
         }

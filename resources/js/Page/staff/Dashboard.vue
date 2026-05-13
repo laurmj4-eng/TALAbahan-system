@@ -18,7 +18,7 @@
 
     <!-- Quick Navigation -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <router-link to="/staff/orders" class="group block h-full">
+      <Link href="/staff/orders" class="group block h-full">
         <GlassCard customClass="p-8 border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-20 h-20 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
             <ShoppingCart class="w-10 h-10 text-indigo-400" />
@@ -28,9 +28,9 @@
             <p class="text-white/40 font-medium text-sm mt-1">Fulfill pending deliveries and updates.</p>
           </div>
         </GlassCard>
-      </router-link>
+      </Link>
 
-      <router-link to="/staff/products" class="group block h-full">
+      <Link href="/staff/products" class="group block h-full">
         <GlassCard customClass="p-8 border-white/10 hover:border-emerald-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-20 h-20 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:-rotate-6 transition-transform">
             <Package class="w-10 h-10 text-emerald-400" />
@@ -40,9 +40,9 @@
             <p class="text-white/40 font-medium text-sm mt-1">Check stock levels and availability.</p>
           </div>
         </GlassCard>
-      </router-link>
+      </Link>
 
-      <router-link to="/staff/sales-history" class="group block h-full">
+      <Link href="/staff/sales-history" class="group block h-full">
         <GlassCard customClass="p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-20 h-20 rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
             <BarChart3 class="w-10 h-10 text-violet-400" />
@@ -52,7 +52,7 @@
             <p class="text-white/40 font-medium text-sm mt-1">Review past transactions and revenue.</p>
           </div>
         </GlassCard>
-      </router-link>
+      </Link>
     </div>
 
     <!-- Recent Activity Placeholder -->
@@ -76,6 +76,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ShoppingCart, Package, BarChart3, Activity, Clock, Users, DollarSign, TrendingUp } from 'lucide-vue-next';
 import GlassCard from '../../components/GlassCard.vue';

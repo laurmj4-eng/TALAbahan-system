@@ -45,14 +45,14 @@
           
           <ul class="space-y-1 list-none p-0 m-0">
             <li v-for="item in section.items" :key="item.path">
-              <router-link
-                :to="item.path"
+              <Link
+                :href="item.path"
                 class="flex items-center gap-3 px-4 py-3 text-white/70 font-medium text-[0.9rem] rounded-xl border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
-                active-class="bg-white/5 text-white font-semibold border-l-4 !border-indigo-500 shadow-lg"
+                :class="{ 'bg-white/5 text-white font-semibold border-l-4 !border-indigo-500 shadow-lg': $page.url.startsWith(item.path) }"
               >
-                <component :is="item.icon" class="w-6 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7] group-[.router-link-active]:text-violet-300" />
+                <component :is="item.icon" class="w-6 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7]" :class="{ 'text-violet-300': $page.url.startsWith(item.path) }" />
                 <span>{{ item.name }}</span>
-              </router-link>
+              </Link>
             </li>
           </ul>
           <div v-if="section.divider" class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-3 my-4"></div>
@@ -95,7 +95,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { router, Link } from '@inertiajs/vue3';
 import { 
   LayoutDashboard, 
   Package, 
@@ -121,7 +121,6 @@ import {
 } from 'lucide-vue-next';
 import Chatbot from '../components/Chatbot.vue';
 
-const router = useRouter();
 const isSidebarOpen = ref(false);
 const username = ref(localStorage.getItem('username') || 'Admin');
 
@@ -168,7 +167,7 @@ const handleLogout = () => {
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userRole');
   localStorage.removeItem('username');
-  router.push('/login');
+  window.location.href = (window.BASE_URL || '/') + 'logout';
 };
 </script>
 

@@ -4,10 +4,10 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
-          <router-link to="/admin/activity" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 backdrop-blur-md border border-violet-500/20 rounded-xl text-white/80 font-semibold text-sm hover:bg-violet-500/20 hover:border-violet-500/40 hover:-translate-x-1 transition-all group mb-4">
+          <Link href="/admin/activity" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 backdrop-blur-md border border-violet-500/20 rounded-xl text-white/80 font-semibold text-sm hover:bg-violet-500/20 hover:border-violet-500/40 hover:-translate-x-1 transition-all group mb-4">
             <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Monitor</span>
-          </router-link>
+          </Link>
           <h2 class="text-[2.2rem] font-bold text-white leading-tight">User Timeline: {{ user.username }}</h2>
           <p class="text-white/60">Detailed activity history for this identity node.</p>
         </div>
@@ -71,12 +71,18 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { Link, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ArrowLeft, Laptop, MapPin, Network } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 
-const route = useRoute();
+const props = defineProps({
+  id: {
+    type: [String, Number],
+    required: true
+  }
+});
+
 const user = ref({});
 const logs = ref([]);
 
@@ -104,7 +110,7 @@ const formatTime = (dateStr) => {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get(`/api/admin/activity/user/${route.params.id}`);
+    const response = await axios.get(`/api/admin/activity/user/${props.id}`);
     user.value = response.data.user || {};
     logs.value = Array.isArray(response.data.logs) ? response.data.logs : [];
   } catch (error) {

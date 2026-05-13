@@ -22,15 +22,15 @@
         </div>
         <ul class="space-y-2 list-none p-0">
           <li v-for="(item, index) in navItems" :key="item.path" :style="{ animationDelay: `${index * 100}ms` }" class="animate-slide-in-left">
-            <router-link
-              :to="item.path"
+            <Link
+              :href="item.path"
               class="flex items-center gap-4 px-5 py-4 text-white/50 font-bold text-[0.85rem] rounded-2xl transition-all duration-500 group relative hover:text-white"
-              active-class="active-nav-item"
+              :class="{ 'active-nav-item': $page.url.startsWith(item.path) }"
             >
               <component :is="item.icon" class="w-5 h-5 transition-transform group-hover:scale-110" />
               <span>{{ item.name }}</span>
-              <div v-if="$route.path === item.path" class="absolute right-4 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_#a78bfa]"></div>
-            </router-link>
+              <div v-if="$page.url.startsWith(item.path)" class="absolute right-4 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_#a78bfa]"></div>
+            </Link>
           </li>
         </ul>
       </nav>
@@ -59,16 +59,16 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="lg:hidden fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-6 right-6 h-20 bg-[#140f2d]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-      <router-link 
+      <Link 
         v-for="item in navItems" 
         :key="item.path" 
-        :to="item.path"
+        :href="item.path"
         class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
-        active-class="text-violet-400 bg-violet-500/10"
+        :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith(item.path) }"
       >
         <component :is="item.icon" class="w-6 h-6" />
         <span class="text-[0.65rem] font-black uppercase tracking-widest">{{ item.name }}</span>
-      </router-link>
+      </Link>
       
       <!-- Global Cart Trigger -->
       <button @click="triggerOpenCart" class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl relative">
@@ -81,14 +81,14 @@
         <span class="text-[0.65rem] font-black uppercase tracking-widest">Cart</span>
       </button>
 
-      <router-link 
-        to="/customer/profile"
+      <Link 
+        href="/customer/profile"
         class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
-        active-class="text-violet-400 bg-violet-500/10"
+        :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith('/customer/profile') }"
       >
         <User class="w-6 h-6" />
         <span class="text-[0.65rem] font-black uppercase tracking-widest">Profile</span>
-      </router-link>
+      </Link>
     </nav>
 
     <!-- Global Floating Cart Button (Hidden on mobile if nav has cart) -->
@@ -121,7 +121,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { router, Link } from '@inertiajs/vue3';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -133,7 +133,6 @@ import {
 } from 'lucide-vue-next';
 import Chatbot from '../components/Chatbot.vue';
 
-const router = useRouter();
 const username = ref(localStorage.getItem('username') || 'Bocana Ilog');
 const cartCount = ref(parseInt(localStorage.getItem('cartCount') || '0'));
 
@@ -165,7 +164,7 @@ const handleLogout = () => {
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userRole');
   localStorage.removeItem('username');
-  router.push('/login');
+  window.location.href = (window.BASE_URL || '/') + 'logout';
 };
 </script>
 

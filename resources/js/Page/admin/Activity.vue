@@ -30,9 +30,9 @@
                     <div class="text-[10px] text-white/30 uppercase font-black tracking-widest">{{ formatDate(log.created_at) }}</div>
                   </td>
                   <td class="px-8 py-6">
-                    <router-link v-if="log.user_id" :to="`/admin/activity/user/${log.user_id}`" class="text-sky-400 hover:text-indigo-400 font-black transition-colors block">
+                    <Link v-if="log.user_id" :href="`/admin/activity/user/${log.user_id}`" class="text-sky-400 hover:text-indigo-400 font-black transition-colors block">
                       <span class="text-sm text-slate-400 font-medium">{{ log.user_identity }}</span>
-                    </router-link>
+                    </Link>
                     <span v-else class="text-white/30 font-bold italic opacity-70">Guest User</span>
                   </td>
                   <td class="px-8 py-6 hidden md:table-cell">
@@ -87,9 +87,9 @@
                   <UserCircle class="w-6 h-6 text-violet-400" />
                 </div>
                 <div>
-                  <router-link v-if="log.user_id" :to="`/admin/activity/user/${log.user_id}`" class="block">
+                  <Link v-if="log.user_id" :href="`/admin/activity/user/${log.user_id}`" class="block">
                     <span class="text-sm text-slate-400 font-bold">{{ log.user_identity }}</span>
-                  </router-link>
+                  </Link>
                   <span v-else class="text-white/40 font-bold text-sm italic opacity-70">Guest User</span>
                   <div class="text-[9px] text-white/30 font-black tracking-widest uppercase">
                     {{ formatDate(log.created_at) }} • {{ formatTime(log.created_at) }}
@@ -149,6 +149,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Laptop, MapPin, UserCircle, Ghost, Monitor, Smartphone, Tablet } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';

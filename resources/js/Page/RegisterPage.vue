@@ -80,7 +80,7 @@
         </form>
 
         <div class="mt-8 text-center">
-          <p class="text-white/40 text-sm font-medium">Already have an account? <router-link to="/login" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Login here</router-link></p>
+          <p class="text-white/40 text-sm font-medium">Already have an account? <Link href="/login" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Login here</Link></p>
         </div>
       </div>
     </div>
@@ -118,10 +118,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
-const router = useRouter();
 const windowObj = window;
 const username = ref('');
 const email = ref('');
@@ -185,7 +184,7 @@ const handleRegister = async () => {
     const response = await axios.post('/api/auth/register', formData);
 
     if (response.data.status === 'success') {
-      router.push('/login');
+      router.visit('/login');
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed. Please try again.';

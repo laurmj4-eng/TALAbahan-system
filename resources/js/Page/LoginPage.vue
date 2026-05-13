@@ -81,7 +81,7 @@
         </form>
 
         <div class="mt-10 text-center">
-          <p class="text-white/40 text-sm font-medium">Don't have an account? <router-link to="/register" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Register here</router-link></p>
+          <p class="text-white/40 text-sm font-medium">Don't have an account? <Link href="/register" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Register here</Link></p>
         </div>
       </div>
     </div>
@@ -119,13 +119,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const router = useRouter();
 const windowObj = window;
 const email = ref('');
 const password = ref('');
@@ -238,9 +237,12 @@ const handleGoogleLogin = async () => {
   // Use Popup by default as it's more reliable for SPA state
   // Only fallback to redirect if popup is blocked or specifically requested
   try {
+    console.log("[Auth] Attempting Google Sign-In with Popup...");
     const result = await signInWithPopup(auth, provider);
+    console.log("[Auth] Popup success, user:", result.user.email);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
+    console.error("[Auth] Google Sign-In Error:", err);
     console.warn("Popup blocked or failed, trying redirect...", err);
     
     // If popup is blocked, we can try redirect for mobile
@@ -259,6 +261,7 @@ const handleGoogleLogin = async () => {
 };
 
 const verifyWithBackend = async (userEmail, name, providerType) => {
+  console.log(`[Auth] Verifying ${providerType} login with backend for:`, userEmail);
   if (providerType === 'google') googleLoading.value = true;
   else loading.value = true;
 
@@ -270,12 +273,20 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
     formData.append('provider', providerType);
     formData.append('remember', 'true');
 
+    console.log("[Auth] Sending verification request to /api/auth/verify...");
     const response = await axios.post('/api/auth/verify', formData);
+    console.log("[Auth] Backend response:", response.data);
 
     if (response.data.status === 'success') {
+      console.log("[Auth] Verification success, handling redirect...");
       handleSuccessfulLogin(response.data);
+    } else {
+      console.error("[Auth] Verification failed with message:", response.data.message);
+      error.value = response.data.message || 'Verification failed.';
     }
   } catch (err) {
+    console.error("[Auth] Axios Error:", err);
+    console.error("[Auth] Error details:", err.response?.data);
     error.value = err.response?.data?.message || 'Verification failed.';
     if (err.response?.data?.token) {
       window.CSRF_HASH = err.response.data.token;
@@ -287,24 +298,28 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
 };
 
 const handleSuccessfulLogin = (data) => {
+  console.log("[Auth] Storing session data in localStorage...");
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
+  localStorage.setItem('username', data.username || '');
   
   const redirectPath = data.redirect || (data.data && data.data.redirect);
+  console.log("[Auth] Redirect path from backend:", redirectPath);
   
   if (redirectPath) {
-    // If it's a full URL, we might still need window.location.href
-    if (redirectPath.startsWith('http')) {
-      window.location.href = redirectPath;
-    } else {
-      // For relative paths, use Vue Router for a smooth SPA transition
-      router.push('/' + redirectPath.replace(/^\//, ''));
-    }
+    const finalUrl = (window.BASE_URL || '/') + redirectPath.replace(/^\//, '');
+    console.log("[Auth] Navigating to:", finalUrl);
+    
+    // Use window.location.href for a full page reload to ensure session is picked up
+    window.location.href = finalUrl;
   } else {
     const role = data.role || 'customer';
-    if (role === 'admin') router.push('/admin/dashboard');
-    else if (role === 'staff') router.push('/staff/dashboard');
-    else router.push('/customer/dashboard');
+    console.log("[Auth] No redirect path, using default for role:", role);
+    let defaultPath = '/customer/dashboard';
+    if (role === 'admin') defaultPath = '/admin/dashboard';
+    else if (role === 'staff') defaultPath = '/staff/dashboard';
+    
+    window.location.href = (window.BASE_URL || '/') + defaultPath.replace(/^\//, '');
   }
 };
 </script>

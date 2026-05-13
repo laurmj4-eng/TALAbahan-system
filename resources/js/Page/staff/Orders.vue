@@ -5,10 +5,10 @@
         <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent">Order Fulfillment</h1>
         <p class="text-white/50 font-medium mt-2">Manage and process your fresh seafood deliveries.</p>
       </div>
-      <router-link to="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+      <Link href="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
         <ChevronLeft class="w-5 h-5" />
         <span>Dashboard</span>
-      </router-link>
+      </Link>
     </div>
 
     <GlassCard customClass="overflow-hidden border-white/10">
@@ -131,6 +131,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ChevronLeft, Eye, X, PackageOpen, Loader2, Flame, Truck, CheckCheck } from 'lucide-vue-next';
 import GlassCard from '../../components/GlassCard.vue';

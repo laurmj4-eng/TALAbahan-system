@@ -7,14 +7,14 @@
           <p class="text-white/60 font-medium">Welcome, <strong class="text-violet-400">{{ username }}</strong>. Manage your purchases quickly.</p>
         </div>
         <div class="profile-actions flex flex-wrap gap-3">
-          <router-link to="/customer/dashboard" class="btn-soft px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+          <Link href="/customer/dashboard" class="btn-soft px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
             <Store class="w-5 h-5 text-violet-400" />
             <span>Back to Shop</span>
-          </router-link>
-          <router-link to="/customer/orders" class="btn-soft px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+          </Link>
+          <Link href="/customer/orders" class="btn-soft px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
             <ClipboardList class="w-5 h-5 text-violet-400" />
             <span>View All Orders</span>
-          </router-link>
+          </Link>
           <button @click="handleLogout" class="btn-soft px-6 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl font-bold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2">
             <LogOut class="w-5 h-5" />
             <span>Logout</span>
@@ -32,10 +32,10 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <router-link 
+          <Link 
             v-for="badge in badges" 
             :key="badge.tab"
-            :to="'/customer/orders?tab=' + badge.tab"
+            :href="'/customer/orders?tab=' + badge.tab"
             class="group relative flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 hover:border-violet-500/40 transition-all overflow-hidden"
           >
             <span class="absolute top-3 right-3 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[0.65rem] font-black uppercase tracking-widest text-white/60">{{ badge.pill }}</span>
@@ -49,7 +49,7 @@
               </div>
             </div>
             <div class="text-3xl font-black text-white ml-4 badge-bounce">{{ counts[badge.tab] || 0 }}</div>
-          </router-link>
+          </Link>
         </div>
       </GlassCard>
     </div>
@@ -58,13 +58,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Store, ClipboardList, LogOut, ShoppingBag, CreditCard, Package, Truck, CheckCircle } from 'lucide-vue-next';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
 
-const router = useRouter();
 const username = ref('Customer');
 const counts = ref({
   to_pay: 0,
@@ -100,7 +99,7 @@ const fetchProfileData = async () => {
 const handleLogout = () => {
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userRole');
-  window.location.href = '/logout';
+  window.location.href = (window.BASE_URL || '/') + 'logout';
 };
 
 onMounted(fetchProfileData);

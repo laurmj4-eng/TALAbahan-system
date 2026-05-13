@@ -5,10 +5,10 @@
         <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">📦 Product Inventory</h1>
         <p class="text-white/50 font-medium">Monitor stock levels and manage fresh seafood products.</p>
       </div>
-      <router-link to="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+      <Link href="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
         <ChevronLeft class="w-5 h-5" />
         <span>Dashboard</span>
-      </router-link>
+      </Link>
     </div>
 
     <GlassCard customClass="p-8 border-white/10">
@@ -85,6 +85,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ChevronLeft, Search, Fish, Loader2, Ghost } from 'lucide-vue-next';
 import GlassCard from '../../components/GlassCard.vue';

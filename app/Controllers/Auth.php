@@ -19,12 +19,9 @@ class Auth extends BaseController
 
     public function verify()
     {
-        // Force CORS headers in the response object directly for this specific method
-        $this->response->setHeader('Access-Control-Allow-Origin', 'https://tal-abahan-system.vercel.app');
-        $this->response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-        $this->response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
-        $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
-
+        // CORS headers are handled in BaseController::initController
+        // but we can ensure they are set correctly here too if needed.
+        
         try {
             // 1. Get POST data
             $email    = strtolower(trim((string)$this->request->getPost('email')));
@@ -114,6 +111,9 @@ class Auth extends BaseController
 
             // 6. Set Session and Redirect
             if ($user) {
+                // Ensure session is started
+                $session = session();
+                
                 $sessionData =[
                     'user_id'    => $user['id'],
                     'username'   => $user['username'],
@@ -121,7 +121,10 @@ class Auth extends BaseController
                     'role'       => strtolower($user['role']),
                     'isLoggedIn' => true,
                 ];
-                session()->set($sessionData);
+                $session->set($sessionData);
+                
+                // Save session explicitly to ensure persistence before redirect response
+                session_write_close();
 
                 $role = strtolower($user['role']);
                 $redirectUrl = $this->_getRedirectUrl($role);
@@ -130,12 +133,14 @@ class Auth extends BaseController
                     'status'       => 'success', 
                     'message'      => 'Login successful.',
                     'role'         => $role,
+                    'username'     => $user['username'],
                     'data'         => [
                         'redirect'     => $redirectUrl,
                         'trust_device' => ($remember === 'true'),
                     ],
                     'redirect'     => $redirectUrl,
-                    'trust_device' => ($remember === 'true') 
+                    'trust_device' => ($remember === 'true'),
+                    'token'        => csrf_hash()
                 ])->setStatusCode(200);
             }
 
