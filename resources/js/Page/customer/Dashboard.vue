@@ -246,13 +246,54 @@
               </div>
               <div class="group space-y-2">
                 <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4 group-focus-within:text-cyan-400 transition-colors">Contact Number</label>
-                <div class="relative">
-                  <input v-model="deliveryDetails.phone" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="09XXXXXXXXX">
-                </div>
-              </div>
-            </div>
+                <div class="relative flex gap-2">
+                  <div class="relative flex-1">
+                    <input v-model="deliveryDetails.phone" :readonly="isPhoneVerified" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="09XXXXXXXXX">
+                    <div v-if="isPhoneVerified" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400">
+                      <CheckCircle class="w-5 h-5" />
+                    </div>
+                  </div>
+                  <button 
+                    v-if="!isPhoneVerified && !showOtpInput"
+                    @click="sendVerificationCode" 
+                    :disabled="isSendingCode || !deliveryDetails.phone"
+                    class="px-4 sm:px-6 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl sm:rounded-2xl font-black text-[0.6rem] sm:text-xs uppercase tracking-widest hover:bg-cyan-500/20 disabled:opacity-50 transition-all whitespace-now8"
+                  >
+                     <Loader2 v-if="isSendingCode" class="w-4 h-4 animate-spin mx-auto" />
+                     <span v-else>Send Code</span>
+                   </button>
+                 </div>
+                 <p class="text-[0.6rem] font-bold text-cyan-400/60 mt-2 ml-1 leading-tight flex items-start gap-2 italic">
+                   <Clock class="w-3 h-3 mt-0.5 flex-shrink-0" />
+                   <span>Mobile number must be working because we will call you within 10-15 minutes to verify your order.</span>
+                 </p>
+               </div>
+             </div>
 
-            <!-- Auto-detection Section -->
+            <!-- OTP Verification Section -->
+            <div v-if="showOtpInput && !isPhoneVerified" class="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] space-y-4 animate-slide-in-right">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                  <Zap class="w-4 h-4 text-cyan-400" />
+                </div>
+                <h4 class="text-xs font-black text-white uppercase tracking-wider">Verify Phone</h4>
+              </div>
+              
+              <div class="flex gap-2">
+                <input v-model="otpCode" type="text" maxlength="6" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all text-center tracking-[0.5em]" placeholder="000000">
+                <button 
+                  @click="verifyOtpCode" 
+                  :disabled="isVerifyingCode || otpCode.length < 6"
+                  class="px-6 bg-cyan-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-widest hover:bg-cyan-300 disabled:opacity-50 transition-all"
+                >
+                  <Loader2 v-if="isVerifyingCode" class="w-4 h-4 animate-spin mx-auto" />
+                  <span v-else>Verify</span>
+                </button>
+              </div>
+              <p v-if="phoneError" class="text-[0.65rem] font-bold text-rose-400">{{ phoneError }}</p>
+            </div>
+ 
+             <!-- Auto-detection Section -->
             <div v-if="ship_to_all !== '1'" class="space-y-4 sm:space-y-6">
               <button @click="getLocation" :disabled="isDetectingLocation" class="w-full py-4 sm:py-5 bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50 group border-dashed hover:border-solid hover:border-cyan-500/30">
                 <Loader2 v-if="isDetectingLocation" class="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-cyan-400" />
@@ -428,6 +469,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Recaptcha Container (Invisible badge will be managed by Firebase) -->
+    <div id="recaptcha-container"></div>
   </CustomerLayout>
 </template>
 
@@ -435,6 +479,12 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+  getAuth, 
+  RecaptchaVerifier, 
+  signInWithPhoneNumber 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   ShoppingCart, 
   Star, 
@@ -492,6 +542,18 @@ const isFetchingQuote = ref(false);
 const isPlacingOrder = ref(false);
 const quote = ref(null);
 
+// Phone Verification State
+const isPhoneVerified = ref(false);
+const isSendingCode = ref(false);
+const isVerifyingCode = ref(false);
+const otpCode = ref('');
+const verificationId = ref(null);
+const phoneError = ref('');
+const showOtpInput = ref(false);
+let auth = null;
+let recaptchaVerifier = null;
+let confirmationResult = null;
+
 const deliveryDetails = ref({
   name: username.value,
   phone: localStorage.getItem('quick_checkout_phone') || '',
@@ -535,6 +597,10 @@ const canGoNext = computed(() => {
   if (currentStep.value === 1) return cartItems.value.length > 0;
   if (currentStep.value === 2) {
     const { name, phone, barangay } = deliveryDetails.value;
+    
+    // Check if phone is verified
+    if (!isPhoneVerified.value) return false;
+
     if (props.ship_to_all === '1') {
       return name && phone && barangay && deliveryDetails.value.city && deliveryDetails.value.street;
     }
@@ -647,6 +713,85 @@ const removeFromCart = (id) => {
 
 const saveCart = () => {
   localStorage.setItem('cartItems', JSON.stringify(cartItems.value));
+};
+
+// Phone Verification Functions
+const initRecaptcha = () => {
+  if (recaptchaVerifier) return;
+  try {
+    recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      'size': 'invisible',
+      'callback': (response) => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+      }
+    });
+  } catch (error) {
+    console.error("Recaptcha init error:", error);
+  }
+};
+
+const sendVerificationCode = async () => {
+  if (!deliveryDetails.value.phone || deliveryDetails.value.phone.length < 10) {
+    phoneError.value = "Please enter a valid phone number.";
+    return;
+  }
+
+  isSendingCode.value = true;
+  phoneError.value = '';
+  
+  try {
+    initRecaptcha();
+    let phone = deliveryDetails.value.phone;
+    // Format phone number to E.164 if needed (assuming PH +63)
+    if (phone.startsWith('0')) {
+      phone = '+63' + phone.substring(1);
+    } else if (!phone.startsWith('+')) {
+      phone = '+63' + phone;
+    }
+
+    confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+    showOtpInput.value = true;
+    alert("Verification code sent to " + phone);
+  } catch (error) {
+    console.error("SMS error:", error);
+    
+    if (error.code === 'auth/billing-not-enabled') {
+      phoneError.value = "SMS verification requires a Firebase Billing account. For development, use a Test Phone Number (e.g., +639123456789 with code 123456) in the Firebase Console.";
+    } else if (error.code === 'auth/too-many-requests') {
+      phoneError.value = "Too many requests. Please try again later.";
+    } else {
+      phoneError.value = error.message || "Failed to send SMS. Please try again.";
+    }
+
+    if (recaptchaVerifier) {
+      recaptchaVerifier.clear();
+      recaptchaVerifier = null;
+    }
+  } finally {
+    isSendingCode.value = false;
+  }
+};
+
+const verifyOtpCode = async () => {
+  if (!otpCode.value || otpCode.value.length < 6) {
+    phoneError.value = "Please enter a valid 6-digit code.";
+    return;
+  }
+
+  isVerifyingCode.value = true;
+  phoneError.value = '';
+
+  try {
+    const result = await confirmationResult.confirm(otpCode.value);
+    isPhoneVerified.value = true;
+    showOtpInput.value = false;
+    alert("Phone number verified successfully!");
+  } catch (error) {
+    console.error("OTP error:", error);
+    phoneError.value = "Invalid or expired code. Please try again.";
+  } finally {
+    isVerifyingCode.value = false;
+  }
 };
 
 // Scroll Lock Logic
@@ -821,6 +966,16 @@ const fetchProducts = async () => {
 onMounted(() => {
   fetchProducts();
   window.addEventListener('open-customer-cart', openCart);
+
+  // Initialize Firebase
+  if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
+    try {
+      const app = initializeApp(window.FIREBASE_CONFIG);
+      auth = getAuth(app);
+    } catch (err) {
+      console.error("Firebase init error:", err);
+    }
+  }
   
   // Load saved cart if any
   const savedCart = JSON.parse(localStorage.getItem('cartItems') || '[]');
