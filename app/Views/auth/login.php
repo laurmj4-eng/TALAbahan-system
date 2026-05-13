@@ -322,7 +322,7 @@ autocomplete="current-password" required>
     </div>
 
     <!-- reCAPTCHA Container -->
-    <div id="captcha-container" style="margin-bottom: 15px; display: flex; justify-content: center; height: 80px; overflow: hidden;">
+    <div id="captcha-container" style="margin-bottom: 15px; display: flex; justify-content: center; height: 80px; position: relative; z-index: 10;">
         <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" style="transition: opacity 0.3s ease;"></div>
     </div>
 

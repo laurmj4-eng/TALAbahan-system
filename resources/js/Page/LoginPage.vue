@@ -42,7 +42,7 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] overflow-hidden rounded-xl scale-90 md:scale-100"></div>
+          <div id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] rounded-xl relative z-10"></div>
 
           <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-4 rounded-xl text-xs font-bold mb-4">
             {{ error }}
