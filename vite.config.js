@@ -12,6 +12,11 @@ export default defineConfig({
   },
   server: {
     origin: 'http://localhost:5173',
+    host: 'localhost',
+    strictPort: true,
+    hmr: {
+      host: 'localhost',
+    },
   },
   build: {
     outDir: 'public/build',

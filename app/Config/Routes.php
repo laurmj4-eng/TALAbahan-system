@@ -11,13 +11,13 @@ use CodeIgniter\Router\RouteCollection;
 $routes->post('admin/chatbot/process', '\App\Controllers\Admin\Chatbot::process');
 $routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::deleteHistory', ['filter' => 'csrf']);
 // Removed 'throttle' from here to fix the error
-$routes->get('/', 'Home::spa');
-$routes->get('login', 'Home::spa');
-$routes->get('register', 'Home::spa');
+$routes->get('/', 'Home::index');
+$routes->get('login', 'Home::login');
+$routes->get('register', 'Home::register');
 $routes->get('admin/dashboard', '\App\Controllers\Admin\Dashboard::index');
-$routes->get('admin/(:any)', 'Home::spa');
-$routes->get('staff/(:any)', 'Home::spa');
-$routes->get('customer/(:any)', 'Home::spa');
+$routes->get('admin/(:any)', 'Home::index');
+$routes->get('staff/(:any)', 'Home::index');
+$routes->get('customer/(:any)', 'Home::index');
 
 // --- API ROUTES (JSON) ---
 $routes->options('api/(:any)', function() {

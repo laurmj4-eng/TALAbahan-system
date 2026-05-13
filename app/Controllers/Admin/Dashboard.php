@@ -17,22 +17,29 @@ class Dashboard extends BaseController
         }
 
         $userModel = new UserModel();
+        $orderModel = new OrderModel();
         
         $data = [
             'title'    => 'Admin Dashboard',
             'username' => session()->get('username'),
-            // 'users'    => $userModel->findAll(), // Keep it simple for Inertia test
+            'cards'    => [],
+            'chart'    => [
+                'labels' => [],
+                'sales'  => [],
+            ],
         ];
 
-        return inertia('admin/Dashboard', $data);
-    }
-        foreach ($data['chart']['dates'] as $idx => $date) {
-            $data['chart']['sales'][$idx] = round($orderModel->getDailyRevenue($date), 2);
+        // 7-day trend
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} day"));
+            $data['chart']['labels'][] = date('M d', strtotime($date));
+            $data['chart']['sales'][] = round($orderModel->getDailyRevenue($date), 2);
         }
 
         $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
         $data['cards']['today_profit'] = round((float) $orderModel->getTodayProfit(), 2);
         
+        $data['cards']['profit_margin'] = 0;
         if ($data['cards']['today_sales'] > 0) {
             $data['cards']['profit_margin'] = round(($data['cards']['today_profit'] / $data['cards']['today_sales']) * 100, 1);
         }
@@ -45,7 +52,6 @@ class Dashboard extends BaseController
             log_message('error', 'Dashboard Ledger Fetch Error: ' . $e->getMessage());
             $data['ledger_history'] = [];
         }
-        // ----------------------------------
 
         // Calculate Growth Metric (Today vs Yesterday)
         $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
@@ -53,7 +59,7 @@ class Dashboard extends BaseController
         if ($yesterdaySales > 0) {
             $growth = (($data['cards']['today_sales'] - $yesterdaySales) / $yesterdaySales) * 100;
         } elseif ($data['cards']['today_sales'] > 0) {
-            $growth = 100; // 100% growth if yesterday was 0
+            $growth = 100;
         }
         $data['cards']['sales_growth'] = round($growth, 1);
 
@@ -65,7 +71,7 @@ class Dashboard extends BaseController
             ->groupEnd()
             ->countAllResults();
 
-        // --- ORDER AGING ALERTS (Stale Orders > 24 Hours) ---
+        // --- ORDER AGING ALERTS ---
         $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
         $data['stale_orders'] = $orderModel
             ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
@@ -75,7 +81,7 @@ class Dashboard extends BaseController
         
         $data['cards']['stale_orders_count'] = count($data['stale_orders']);
 
-        // Top 3 Selling Products (Last 30 Days)
+        // Top 3 Selling Products
         $db = \Config\Database::connect();
         $data['top_products'] = $db->table('order_items oi')
             ->select('product_name, SUM(quantity) as total_sold')
@@ -88,11 +94,9 @@ class Dashboard extends BaseController
             ->get()
             ->getResultArray();
 
-        // Recent Activity Feed (Orders + New Users + Stock)
+        // Recent Activity Feed
         $activities = [];
-
         try {
-            // 1. Get recent order status changes
             $recentOrders = $db->table('order_status_history h')
                 ->select('h.*, o.transaction_code')
                 ->join('orders o', 'o.id = h.order_id')
@@ -111,7 +115,6 @@ class Dashboard extends BaseController
                 ];
             }
 
-            // 2. Get recent stock changes (from products updated_at)
             $recentStock = $db->table('products')
                 ->select('name, current_stock, updated_at')
                 ->where('updated_at >=', date('Y-m-d H:i:s', strtotime('-24 hours')))
@@ -130,7 +133,6 @@ class Dashboard extends BaseController
                 ];
             }
 
-            // 3. Get recent user changes
             $recentUsers = $db->table('users')
                 ->select('username, role, email')
                 ->orderBy('id', 'DESC')
@@ -142,13 +144,12 @@ class Dashboard extends BaseController
                 $activities[] = [
                     'title' => 'New User Access',
                     'desc'  => "{$ru['username']} ({$ru['role']}) added to the system.",
-                    'time'  => date('Y-m-d H:i:s'), // Assuming just now if no created_at
+                    'time'  => date('Y-m-d H:i:s'),
                     'icon'  => 'fa-user-plus',
                     'color' => '#fbbf24'
                 ];
             }
 
-            // Sort all activities by time
             usort($activities, function($a, $b) {
                 return strtotime($b['time']) - strtotime($a['time']);
             });
@@ -159,7 +160,7 @@ class Dashboard extends BaseController
             $data['activities'] = [];
         }
 
-        return view('admin/dashboard', $data);
+        return inertia('admin/Dashboard', $data);
     }
 
     public function getTodaySalesData()

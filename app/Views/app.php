@@ -33,6 +33,6 @@
     <?php endif; ?>
 </head>
 <body class="bg-slate-950 text-white">
-    <?php echo inertia_div(); ?>
+    <?php echo inertia_div($page); ?>
 </body>
 </html>

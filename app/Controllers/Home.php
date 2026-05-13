@@ -4,13 +4,18 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
-    public function index(): string
+    public function index()
     {
-        return view('welcome_message');
+        return inertia('LoginPage'); // Default to login or a LandingPage if you have one
     }
 
-    public function spa()
+    public function login()
     {
-        return view('spa');
+        return inertia('LoginPage');
+    }
+
+    public function register()
+    {
+        return inertia('RegisterPage');
     }
 }
