@@ -10,15 +10,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, './resources/js'),
     },
   },
+  server: {
+    origin: 'http://localhost:5173',
+  },
   build: {
-    outDir: 'dist',
+    outDir: 'public/build',
     emptyOutDir: true,
+    manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
+      input: path.resolve(__dirname, 'resources/js/main.js'),
       output: {
-        entryFileNames: `assets/[name].js`,
+        entryFileNames: `assets/index.js`,
         chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`,
+        assetFileNames: `assets/index.[ext]`,
       },
     },
   },

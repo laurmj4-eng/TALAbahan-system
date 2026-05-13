@@ -14,6 +14,7 @@ $routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::de
 $routes->get('/', 'Home::spa');
 $routes->get('login', 'Home::spa');
 $routes->get('register', 'Home::spa');
+$routes->get('admin/dashboard', '\App\Controllers\Admin\Dashboard::index');
 $routes->get('admin/(:any)', 'Home::spa');
 $routes->get('staff/(:any)', 'Home::spa');
 $routes->get('customer/(:any)', 'Home::spa');

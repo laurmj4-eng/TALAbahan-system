@@ -18,36 +18,14 @@ class Dashboard extends BaseController
 
         $userModel = new UserModel();
         
-        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
-        $db = \Config\Database::connect();
-        $db->query("SET time_zone = '+08:00'");
-        
         $data = [
             'title'    => 'Admin Dashboard',
             'username' => session()->get('username'),
-            'users'    => $userModel->findAll(),
-            'cards'    => [
-                'today_sales'      => 0,
-                'today_orders'     => 0,
-                'today_profit'     => 0,
-                'profit_margin'    => 0,
-            ],
-            'chart'    => [
-                'labels'   => [],
-                'dates'    => [],
-                'sales'    => [],
-            ],
+            // 'users'    => $userModel->findAll(), // Keep it simple for Inertia test
         ];
 
-        // Last 7-day trend chart for owner-friendly monitoring.
-        for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-{$i} day"));
-            $data['chart']['dates'][] = $date;
-            $data['chart']['labels'][] = date('M d', strtotime($date));
-            $data['chart']['sales'][] = 0;
-        }
-
-        $orderModel = new OrderModel();
+        return inertia('admin/Dashboard', $data);
+    }
         foreach ($data['chart']['dates'] as $idx => $date) {
             $data['chart']['sales'][$idx] = round($orderModel->getDailyRevenue($date), 2);
         }
