@@ -14,7 +14,7 @@ class Auth extends BaseController
             return $this->_redirectByRole(session()->get('role'));
         }
 
-        return view('auth/login');
+        return inertia('LoginPage');
     }
 
     public function verify()
@@ -159,7 +159,7 @@ class Auth extends BaseController
     public function register()
     {
         helper(['form']);
-        return view('auth/register'); 
+        return inertia('RegisterPage'); 
     }
 
     public function createAccount()

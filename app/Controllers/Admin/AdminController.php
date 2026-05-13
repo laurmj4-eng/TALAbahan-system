@@ -105,8 +105,8 @@ class AdminController extends BaseController
             log_message('error', 'Admin dashboard error: ' . $e->getMessage());
         }
 
-        // Points to app/Views/admin/dashboard.php
-        return view('admin/dashboard', $data);
+        $data['username'] = session()->get('username');
+        return inertia('admin/Dashboard', $data);
     }
 
     /**
@@ -122,11 +122,11 @@ class AdminController extends BaseController
         $userModel = new UserModel();
         $data = [
             'title' => 'Database Management',
-            'users' => $userModel->findAll() // Fetches all users for the table
+            'users' => $userModel->findAll(),
+            'username' => session()->get('username')
         ];
 
-        // Points to the new separate view: app/Views/admin/user_view.php
-        return view('admin/user_view', $data);
+        return inertia('admin/Users', $data);
     }
 
     /**

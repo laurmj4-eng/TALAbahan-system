@@ -17,11 +17,11 @@ class ProductController extends BaseController
         
         $data = [
             'title'    => 'Daily Seafood Inventory',
-            'products' => $model->getDailyInventory() // Uses the custom method we added to the model
+            'products' => $model->getDailyInventory(),
+            'username' => session()->get('username')
         ];
 
-        // Points to app/Views/admin/productview.php
-        return view('admin/productview', $data);
+        return inertia('admin/Products', $data);
     }
 
     /**

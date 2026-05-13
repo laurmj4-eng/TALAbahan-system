@@ -79,7 +79,7 @@ class Dashboard extends BaseController
         $data['chart']['labels'] = $chartLabels;
         $data['chart']['sales'] = $chartSales;
 
-        return view('staff/dashboard', $data);
+        return inertia('staff/Dashboard', $data);
     }
 
     /**

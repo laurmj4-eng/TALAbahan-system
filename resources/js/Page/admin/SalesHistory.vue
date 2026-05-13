@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <AdminLayout :username="username">
     <div class="space-y-8">
       <div>
         <h1 class="text-3xl font-bold text-white">Financial Ledger 📈</h1>
@@ -79,17 +79,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 import { Search, Download } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
 
-const sales = ref([]);
+const props = defineProps({
+  username: String,
+  sales: Array
+});
+
+const localSales = ref([...props.sales]);
 const searchQuery = ref('');
 const startDate = ref('');
 const endDate = ref('');
 const isLoading = ref(false);
+
+watch(() => props.sales, (newSales) => {
+  localSales.value = [...newSales];
+}, { deep: true });
 
 const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -98,34 +107,27 @@ const formatNumber = (num) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
   const date = new Date(dateStr);
-  return date.toLocaleString('en-PH', { 
+  return date.toLocaleDateString('en-US', { 
     month: 'short', 
-    day: '2-digit', 
+    day: 'numeric', 
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
+    minute: '2-digit'
   });
 };
-
-const filteredSales = computed(() => {
-  if (!searchQuery.value) return sales.value;
-  const q = searchQuery.value.toLowerCase();
-  return sales.value.filter(s => 
-    s.transaction_code.toLowerCase().includes(q) || 
-    s.items_summary.toLowerCase().includes(q)
-  );
-});
 
 const fetchSales = async () => {
   isLoading.value = true;
   try {
-    let url = '/api/admin/getHistory';
-    if (startDate.value && endDate.value) {
-      url += `?start_date=${startDate.value}&end_date=${endDate.value}`;
+    const response = await axios.get('/api/admin/getHistory', {
+      params: {
+        start_date: startDate.value,
+        end_date: endDate.value
+      }
+    });
+    if (Array.isArray(response.data)) {
+      localSales.value = response.data;
     }
-    const response = await axios.get(url);
-    sales.value = response.data.data || response.data;
   } catch (error) {
     console.error('Failed to fetch sales history:', error);
   } finally {
@@ -133,34 +135,16 @@ const fetchSales = async () => {
   }
 };
 
-const exportCSV = () => {
-  if (sales.value.length === 0) return;
-  
-  const headers = ['TRANSACTION CODE', 'DATE & TIME', 'ITEMS PURCHASED', 'TOTAL REVENUE'];
-  const rows = sales.value.map(s => [
-    s.transaction_code,
-    formatDate(s.created_at),
-    s.items_summary.replace(/"/g, '""'),
-    s.total_amount
-  ]);
-
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(r => r.map(cell => `"${cell}"`).join(','))
-  ].join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `sales_history_${new Date().toISOString().split('T')[0]}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-onMounted(() => {
-  fetchSales();
+const filteredSales = computed(() => {
+  if (!searchQuery.value) return localSales.value;
+  const q = searchQuery.value.toLowerCase();
+  return localSales.value.filter(s => 
+    s.transaction_code.toLowerCase().includes(q) || 
+    (s.items_summary && s.items_summary.toLowerCase().includes(q))
+  );
 });
+
+const exportCSV = () => {
+  window.location.href = `/api/admin/getHistory?export=csv&start_date=${startDate.value}&end_date=${endDate.value}`;
+};
 </script>

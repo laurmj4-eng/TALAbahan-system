@@ -24,7 +24,7 @@ class ShippingController extends BaseController
             'ship_to_all'       => $settingsModel->getSetting('ship_to_all', '0')
         ];
 
-        return view('admin/shipping_view', $data);
+        return inertia('admin/Shipping', $data);
     }
 
     /**

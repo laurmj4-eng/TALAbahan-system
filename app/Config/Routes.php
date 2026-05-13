@@ -67,6 +67,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->get('deleteUser/(:num)', 'AdminController::deleteUser/$1');
     
     // --- POS & Sales ---
+    $routes->get('pos', 'PosController::index');
+    $routes->get('sales', 'SalesController::index');
     $routes->get('getProducts', 'PosController::getProducts');
     $routes->post('checkout', 'PosController::checkout', ['filter' => 'csrf']);
     $routes->get('getHistory', 'PosController::getHistory');

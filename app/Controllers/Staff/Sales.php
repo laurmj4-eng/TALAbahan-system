@@ -23,7 +23,7 @@ class Sales extends BaseController
             'sales'    => $salesModel->orderBy('created_at', 'DESC')->findAll(),
         ];
 
-        return view('staff/sales_history', $data);
+        return inertia('staff/SalesHistory', $data);
     }
 
     /**

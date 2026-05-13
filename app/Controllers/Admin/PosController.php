@@ -9,6 +9,25 @@ use App\Models\OrderModel;
 
 class PosController extends BaseController
 {
+    public function index()
+    {
+        if (session()->get('role') !== 'admin') {
+            return redirect()->to('/login');
+        }
+
+        $productModel = new ProductModel();
+        $userModel = new \App\Models\UserModel();
+        
+        $data = [
+            'title'     => 'TALAbahan Terminal',
+            'username'  => session()->get('username'),
+            'products'  => $productModel->findAll(),
+            'customers' => $userModel->where('role', 'customer')->findAll(),
+        ];
+
+        return inertia('admin/Pos', $data);
+    }
+
     // 1. Get products for the POS screen
     public function getProducts()
     {

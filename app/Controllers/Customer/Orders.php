@@ -36,7 +36,7 @@ class Orders extends BaseController
         $counts = $dashboard->getCustomerOrderCounts($customerName);
         $orders = $this->getOrdersForCustomerByTab($customerName, $tab);
 
-        return view('customer/order_items', [
+        return inertia('customer/OrderItems', [
             'title' => 'Order Center',
             'username' => $customerName,
             'orders' => $orders,

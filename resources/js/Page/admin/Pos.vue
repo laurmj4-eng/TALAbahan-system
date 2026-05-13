@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <AdminLayout :username="username">
     <div class="space-y-8">
       <h2 class="text-3xl font-bold text-white">TALAbahan Terminal</h2>
       
@@ -14,10 +14,10 @@
           >
             <span class="text-5xl block mb-4 group-hover:scale-110 transition-transform">{{ product.icon || '🐟' }}</span>
             <div class="font-bold text-white mb-2">{{ product.name }}</div>
-            <div class="text-emerald-400 font-black text-lg">₱{{ formatNumber(product.price) }}</div>
+            <div class="text-emerald-400 font-black text-lg">₱{{ formatNumber(product.selling_price || product.price) }}</div>
           </GlassCard>
           <div v-if="products.length === 0" class="col-span-full py-24 text-center text-white/20 italic">
-            Loading products...
+            No products available.
           </div>
         </div>
 
@@ -44,8 +44,8 @@
             </div>
             <div v-for="item in cart" :key="item.id" class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
               <div class="flex-1">
-                <div class="font-bold text-sm text-white">{{ item.icon }} {{ item.name }}</div>
-                <div class="text-xs text-emerald-400">₱{{ formatNumber(item.price) }}</div>
+                <div class="font-bold text-sm text-white">{{ item.icon || '🐟' }} {{ item.name }}</div>
+                <div class="text-xs text-emerald-400">₱{{ formatNumber(item.selling_price || item.price) }}</div>
               </div>
               <div class="flex items-center gap-3">
                 <button @click="changeQty(item, -1)" class="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-red-500/20 rounded-lg text-white transition-colors">-</button>
@@ -101,63 +101,22 @@
         </GlassCard>
       </div>
     </div>
-
-    <!-- Receipt Modal -->
-    <div v-if="receipt" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-      <div class="bg-white text-slate-900 w-full max-w-sm p-8 rounded-sm font-mono shadow-2xl">
-        <div class="text-center border-b-2 border-dashed border-slate-200 pb-6 mb-6">
-          <h1 class="text-2xl font-black tracking-widest">TALAbahan</h1>
-          <p class="text-[10px] mt-1 text-slate-500 uppercase">Seafood & Grill Terminal</p>
-          <p class="text-[10px] text-slate-400 mt-1">{{ receipt.date }}</p>
-        </div>
-        
-        <div class="space-y-2 mb-6">
-          <div v-for="item in receipt.items" :key="item.id" class="flex justify-between text-xs">
-            <span>{{ item.quantity }}x {{ item.product_name }}</span>
-            <span>₱{{ formatNumber(item.subtotal) }}</span>
-          </div>
-        </div>
-
-        <div class="border-t border-dashed border-slate-200 pt-4 space-y-2">
-          <div class="flex justify-between font-bold">
-            <span>TOTAL</span>
-            <span>₱{{ formatNumber(receipt.total_amount) }}</span>
-          </div>
-          <div v-if="receipt.discount > 0" class="flex justify-between text-slate-500 text-xs italic">
-            <span>DISCOUNT</span>
-            <span>-₱{{ formatNumber(receipt.discount) }}</span>
-          </div>
-        </div>
-
-        <div class="border-t border-dashed border-slate-200 mt-6 pt-4">
-          <div class="flex justify-between text-[10px] text-slate-400 uppercase tracking-widest">
-            <span>TRANSACTION</span>
-            <span class="font-bold text-slate-600">{{ receipt.transaction_code }}</span>
-          </div>
-        </div>
-
-        <div class="text-center mt-8 pt-6 border-t-2 border-dashed border-slate-200">
-          <p class="text-xs font-bold uppercase tracking-widest">Thank you for dining!</p>
-          <p class="text-[10px] text-slate-400 mt-1">Visit us again soon 🌊</p>
-        </div>
-
-        <button @click="receipt = null" class="w-full mt-8 py-3 bg-slate-900 text-white font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors">
-          Close & New Order
-        </button>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import { ShoppingCart } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
 
-const products = ref([]);
-const customers = ref([]);
+const props = defineProps({
+  username: String,
+  products: Array,
+  customers: Array
+});
+
 const cart = ref([]);
 const customerName = ref('Walk-in Customer');
 const voucherCode = ref('');
@@ -165,7 +124,7 @@ const voucherStatus = ref(null);
 const isProcessing = ref(false);
 const receipt = ref(null);
 
-const subtotal = computed(() => cart.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
+const subtotal = computed(() => cart.value.reduce((sum, item) => sum + ((item.selling_price || item.price) * item.qty), 0));
 const discount = ref(0);
 const tax = computed(() => subtotal.value * 0.12);
 const total = computed(() => subtotal.value + tax.value - discount.value);
@@ -205,26 +164,24 @@ const applyVoucher = async () => {
 };
 
 const processCheckout = async () => {
-  if (cart.value.length === 0) return;
+  if (cart.length === 0) return;
   isProcessing.value = true;
 
   try {
-    const formData = new FormData();
-    formData.append('items', JSON.stringify(cart.value));
-    formData.append('voucher_code', voucherCode.value);
-    formData.append('customer_name', customerName.value);
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+    const payload = {
+      items: cart.value,
+      voucher_code: voucherCode.value,
+      customer_name: customerName.value
+    };
 
-    const response = await axios.post('/api/admin/checkout', formData);
+    const response = await axios.post('/api/admin/checkout', payload);
     if (response.data.status === 'success') {
       receipt.value = response.data.data;
       cart.value = [];
       voucherCode.value = '';
       voucherStatus.value = null;
       discount.value = 0;
+      alert('Checkout successful!');
     } else {
       alert(response.data.message || 'Checkout failed');
     }
@@ -235,25 +192,4 @@ const processCheckout = async () => {
     isProcessing.value = false;
   }
 };
-
-const fetchData = async () => {
-  try {
-    const [pRes, uRes] = await Promise.all([
-      axios.get('/api/admin/getProducts'),
-      axios.get('/api/admin/users')
-    ]);
-    
-    // The backend returns { status: 'success', data: [...] }
-    products.value = pRes.data.data || [];
-    
-    const usersData = uRes.data.data || [];
-    customers.value = Array.isArray(usersData) ? usersData.filter(u => u.role === 'customer') : [];
-  } catch (error) {
-    console.error('Failed to fetch POS data:', error);
-  }
-};
-
-onMounted(() => {
-  fetchData();
-});
 </script>

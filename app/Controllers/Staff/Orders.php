@@ -24,7 +24,7 @@ class Orders extends BaseController
             'orders'   => $orderModel->getOrdersWithItemCount(),
         ];
 
-        return view('staff/orders', $data);
+        return inertia('staff/Orders', $data);
     }
 
     /**

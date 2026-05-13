@@ -20,7 +20,7 @@ class VoucherController extends BaseController
             'vouchers' => $model->orderBy('created_at', 'DESC')->findAll(),
         ];
 
-        return view('admin/vouchers_view', $data);
+        return inertia('admin/Vouchers', $data);
     }
 
     /**

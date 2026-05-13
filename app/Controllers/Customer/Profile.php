@@ -16,7 +16,7 @@ class Profile extends BaseController
         $dashboard = new Dashboard();
         $counts = $dashboard->getCustomerOrderCounts($customerName);
 
-        return view('customer/profile', [
+        return inertia('customer/Profile', [
             'title' => 'My Profile',
             'username' => $customerName,
             'counts' => $counts,

@@ -64,8 +64,8 @@ class Dashboard extends BaseController
             'isAJAX'            => $this->request->isAJAX(),
         ];
 
-        // 5. Load the customer dashboard view
-        return view('customer/dashboard', $data);
+        // 5. Load the customer dashboard view using Inertia
+        return inertia('customer/Dashboard', $data);
     }
 
     public function getData()

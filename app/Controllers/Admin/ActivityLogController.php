@@ -33,9 +33,10 @@ class ActivityLogController extends BaseController
             'title' => 'System Activity Monitor',
             'logs'  => $logs,
             'pager' => $logModel->pager,
+            'username' => session()->get('username')
         ];
 
-        return view('admin/activity/index', $data);
+        return inertia('admin/Activity', $data);
     }
 
     /**
@@ -86,9 +87,10 @@ class ActivityLogController extends BaseController
             'title' => 'User Timeline: ' . ($user['username'] ?? 'Unknown'),
             'user'  => $user,
             'logs'  => $logs,
+            'username' => session()->get('username')
         ];
 
-        return view('admin/activity/timeline', $data);
+        return inertia('admin/UserTimeline', $data);
     }
 
     /**

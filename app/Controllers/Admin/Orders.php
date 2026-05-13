@@ -28,13 +28,15 @@ class Orders extends BaseController
             'pager'  => $model->pager,
         ];
 
-        // We need to inject the item count for each order since we are using standard paginate()
+        // We need to inject the item count for each order
         foreach ($data['orders'] as &$o) {
             $db = db_connect();
             $o['item_count'] = $db->table('order_items')->where('order_id', $o['id'])->countAllResults();
         }
 
-        return view('admin/orders_standalone', $data);
+        $data['username'] = session()->get('username');
+
+        return inertia('admin/Orders', $data);
     }
 
     /**
@@ -90,7 +92,10 @@ class Orders extends BaseController
             ->get()
             ->getResultArray();
 
-        return view('admin/order_items_view', ['orderItems' => $rows]);
+        return inertia('admin/OrderItems', [
+            'orderItems' => $rows,
+            'username' => session()->get('username')
+        ]);
     }
 
     /**

@@ -23,7 +23,7 @@ class Products extends BaseController
             'products' => $productModel->getWithCategory(),
         ];
 
-        return view('staff/products', $data);
+        return inertia('staff/Products', $data);
     }
 
     /**
