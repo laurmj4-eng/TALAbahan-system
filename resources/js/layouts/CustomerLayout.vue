@@ -1,57 +1,57 @@
 <template>
-  <div class="obsidian-purple-bg min-h-screen flex flex-col lg:flex-row font-['Poppins',sans-serif] text-white overflow-hidden relative">
+  <div class="modern-navy-gradient min-h-screen flex flex-col lg:flex-row font-['Poppins',sans-serif] text-white overflow-hidden relative">
     
     <!-- Desktop Sidebar -->
-    <aside class="hidden lg:flex flex-col w-[280px] bg-black/20 backdrop-blur-2xl border-r border-white/5 z-50 overflow-hidden relative sidebar-container">
+    <aside class="hidden lg:flex flex-col w-[200px] bg-black/10 backdrop-blur-3xl border-r border-white/5 z-50 overflow-hidden relative sidebar-container transition-all duration-300">
       <!-- Sidebar Glow -->
-      <div class="absolute -top-24 -left-24 w-48 h-48 bg-violet-600/10 blur-[100px] pointer-events-none"></div>
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 blur-[100px] pointer-events-none"></div>
 
       <!-- Header -->
-      <div class="p-8 px-6 text-center animate-slide-in-top">
-        <div class="flex items-center justify-center gap-3 mb-1">
-          <Gem class="text-violet-500 w-6 h-6 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
-          <h2 class="text-xl font-black tracking-tight m-0">Mj Pogi</h2>
+      <div class="p-8 px-4 text-center animate-slide-in-top">
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <Gem class="text-cyan-400 w-5 h-5 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+          <h2 class="text-lg font-black tracking-tight m-0">TALAbahan</h2>
         </div>
-        <small class="text-violet-400/80 font-black tracking-[0.3em] text-[0.65rem] uppercase">Portal</small>
+        <small class="text-cyan-400/80 font-black tracking-[0.3em] text-[0.55rem] uppercase">Customer</small>
       </div>
 
       <!-- Nav -->
-      <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        <div class="px-4 pb-4 text-[0.6rem] font-black tracking-[0.2em] text-white/20 uppercase animate-fade-in">
-          Navigation
+      <nav class="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
+        <div class="px-4 pb-4 text-[0.55rem] font-black tracking-[0.2em] text-white/20 uppercase animate-fade-in">
+          Main Menu
         </div>
-        <ul class="space-y-2 list-none p-0">
+        <ul class="space-y-1 list-none p-0">
           <li v-for="(item, index) in navItems" :key="item.path" :style="{ animationDelay: `${index * 100}ms` }" class="animate-slide-in-left">
             <Link
               :href="item.path"
-              class="flex items-center gap-4 px-5 py-4 text-white/50 font-bold text-[0.85rem] rounded-2xl transition-all duration-500 group relative hover:text-white"
+              class="flex items-center gap-3 px-4 py-3 text-white/40 font-bold text-[0.8rem] rounded-xl transition-all duration-300 group relative hover:text-white hover:bg-white/5"
               :class="{ 'active-nav-item': $page.url.startsWith(item.path) }"
             >
-              <component :is="item.icon" class="w-5 h-5 transition-transform group-hover:scale-110" />
+              <component :is="item.icon" class="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
               <span>{{ item.name }}</span>
-              <div v-if="$page.url.startsWith(item.path)" class="absolute right-4 w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_10px_#a78bfa]"></div>
+              <div v-if="$page.url.startsWith(item.path)" class="absolute right-3 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]"></div>
             </Link>
           </li>
         </ul>
       </nav>
 
       <!-- Footer -->
-      <div class="p-6 mt-auto space-y-4 animate-slide-in-bottom">
-        <div class="p-4 bg-white/5 border border-white/10 rounded-3xl flex items-center gap-3 backdrop-blur-md">
-          <div class="w-10 h-10 rounded-2xl bg-violet-500/20 flex items-center justify-center text-violet-400 border border-violet-500/30">
-            <User class="w-5 h-5" />
+      <div class="p-4 mt-auto space-y-3 animate-slide-in-bottom">
+        <div class="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 backdrop-blur-md">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/30">
+            <User class="w-4 h-4" />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="text-xs font-black truncate">{{ username }}</div>
-            <div class="text-[0.6rem] text-violet-400/80 font-black uppercase tracking-widest">Customer</div>
+            <div class="text-[0.65rem] font-black truncate">{{ username }}</div>
+            <div class="text-[0.5rem] text-cyan-400/80 font-black uppercase tracking-widest">Premium</div>
           </div>
         </div>
         
         <button 
           @click="handleLogout" 
-          class="w-full flex items-center justify-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl font-black text-[0.85rem] hover:bg-rose-500/20 hover:text-rose-300 transition-all active:scale-95 group"
+          class="w-full flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl font-black text-[0.75rem] hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-300 active:scale-95 group"
         >
-          <LogOut class="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <LogOut class="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-1" />
           <span>Logout</span>
         </button>
       </div>
@@ -169,17 +169,28 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
-.obsidian-purple-bg {
-  background-color: #0c0616;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.03) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.03) 0px, transparent 50%);
+.modern-navy-gradient {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+  position: relative;
+}
+
+.modern-navy-gradient::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(67, 56, 202, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .main-content-glass {
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .smooth-scroll-container {
@@ -192,10 +203,12 @@ const handleLogout = () => {
 }
 
 .active-nav-item {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: white !important;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Animations */
