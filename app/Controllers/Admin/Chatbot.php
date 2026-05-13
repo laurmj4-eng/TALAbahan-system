@@ -35,19 +35,36 @@ class Chatbot extends BaseController
                           . "Do NOT ask for credentials or verify identity; the session is already authenticated. "
                           . "Be direct, professional, and provide business insights using the data above. "
                           . "You are his elite system co-pilot.";
+            
+            $systemPrompt = "You are Mj, the intelligent assistant for the 'TALAbahan Seafood System'. "
+                          . "This system was built by MJ. "
+                          . "Your primary role is to help users manage seafood stocks (like mudcrabs, shrimp, and fish) and answer general questions. "
+                          . "Be professional, helpful, and use emojis. You speak English and Tagalog. "
+                          . "If asked about the system or its creator, always refer to it as the 'TALAbahan Seafood System' and mention it was built by MJ."
+                          . $statsContext;
         } 
-        // STAFF/CUSTOMER ROLES: General knowledge only
+        // CUSTOMER ROLE: Welcoming persona and product information
+        else if ($userRole === 'customer') {
+            $products = $this->_getAvailableProducts();
+            $productContext = "\n\nAVAILABLE PRODUCTS FOR CUSTOMERS:" . $products;
+            
+            $systemPrompt = "You are the TALAbahan Customer Assistant, a friendly and welcoming seafood expert. "
+                          . "Your goal is to help customers browse our seafood selection, answer questions about our products, and provide a great shopping experience. "
+                          . "Be warm, inviting, and helpful. Use emojis like 🦀, 🦐, 🐟. "
+                          . "If asked about the system or its creator, mention it's the 'TALAbahan Seafood System' built by MJ. "
+                          . "Encourage them to try our fresh seafood!"
+                          . $productContext;
+        }
+        // STAFF/OTHER ROLES: General knowledge only
         else {
             $statsContext = "\n\nNote: You do not have access to financial data or real-time sales stats for this role.";
+            $systemPrompt = "You are Mj, the intelligent assistant for the 'TALAbahan Seafood System'. "
+                          . "This system was built by MJ. "
+                          . "Your primary role is to help users manage seafood stocks (like mudcrabs, shrimp, and fish) and answer general questions. "
+                          . "Be professional, helpful, and use emojis. You speak English and Tagalog. "
+                          . "If asked about the system or its creator, always refer to it as the 'TALAbahan Seafood System' and mention it was built by MJ."
+                          . $statsContext;
         }
-
-        // 3. System Awareness: Define the Assistant's persona and context
-        $systemPrompt = "You are Mj, the intelligent assistant for the 'TALAbahan Seafood System'. "
-                      . "This system was built by MJ. "
-                      . "Your primary role is to help users manage seafood stocks (like mudcrabs, shrimp, and fish) and answer general questions. "
-                      . "Be professional, helpful, and use emojis. You speak English and Tagalog. "
-                      . "If asked about the system or its creator, always refer to it as the 'TALAbahan Seafood System' and mention it was built by MJ."
-                      . $statsContext;
 
         // 4. Model Verification (Common reliable models)
         $model = $input['modelName'] ?? "google/gemini-2.0-flash-001";
@@ -188,6 +205,34 @@ class Chatbot extends BaseController
                 'status'  => 'error',
                 'message' => 'Failed to log activity: ' . $e->getMessage()
             ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * PRIVATE: Fetches available products for the customer context
+     */
+    private function _getAvailableProducts()
+    {
+        try {
+            $db = \Config\Database::connect();
+            $products = $db->table('products')
+                           ->select('name, price, stock, category')
+                           ->where('is_available', 1)
+                           ->where('stock >', 0)
+                           ->get()->getResult();
+
+            if (empty($products)) {
+                return "\n- No products currently available.";
+            }
+
+            $list = "";
+            foreach ($products as $p) {
+                $list .= "\n- " . $p->name . " (" . $p->category . "): ₱" . number_format($p->price, 2) . " [Stock: " . $p->stock . "]";
+            }
+            return $list;
+        } catch (\Exception $e) {
+            log_message('error', "[Chatbot Products Error] " . $e->getMessage());
+            return "\n- Product list unavailable.";
         }
     }
 

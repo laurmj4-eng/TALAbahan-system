@@ -34,7 +34,7 @@
             <img :src="getLogoUrl()" alt="MJ" class="w-full h-full object-cover scale-125" />
           </div>
           <div class="flex flex-col min-w-0">
-            <span class="font-bold text-sm text-white truncate">MJ Assistant</span>
+            <span class="font-bold text-sm text-white truncate">{{ chatbotTitle }}</span>
             <select 
               v-model="selectedModel" 
               class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-[10px] outline-none hover:bg-white/20 transition-colors"
@@ -79,7 +79,7 @@
             :class="[
               'px-4 py-3 text-sm shadow-sm',
               msg.role === 'user' 
-                ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.2rem_1.2rem_0.2rem_1.2rem]' 
+                ? (role === 'admin' ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-[1.2rem_1.2rem_0.2rem_1.2rem]' : 'bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-[1.2rem_1.2rem_0.2rem_1.2rem]')
                 : 'bg-white text-gray-800 border border-gray-100 rounded-[1.2rem_1.2rem_1.2rem_0.2rem]'
             ]"
             v-html="renderMessage(msg.content)"
@@ -91,9 +91,9 @@
         <div v-if="isTyping" class="self-start items-start flex flex-col max-w-[85%]">
           <div class="bg-white border border-gray-100 px-4 py-3 rounded-[1.2rem_1.2rem_1.2rem_0.2rem] shadow-sm">
             <div class="flex gap-1">
-              <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
-              <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+              <div :class="['w-1.5 h-1.5 rounded-full animate-bounce', role === 'admin' ? 'bg-indigo-400' : 'bg-cyan-400']"></div>
+              <div :class="['w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:0.2s]', role === 'admin' ? 'bg-indigo-400' : 'bg-cyan-400']"></div>
+              <div :class="['w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:0.4s]', role === 'admin' ? 'bg-indigo-400' : 'bg-cyan-400']"></div>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@
           <input 
             v-model="userInput"
             type="text"
-            placeholder="Ask MJ anything..."
+            :placeholder="inputPlaceholder"
             class="flex-1 bg-transparent border-none outline-none text-sm text-gray-800"
             :disabled="isTyping"
             ref="inputField"
@@ -113,7 +113,10 @@
           <button 
             type="submit"
             :disabled="!userInput.trim() || isTyping"
-            class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all"
+            :class="[
+              'w-10 h-10 rounded-xl text-white flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all',
+              role === 'admin' ? 'bg-gradient-to-br from-indigo-600 to-violet-600' : 'bg-gradient-to-br from-cyan-600 to-blue-600'
+            ]"
           >
             <Send class="w-5 h-5" />
           </button>
@@ -124,15 +127,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick, watch, computed } from 'vue';
 import { Send, X, Trash2 } from 'lucide-vue-next';
 import axios from 'axios';
+
+const props = defineProps({
+  role: {
+    type: String,
+    default: 'admin'
+  }
+});
 
 const isOpen = ref(false);
 const isTyping = ref(false);
 const userInput = ref('');
 const selectedModel = ref('google/gemini-2.0-flash-001');
-const messages = ref(JSON.parse(localStorage.getItem('myChatbotHistory')) || []);
+
+const historyKey = computed(() => `mj_chat_history_${props.role}`);
+const messages = ref(JSON.parse(localStorage.getItem(historyKey.value)) || []);
+
+const chatbotTitle = computed(() => props.role === 'admin' ? 'MJ Assistant' : 'TALAbahan Assistant');
+const inputPlaceholder = computed(() => props.role === 'admin' ? 'Ask MJ anything...' : 'Ask about our seafood...');
+
 const messageContainer = ref(null);
 const inputField = ref(null);
 
@@ -166,8 +182,10 @@ const closeChat = () => {
 const clearHistory = () => {
   if (confirm('Clear chat history?')) {
     messages.value = [];
-    localStorage.removeItem('myChatbotHistory');
-    addBotMessage('History cleared. How can I help you today? ✨');
+    localStorage.removeItem(historyKey.value);
+    addBotMessage(props.role === 'admin' 
+      ? 'History cleared. How can I help you today? ✨' 
+      : 'History cleared! How can I help you find the best seafood today? 🌊');
   }
 };
 
@@ -182,7 +200,7 @@ const addBotMessage = (content) => {
 };
 
 const saveHistory = () => {
-  localStorage.setItem('myChatbotHistory', JSON.stringify(messages.value));
+  localStorage.setItem(historyKey.value, JSON.stringify(messages.value));
 };
 
 const renderMessage = (content) => {
@@ -293,7 +311,11 @@ const sendMessage = async () => {
 
 onMounted(() => {
   if (messages.value.length === 0) {
-    addBotMessage('Hello! I am Mj. How can I help you today? ✨');
+    if (props.role === 'admin') {
+      addBotMessage('Hello! I am Mj. How can I help you today? ✨');
+    } else {
+      addBotMessage('Welcome to TALAbahan! 🌊 I am your seafood assistant. How can I help you find the freshest catch today? 🦀');
+    }
   }
   scrollToBottom();
 });

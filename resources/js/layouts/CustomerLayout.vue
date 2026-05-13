@@ -115,7 +115,7 @@
         <slot></slot>
       </div>
     </main>
-    <Chatbot />
+    <Chatbot role="customer" />
   </div>
 </template>
 

@@ -89,7 +89,7 @@
         </div>
       </main>
     </div>
-    <Chatbot />
+    <Chatbot role="admin" />
   </div>
 </template>
 
