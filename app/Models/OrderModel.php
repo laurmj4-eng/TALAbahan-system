@@ -23,6 +23,8 @@ class OrderModel extends Model
     protected $allowedFields = [
         'transaction_code',
         'customer_name',
+        'customer_alias',
+        'user_id',
         'total_amount',
         'subtotal_amount',
         'shipping_fee',
@@ -293,6 +295,8 @@ class OrderModel extends Model
         $voucherModel   = new VoucherModel();
 
         $customerName = trim((string) ($payload['customer_name'] ?? 'Walk-in Customer'));
+        $customerAlias = trim((string) ($payload['customer_alias'] ?? ''));
+        $userId        = (int) ($payload['user_id'] ?? 0);
         $cartItems     = $payload['items'] ?? [];
         $voucherCode   = trim((string) ($payload['voucher_code'] ?? ''));
 
@@ -361,6 +365,8 @@ class OrderModel extends Model
             $inserted = $this->insert([
                 'transaction_code' => $transactionCode,
                 'customer_name'    => $customerName === '' ? 'Walk-in Customer' : $customerName,
+                'customer_alias'   => $customerAlias,
+                'user_id'          => $userId > 0 ? $userId : null,
                 'subtotal_amount'  => round($subtotalAmount, 2),
                 'voucher_discount' => $discountAmount,
                 'total_amount'     => $finalAmount,

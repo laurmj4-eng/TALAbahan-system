@@ -96,7 +96,6 @@
         <div class="cart-summary">
             <div class="summary-row"><span>Subtotal</span> <span id="cart-subtotal">₱0.00</span></div>
             <div class="summary-row" id="discount-row" style="display: none;"><span>Discount</span> <span id="cart-discount" class="color-success">-₱0.00</span></div>
-            <div class="summary-row"><span>Tax (12%)</span> <span id="cart-tax">₱0.00</span></div>
             <div class="summary-total"><span>Total</span> <span id="cart-total">₱0.00</span></div>
             
             <div class="voucher-section">
@@ -199,7 +198,6 @@
         if (cart.length === 0) {
             cartDiv.innerHTML = '<div style="color: rgba(255,255,255,0.3); text-align: center; margin-top: 50px;">Select items to add to cart</div>';
             document.getElementById('cart-subtotal').innerText = '₱0.00';
-            document.getElementById('cart-tax').innerText = '₱0.00';
             document.getElementById('cart-total').innerText = '₱0.00';
             document.getElementById('discount-row').style.display = 'none';
             appliedVoucherCode = '';
@@ -224,11 +222,9 @@
         });
 
         // We'll calculate a local estimate for UI, but final calculation happens in Backend
-        const tax = subtotal * 0.12;
-        let total = subtotal + tax;
+        let total = subtotal;
 
         document.getElementById('cart-subtotal').innerText = `₱${subtotal.toFixed(2)}`;
-        document.getElementById('cart-tax').innerText = `₱${tax.toFixed(2)}`;
         document.getElementById('cart-total').innerText = `₱${total.toFixed(2)}`;
     }
 

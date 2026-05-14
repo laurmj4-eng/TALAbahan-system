@@ -56,10 +56,14 @@ class PosController extends BaseController
         if ($itemsRaw) {
             $items = json_decode($itemsRaw, true);
             $customerName = $this->request->getPost('customer_name');
+            $customerAlias = $this->request->getPost('customer_alias');
+            $userId = $this->request->getPost('user_id');
             $voucherCode = $this->request->getPost('voucher_code');
             $payload = [
                 'items' => $items,
                 'customer_name' => $customerName,
+                'customer_alias' => $customerAlias,
+                'user_id' => $userId,
                 'voucher_code' => $voucherCode
             ];
         } else {

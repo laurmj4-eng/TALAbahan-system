@@ -1,11 +1,11 @@
 <template>
   <AdminLayout :username="username">
-    <div class="space-y-8">
-      <h2 class="text-3xl font-bold text-white">TALAbahan Terminal</h2>
+    <div class="space-y-6 md:space-y-8 pb-10">
+      <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">TALAbahan Terminal</h2>
       
-      <div class="flex flex-col lg:flex-row gap-8 items-start">
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
         <!-- Products Grid -->
-        <div class="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="flex-1 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 w-full">
           <GlassCard 
             v-for="product in products" 
             :key="product.id" 
@@ -13,7 +13,7 @@
             customClass="p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all group flex flex-col h-full"
           >
             <!-- Product Image -->
-            <div class="h-40 overflow-hidden relative bg-white/5">
+            <div class="h-32 md:h-40 overflow-hidden relative bg-white/5">
               <img 
                 v-if="product.image" 
                 :src="getImageUrl(product.image)" 
@@ -44,27 +44,40 @@
         </div>
 
         <!-- Cart Sidebar -->
-        <GlassCard customClass="w-full lg:w-96 p-8 sticky top-8 border-white/10 bg-black/40 shadow-2xl backdrop-blur-2xl">
+        <GlassCard customClass="w-full lg:w-96 p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl backdrop-blur-2xl">
           <div class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4 flex items-center gap-2">
             <ShoppingCart class="w-5 h-5 text-indigo-400" />
             <span>Current Order</span>
           </div>
           
           <!-- Customer Selection -->
-          <div class="mb-6">
-            <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Select Customer</label>
-            <select 
-              v-model="customerName"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
-            >
-              <option value="Walk-in Customer" class="bg-slate-900">Walk-in Customer</option>
-              <option v-for="user in customers" :key="user.id" :value="user.username" class="bg-slate-900">{{ user.username }}</option>
-            </select>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Select Customer</label>
+              <select 
+                v-model="customerName"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
+              >
+                <option value="Walk-in Customer" class="bg-slate-900">Walk-in Customer</option>
+                <option v-for="user in customers" :key="user.id" :value="user.username" class="bg-slate-900">{{ user.username }}</option>
+              </select>
+            </div>
+
+            <!-- Walk-in Alias Input -->
+            <div v-if="customerName === 'Walk-in Customer'" class="animate-in fade-in slide-in-from-top-2 duration-300">
+              <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Customer Name / Table Number</label>
+              <input 
+                v-model="customerAlias"
+                type="text" 
+                placeholder="e.g. Table 5 / John Doe"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
+              >
+            </div>
           </div>
 
           <!-- Cart Items -->
-          <div class="min-h-[200px] max-h-[400px] overflow-y-auto mb-6 pr-2 custom-scrollbar">
-            <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-[200px] text-white/20 italic">
+          <div class="min-h-[150px] lg:min-h-[200px] max-h-[300px] lg:max-h-[400px] overflow-y-auto mb-6 pr-2 custom-scrollbar">
+            <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-[150px] lg:h-[200px] text-white/20 italic">
               <ShoppingCart class="w-12 h-12 mb-4 opacity-10" />
               <p class="text-xs">Your cart is empty</p>
             </div>
@@ -93,10 +106,6 @@
             <div v-if="discount > 0" class="flex justify-between text-sm text-emerald-400">
               <span>Discount</span>
               <span>-₱{{ formatNumber(discount) }}</span>
-            </div>
-            <div class="flex justify-between text-sm text-white/60">
-              <span>Tax (12%)</span>
-              <span>₱{{ formatNumber(tax) }}</span>
             </div>
             <div class="flex justify-between text-2xl font-black text-white pt-2">
               <span>Total</span>
@@ -166,6 +175,7 @@ const props = defineProps({
 
 const cart = ref([]);
 const customerName = ref('Walk-in Customer');
+const customerAlias = ref('');
 const voucherCode = ref('');
 const voucherStatus = ref(null);
 const isProcessing = ref(false);
@@ -173,8 +183,7 @@ const receipt = ref(null);
 
 const subtotal = computed(() => cart.value.reduce((sum, item) => sum + ((item.selling_price || item.price) * item.qty), 0));
 const discount = ref(0);
-const tax = computed(() => subtotal.value * 0.12);
-const total = computed(() => subtotal.value + tax.value - discount.value);
+const total = computed(() => subtotal.value - discount.value);
 
 const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -224,15 +233,21 @@ const processCheckout = async () => {
   isProcessing.value = true;
 
   try {
+    const selectedUser = props.customers.find(u => u.username === customerName.value);
+    const userId = selectedUser ? selectedUser.id : null;
+
     const formData = new FormData();
     formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
     formData.append('customer_name', customerName.value);
+    formData.append('customer_alias', customerAlias.value);
+    if (userId) formData.append('user_id', userId);
     formData.append('voucher_code', voucherCode.value);
     formData.append('items', JSON.stringify(cart.value));
 
     const response = await axios.post('/admin/checkout', formData);
     if (response.data.status === 'success') {
       cart.value = [];
+      customerAlias.value = '';
       voucherCode.value = '';
       voucherStatus.value = null;
       discount.value = 0;

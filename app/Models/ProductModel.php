@@ -21,8 +21,6 @@ class ProductModel extends Model
         'name'          => 'required|min_length[2]|max_length[255]',
         'cost_price'    => 'required|numeric|greater_than_equal_to[0]',
         'selling_price' => 'required|numeric|greater_than[0]|validate_price_gt_cost',
-        'initial_stock' => 'required|numeric|greater_than_equal_to[0]',
-        'current_stock' => 'required|numeric|greater_than_equal_to[0]',
     ];
 
     protected $validationMessages = [
@@ -55,7 +53,7 @@ class ProductModel extends Model
             return null;
         }
 
-        if ((float) ($product['current_stock'] ?? 0) <= 0) {
+        if ((int) ($product['is_available'] ?? 0) !== 1) {
             return null;
         }
 
@@ -64,18 +62,8 @@ class ProductModel extends Model
 
     public function reduceStock(int $productId, float $qty): bool
     {
-        $product = $this->find($productId);
-        if (! $product) {
-            return false;
-        }
-
-        $current = (float) ($product['current_stock'] ?? 0);
-        if ($qty <= 0 || $current < $qty) {
-            return false;
-        }
-
-        $newStock = round($current - $qty, 2);
-        return $this->update($productId, ['current_stock' => $newStock]);
+        // Stock tracking disabled. Always return true.
+        return true;
     }
 
     /**
@@ -83,14 +71,8 @@ class ProductModel extends Model
      */
     public function increaseStock(int $productId, float $qty): bool
     {
-        $product = $this->find($productId);
-        if (!$product || $qty <= 0) {
-            return false;
-        }
-
-        $current = (float) ($product['current_stock'] ?? 0);
-        $newStock = round($current + $qty, 2);
-        return $this->update($productId, ['current_stock' => $newStock]);
+        // Stock tracking disabled. Always return true.
+        return true;
     }
 
     /**

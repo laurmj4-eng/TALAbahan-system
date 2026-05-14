@@ -16,18 +16,14 @@
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-md">
-          <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Total Stock</div>
-          <div class="text-3xl font-black text-white">{{ totalStock }} <span class="text-sm text-green-400/80 uppercase ml-1">units</span></div>
-        </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
         <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-md">
           <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Live Items</div>
           <div class="text-3xl font-black text-emerald-400">{{ liveItemsCount }}</div>
         </div>
         <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-md">
-          <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Inventory Value</div>
-          <div class="text-3xl font-black text-sky-400">₱{{ formatNumber(totalValue) }}</div>
+          <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Total Products</div>
+          <div class="text-3xl font-black text-sky-400">{{ products.length }}</div>
         </div>
       </div>
 
@@ -41,7 +37,6 @@
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Category</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Price Point</th>
-                <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Stock Level</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-center">Visibility</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-right">Actions</th>
               </tr>
@@ -72,12 +67,6 @@
                 </td>
                 <td class="px-8 py-6 font-black text-emerald-400 text-lg">
                   ₱{{ formatNumber(product.selling_price) }}
-                </td>
-                <td class="px-8 py-6">
-                  <div class="flex items-center gap-2">
-                    <span class="font-bold text-white">{{ product.current_stock }}</span>
-                    <span class="text-[10px] text-green-400/80 font-bold uppercase tracking-widest px-1.5 py-0.5 bg-green-500/10 rounded border border-green-500/20">units</span>
-                  </div>
                 </td>
                 <td class="px-8 py-6 text-center">
                   <button 
@@ -131,9 +120,8 @@
               
               <div class="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl border border-white/5">
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] text-white/40 font-bold uppercase">Stock:</span>
-                  <span class="font-bold text-white">{{ product.current_stock }}</span>
-                  <span class="text-[9px] text-green-400/80 font-bold uppercase">units</span>
+                  <span class="text-[10px] text-white/40 font-bold uppercase">Unit:</span>
+                  <span class="font-bold text-white">{{ product.unit }}</span>
                 </div>
                 <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/10" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
                   {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
@@ -181,17 +169,13 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Initial Stock</label>
-                <input v-model="form.quantity" type="number" step="0.01" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0" required />
-              </div>
+            <div class="grid grid-cols-1 gap-4">
               <div class="space-y-2">
                 <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</label>
                 <select v-model="form.unit" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
-                  <option value="kg" class="bg-slate-900">Kilogram (kg)</option>
-                  <option value="pcs" class="bg-slate-900">Pieces (pcs)</option>
-                  <option value="pack" class="bg-slate-900">Pack</option>
+                  <option value="Per serving" class="bg-slate-900">Per serving</option>
+                  <option value="Isa ka basket" class="bg-slate-900">Isa ka basket</option>
+                  <option value="Pila ka bilao" class="bg-slate-900">Pila ka bilao</option>
                 </select>
               </div>
             </div>
@@ -236,21 +220,12 @@ const form = ref({
   name: '',
   cost_price: '',
   selling_price: '',
-  quantity: '',
-  unit: 'kg'
+  unit: 'Per serving'
 });
 
-const totalStock = computed(() => {
-  if (!Array.isArray(products.value)) return 0;
-  return products.value.reduce((sum, p) => sum + parseFloat(p.current_stock || 0), 0);
-});
 const liveItemsCount = computed(() => {
   if (!Array.isArray(products.value)) return 0;
   return products.value.filter(p => parseInt(p.is_available) === 1).length;
-});
-const totalValue = computed(() => {
-  if (!Array.isArray(products.value)) return 0;
-  return products.value.reduce((sum, p) => sum + (parseFloat(p.selling_price || 0) * parseFloat(p.current_stock || 0)), 0);
 });
 
 const formatNumber = (num) => {
@@ -279,7 +254,7 @@ const fetchProducts = async () => {
 
 const openAddModal = () => {
   isEditing.value = false;
-  form.value = { id: null, name: '', cost_price: '', selling_price: '', quantity: '', unit: 'kg' };
+  form.value = { id: null, name: '', cost_price: '', selling_price: '', unit: 'Per serving' };
   imagePreview.value = null;
   selectedFile.value = null;
   showModal.value = true;
@@ -292,8 +267,7 @@ const openEditModal = (product) => {
     name: product.name,
     cost_price: product.cost_price,
     selling_price: product.selling_price,
-    quantity: product.current_stock,
-    unit: product.unit || 'kg'
+    unit: product.unit || 'Per serving'
   };
   imagePreview.value = product.image ? getImageUrl(product.image) : null;
   selectedFile.value = null;
@@ -320,15 +294,6 @@ const saveProduct = async () => {
     formData.append('name', form.value.name);
     formData.append('cost_price', form.value.cost_price);
     formData.append('selling_price', form.value.selling_price);
-    
-    // The backend store() expects 'quantity' for initial/current stock
-    // and update() expects 'current_stock'
-    if (isEditing.value) {
-      formData.append('current_stock', form.value.quantity);
-    } else {
-      formData.append('quantity', form.value.quantity);
-    }
-    
     formData.append('unit', form.value.unit);
     
     if (selectedFile.value) {
