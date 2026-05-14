@@ -24,11 +24,14 @@ $routes->group('api', function($routes) {
     $routes->post('auth/verify', 'Auth::verify');
     $routes->post('auth/register', 'Auth::createAccountApi');
     $routes->get('admin/products/list', '\App\Controllers\Admin\ProductController::list');
+    $routes->post('admin/products/store', '\App\Controllers\Admin\ProductController::store');
+    $routes->post('admin/products/update', '\App\Controllers\Admin\ProductController::update');
     $routes->post('admin/products/toggleStatus/(:num)', '\App\Controllers\Admin\ProductController::toggleStatus/$1');
     $routes->post('admin/products/delete', '\App\Controllers\Admin\ProductController::delete');
     $routes->get('staff/getOrders', '\App\Controllers\Staff\Orders::getOrders');
     $routes->post('staff/updateOrderStatus', '\App\Controllers\Staff\Orders::updateOrderStatus');
     $routes->get('customer/dashboard/data', '\App\Controllers\Customer\Dashboard::getData');
+    $routes->get('customer/order-center/data', '\App\Controllers\Customer\Orders::getData');
     
     // Admin API Routes
     $routes->get('admin/dashboard/data', '\App\Controllers\Admin\Dashboard::getData');
@@ -127,6 +130,10 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
     // Sales History
     $routes->get('salesHistory', 'Sales::salesHistory');
     $routes->get('getSalesHistory', 'Sales::getSalesHistory');
+
+    // POS Routes
+    $routes->get('pos', 'PosController::index');
+    $routes->post('checkout', 'PosController::checkout', ['filter' => 'csrf']);
 });
 
 // --- 4. CUSTOMER GROUP ---

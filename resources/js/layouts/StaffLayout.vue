@@ -108,7 +108,9 @@ import {
   Fish,
   ClipboardList,
   LineChart,
-  UserCircle
+  UserCircle,
+  Bolt,
+  Shrimp
 } from 'lucide-vue-next';
 import Chatbot from '../components/Chatbot.vue';
 
@@ -136,6 +138,14 @@ const navSections = [
     items: [
       { name: 'Inventory', path: '/staff/products', icon: Fish },
       { name: 'Orders', path: '/staff/orders', icon: ClipboardList }
+    ],
+    divider: true
+  },
+  {
+    title: 'Quick Access',
+    icon: Bolt,
+    items: [
+      { name: 'Seafood POS', path: '/staff/pos', icon: Shrimp }
     ],
     divider: true
   },

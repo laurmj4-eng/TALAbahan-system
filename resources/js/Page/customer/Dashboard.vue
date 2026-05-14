@@ -476,7 +476,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { 
@@ -905,7 +905,9 @@ const placeOrder = async () => {
       cartItems.value = [];
       saveCart();
       updateCartCount(0);
-      router.visit('/customer/orders');
+      
+      // Fixed: Redirect to the correct order center page
+      router.visit('/customer/order-center');
     } else {
       alert(response.data.message);
     }
@@ -924,8 +926,6 @@ const confirmGcashPayment = () => {
 };
 
 const fetchProducts = async () => {
-  if (props.products && props.products.length > 0) return;
-  
   try {
     const response = await axios.get('/api/customer/dashboard/data');
     products.value = response.data.products || [];
@@ -934,8 +934,14 @@ const fetchProducts = async () => {
   }
 };
 
+const pollInterval = ref(null);
+
 onMounted(() => {
   fetchProducts();
+  
+  // Real-time update: Poll every 3 seconds to keep products/units updated
+  pollInterval.value = setInterval(fetchProducts, 3000);
+  
   window.addEventListener('open-customer-cart', openCart);
 
   // Global Axios interceptor for CSRF tokens
@@ -974,6 +980,12 @@ onMounted(() => {
   if (savedCart.length > 0) {
     cartItems.value = savedCart;
     updateCartCount(cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
+  }
+});
+
+onUnmounted(() => {
+  if (pollInterval.value) {
+    clearInterval(pollInterval.value);
   }
 });
 </script>

@@ -18,11 +18,23 @@
       </div>
 
       <!-- Quick Navigation -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Link href="/staff/pos" class="group block h-full">
+          <GlassCard customClass="p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
+            <div class="w-20 h-20 rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
+              <ShoppingCart class="w-10 h-10 text-violet-400" />
+            </div>
+            <div>
+              <h3 class="text-2xl font-black text-white group-hover:text-violet-300 transition-colors">Seafood POS</h3>
+              <p class="text-white/40 font-medium text-sm mt-1">Direct terminal for walk-in orders.</p>
+            </div>
+          </GlassCard>
+        </Link>
+
         <Link href="/staff/orders" class="group block h-full">
           <GlassCard customClass="p-8 border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
             <div class="w-20 h-20 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
-              <ShoppingCart class="w-10 h-10 text-indigo-400" />
+              <ClipboardList class="w-10 h-10 text-indigo-400" />
             </div>
             <div>
               <h3 class="text-2xl font-black text-white group-hover:text-indigo-300 transition-colors">Manage Orders</h3>
@@ -44,12 +56,12 @@
         </Link>
 
         <Link href="/staff/salesHistory" class="group block h-full">
-          <GlassCard customClass="p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
-            <div class="w-20 h-20 rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
-              <BarChart3 class="w-10 h-10 text-violet-400" />
+          <GlassCard customClass="p-8 border-white/10 hover:border-sky-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
+            <div class="w-20 h-20 rounded-[2rem] bg-sky-500/10 border border-sky-500/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
+              <BarChart3 class="w-10 h-10 text-sky-400" />
             </div>
             <div>
-              <h3 class="text-2xl font-black text-white group-hover:text-violet-300 transition-colors">Sales History</h3>
+              <h3 class="text-2xl font-black text-white group-hover:text-sky-300 transition-colors">Sales History</h3>
               <p class="text-white/40 font-medium text-sm mt-1">Review past transactions and revenue.</p>
             </div>
           </GlassCard>

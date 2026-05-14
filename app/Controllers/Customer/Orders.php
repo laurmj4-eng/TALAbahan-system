@@ -46,6 +46,28 @@ class Orders extends BaseController
         ]);
     }
 
+    public function getData()
+    {
+        if (session()->get('role') !== 'customer') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
+        }
+
+        $customerName = (string) session()->get('username');
+        $dashboard = new Dashboard();
+        $counts = $dashboard->getCustomerOrderCounts($customerName);
+        
+        $orderModel = new OrderModel();
+        $orders = $orderModel->where('customer_name', $customerName)
+                             ->orderBy('created_at', 'DESC')
+                             ->findAll();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'orders' => $orders,
+            'counts' => $counts,
+        ]);
+    }
+
     public function orderDetails($orderId)
     {
         if (session()->get('role') !== 'customer') {
