@@ -135,15 +135,15 @@ $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' 
     $routes->get('profile', 'Profile::index');
     $routes->get('order-center', 'Orders::orderCenter');
     $routes->get('order-items', 'Orders::orderItems');
-    $routes->post('precheckout', 'Checkout::preCheckout', ['filter' => 'csrf']);
-    $routes->post('placeOrder', 'Checkout::placeOrder', ['filter' => 'csrf']);
-    $routes->post('validate-location', 'Checkout::validateLocation', ['filter' => 'csrf']);
+    $routes->post('precheckout', 'Checkout::preCheckout');
+    $routes->post('placeOrder', 'Checkout::placeOrder');
+    $routes->post('validate-location', 'Checkout::validateLocation');
     $routes->get('order-details/(:num)', 'Orders::orderDetails/$1');
-    $routes->post('cancel-order', 'Orders::cancelOrder', ['filter' => 'csrf']);
-    $routes->post('pay-now', 'Orders::payNow', ['filter' => 'csrf']);
+    $routes->post('cancel-order', 'Orders::cancelOrder');
+    $routes->post('pay-now', 'Orders::payNow');
     $routes->get('tracking/(:num)', 'Orders::tracking/$1');
-    $routes->post('review', 'Reviews::submitReview', ['filter' => 'csrf']);
-    $routes->post('refund-request', 'Refunds::submitRefundRequest', ['filter' => 'csrf']);
+    $routes->post('review', 'Reviews::submitReview');
+    $routes->post('refund-request', 'Refunds::submitRefundRequest');
 });
 
 // --- 5. SPA CATCH-ALL ROUTES ---

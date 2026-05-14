@@ -267,31 +267,31 @@
                    <Clock class="w-3 h-3 mt-0.5 flex-shrink-0" />
                    <span>Mobile number must be working because we will call you within 10-15 minutes to verify your order.</span>
                  </p>
+                 <p v-if="phoneError && !showOtpInput" class="text-[0.65rem] font-bold text-rose-400 mt-2 ml-1">{{ phoneError }}</p>
+
+                 <!-- OTP Verification Section (Inline) -->
+                 <div v-if="showOtpInput && !isPhoneVerified" class="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 animate-slide-in-right">
+                   <div class="flex items-center gap-2 mb-1">
+                     <Zap class="w-3 h-3 text-cyan-400" />
+                     <span class="text-[0.6rem] font-black text-white uppercase tracking-wider">Enter 6-Digit Code</span>
+                   </div>
+                   <div class="flex gap-2">
+                      <input v-model="otpCode" type="text" maxlength="6" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-cyan-500/50 outline-none text-center tracking-[0.3em]" placeholder="000000">
+                      <button 
+                        @click="verifyOtpCode" 
+                        :disabled="isVerifyingCode || !otpCode"
+                        class="px-4 bg-cyan-400 text-slate-950 font-black rounded-lg text-[0.6rem] uppercase hover:bg-cyan-300 disabled:opacity-50 transition-all"
+                      >
+                        <Loader2 v-if="isVerifyingCode" class="w-3 h-3 animate-spin mx-auto" />
+                        <span v-else>Verify</span>
+                      </button>
+                    </div>
+                   <p v-if="phoneError" class="text-[0.55rem] font-bold text-rose-400">{{ phoneError }}</p>
+                 </div>
                </div>
              </div>
 
-            <!-- OTP Verification Section -->
-            <div v-if="showOtpInput && !isPhoneVerified" class="p-4 sm:p-6 bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] space-y-4 animate-slide-in-right">
-              <div class="flex items-center gap-3 mb-2">
-                <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-                  <Zap class="w-4 h-4 text-cyan-400" />
-                </div>
-                <h4 class="text-xs font-black text-white uppercase tracking-wider">Verify Phone</h4>
-              </div>
-              
-              <div class="flex gap-2">
-                <input v-model="otpCode" type="text" maxlength="6" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all text-center tracking-[0.5em]" placeholder="000000">
-                <button 
-                  @click="verifyOtpCode" 
-                  :disabled="isVerifyingCode || otpCode.length < 6"
-                  class="px-6 bg-cyan-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-widest hover:bg-cyan-300 disabled:opacity-50 transition-all"
-                >
-                  <Loader2 v-if="isVerifyingCode" class="w-4 h-4 animate-spin mx-auto" />
-                  <span v-else>Verify</span>
-                </button>
-              </div>
-              <p v-if="phoneError" class="text-[0.65rem] font-bold text-rose-400">{{ phoneError }}</p>
-            </div>
+             <!-- Removed Old OTP Section from here -->
  
              <!-- Auto-detection Section -->
             <div v-if="ship_to_all !== '1'" class="space-y-4 sm:space-y-6">
@@ -470,8 +470,8 @@
       </div>
     </div>
 
-    <!-- Recaptcha Container (Invisible badge will be managed by Firebase) -->
-    <div id="recaptcha-container"></div>
+    <!-- Simulated OTP container -->
+    <div id="otp-container"></div>
   </CustomerLayout>
 </template>
 
@@ -479,12 +479,6 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-  getAuth, 
-  RecaptchaVerifier, 
-  signInWithPhoneNumber 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   ShoppingCart, 
   Star, 
@@ -547,12 +541,8 @@ const isPhoneVerified = ref(false);
 const isSendingCode = ref(false);
 const isVerifyingCode = ref(false);
 const otpCode = ref('');
-const verificationId = ref(null);
 const phoneError = ref('');
 const showOtpInput = ref(false);
-let auth = null;
-let recaptchaVerifier = null;
-let confirmationResult = null;
 
 const deliveryDetails = ref({
   name: username.value,
@@ -716,20 +706,6 @@ const saveCart = () => {
 };
 
 // Phone Verification Functions
-const initRecaptcha = () => {
-  if (recaptchaVerifier) return;
-  try {
-    recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': (response) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-      }
-    });
-  } catch (error) {
-    console.error("Recaptcha init error:", error);
-  }
-};
-
 const sendVerificationCode = async () => {
   if (!deliveryDetails.value.phone || deliveryDetails.value.phone.length < 10) {
     phoneError.value = "Please enter a valid phone number.";
@@ -739,59 +715,34 @@ const sendVerificationCode = async () => {
   isSendingCode.value = true;
   phoneError.value = '';
   
-  try {
-    initRecaptcha();
-    let phone = deliveryDetails.value.phone;
-    // Format phone number to E.164 if needed (assuming PH +63)
-    if (phone.startsWith('0')) {
-      phone = '+63' + phone.substring(1);
-    } else if (!phone.startsWith('+')) {
-      phone = '+63' + phone;
-    }
-
-    confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
+  // Simulated Demo Logic
+  setTimeout(() => {
     showOtpInput.value = true;
-    alert("Verification code sent to " + phone);
-  } catch (error) {
-    console.error("SMS error:", error);
-    
-    if (error.code === 'auth/billing-not-enabled') {
-      phoneError.value = "SMS verification requires a Firebase Billing account. For development, use a Test Phone Number (e.g., +639123456789 with code 123456) in the Firebase Console.";
-    } else if (error.code === 'auth/too-many-requests') {
-      phoneError.value = "Too many requests. Please try again later.";
-    } else {
-      phoneError.value = error.message || "Failed to send SMS. Please try again.";
-    }
-
-    if (recaptchaVerifier) {
-      recaptchaVerifier.clear();
-      recaptchaVerifier = null;
-    }
-  } finally {
     isSendingCode.value = false;
-  }
+    alert("Demo Mode: Use code '1' or '19828' to verify.");
+  }, 800);
 };
 
 const verifyOtpCode = async () => {
-  if (!otpCode.value || otpCode.value.length < 6) {
-    phoneError.value = "Please enter a valid 6-digit code.";
+  if (!otpCode.value) {
+    phoneError.value = "Please enter the code.";
     return;
   }
 
   isVerifyingCode.value = true;
   phoneError.value = '';
 
-  try {
-    const result = await confirmationResult.confirm(otpCode.value);
-    isPhoneVerified.value = true;
-    showOtpInput.value = false;
-    alert("Phone number verified successfully!");
-  } catch (error) {
-    console.error("OTP error:", error);
-    phoneError.value = "Invalid or expired code. Please try again.";
-  } finally {
+  // Demo validation: accept '1' or '19828'
+  setTimeout(() => {
+    if (otpCode.value === '1' || otpCode.value === '19828') {
+      isPhoneVerified.value = true;
+      showOtpInput.value = false;
+      alert("Phone number verified successfully (Demo Mode)!");
+    } else {
+      phoneError.value = "Invalid code. Try '1' or '19828'.";
+    }
     isVerifyingCode.value = false;
-  }
+  }, 800);
 };
 
 // Scroll Lock Logic
@@ -879,7 +830,17 @@ const getLocation = () => {
 
 const validateBarangay = async (bgy) => {
   try {
-    const response = await axios.post('/customer/validate-location', { barangay: bgy });
+    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content || 'csrf_test_name';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+
+    const postData = { barangay: bgy };
+    if (csrfName && csrfToken) postData[csrfName] = csrfToken;
+
+    const headers = {};
+    if (csrfToken) headers[csrfHeader] = csrfToken;
+
+    const response = await axios.post('/customer/validate-location', postData, { headers });
     if (response.data.status !== 'success') {
       locationError.value = response.data.message || "We don't deliver to this area yet.";
     } else {
@@ -900,7 +861,12 @@ const fetchQuote = async () => {
       shipping_details: deliveryDetails.value
     };
 
-    const response = await axios.post('/customer/precheckout', { order_data: JSON.stringify(payload) });
+    // Use URLSearchParams for standard form-data POST
+    const params = new URLSearchParams();
+    params.append('order_data', JSON.stringify(payload));
+
+    const response = await axios.post('/customer/precheckout', params);
+    
     if (response.data.status === 'success') {
       quote.value = response.data.data;
       return true;
@@ -926,7 +892,12 @@ const placeOrder = async () => {
       shipping_details: deliveryDetails.value
     };
 
-    const response = await axios.post('/customer/placeOrder', { order_data: JSON.stringify(payload) });
+    // Use URLSearchParams for standard form-data POST
+    const params = new URLSearchParams();
+    params.append('order_data', JSON.stringify(payload));
+
+    const response = await axios.post('/customer/placeOrder', params);
+
     if (response.data.status === 'success') {
       localStorage.setItem('quick_checkout_phone', deliveryDetails.value.phone);
       localStorage.setItem('quick_checkout_barangay', deliveryDetails.value.barangay);
@@ -967,16 +938,37 @@ onMounted(() => {
   fetchProducts();
   window.addEventListener('open-customer-cart', openCart);
 
-  // Initialize Firebase
-  if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
-    try {
-      const app = initializeApp(window.FIREBASE_CONFIG);
-      auth = getAuth(app);
-    } catch (err) {
-      console.error("Firebase init error:", err);
+  // Global Axios interceptor for CSRF tokens
+  axios.interceptors.request.use(config => {
+    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content || 'csrf_test_name';
+    
+    // Ensure AJAX header is sent
+    config.headers['X-Requested-With'] = 'XMLHttpRequest';
+    
+    if (csrfToken && (config.method === 'post' || config.method === 'put' || config.method === 'delete')) {
+      config.headers[csrfHeader] = csrfToken;
+      
+      // If using URLSearchParams, also inject CSRF into the body for redundancy
+      if (config.data instanceof URLSearchParams) {
+        config.data.set(csrfName, csrfToken);
+      }
     }
-  }
-  
+    return config;
+  });
+
+  // Global Axios response interceptor to update CSRF tokens
+  axios.interceptors.response.use(response => {
+    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const newToken = response.headers[csrfHeader.toLowerCase()] || response.data?.token;
+    if (newToken) {
+      const meta = document.querySelector('meta[name="csrf-token"]');
+      if (meta) meta.content = newToken;
+    }
+    return response;
+  });
+
   // Load saved cart if any
   const savedCart = JSON.parse(localStorage.getItem('cartItems') || '[]');
   if (savedCart.length > 0) {

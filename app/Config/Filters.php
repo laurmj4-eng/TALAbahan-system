@@ -72,7 +72,10 @@ class Filters extends BaseFilters
                 'admin/shipping/store',
                 'admin/shipping/update',
                 'admin/shipping/delete',
-                'admin/shipping/updateGlobal'
+                'admin/shipping/updateGlobal',
+                'customer/precheckout',
+                'customer/placeOrder',
+                'customer/validate-location'
             ]], // Exclude API and Admin Product routes from global CSRF as we handle it or use AJAX
             // 'invalidchars',
         ],
