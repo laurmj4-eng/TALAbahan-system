@@ -51,15 +51,28 @@ class PosController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
         }
 
-        $json = $this->request->getJSON(true);
+        // Try to get data from POST first (FormData), then fall back to JSON
+        $itemsRaw = $this->request->getPost('items');
+        if ($itemsRaw) {
+            $items = json_decode($itemsRaw, true);
+            $customerName = $this->request->getPost('customer_name');
+            $voucherCode = $this->request->getPost('voucher_code');
+            $payload = [
+                'items' => $items,
+                'customer_name' => $customerName,
+                'voucher_code' => $voucherCode
+            ];
+        } else {
+            $payload = $this->request->getJSON(true);
+        }
 
-        if (!$json || empty($json['items'])) {
+        if (!$payload || empty($payload['items'])) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Cart is empty.', 'token' => csrf_hash()])->setStatusCode(400);
         }
 
         $orderModel = new OrderModel();
-        $json['moved_by'] = (int) (session()->get('user_id') ?? 0);
-        $result     = $orderModel->createFromCheckout($json);
+        $payload['moved_by'] = (int) (session()->get('user_id') ?? 0);
+        $result     = $orderModel->createFromCheckout($payload);
         if (! $result['ok']) {
             return $this->response->setJSON([
                 'status'  => 'error',

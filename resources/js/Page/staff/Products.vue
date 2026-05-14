@@ -41,7 +41,7 @@
               <tr v-for="product in filteredProducts" :key="product.id" class="group hover:bg-white/[0.02] transition-all">
                 <td class="px-6 py-6">
                   <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center group-hover:border-indigo-500/30 transition-all">
-                    <img v-if="product.image" :src="'/uploads/products/' + product.image" class="w-full h-full object-cover" />
+                    <img v-if="product.image" :src="getImageUrl(product.image)" class="w-full h-full object-cover" />
                     <Fish v-else class="w-8 h-8 opacity-20" />
                   </div>
                 </td>
@@ -109,5 +109,14 @@ const filteredProducts = computed(() => {
 
 const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = window.BASE_URL || '';
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  const cleanPath = imagePath.replace(/^\//, '').replace(/^uploads\//, '').replace(/^products\//, '');
+  return `${cleanBaseUrl}/uploads/products/${cleanPath}`;
 };
 </script>

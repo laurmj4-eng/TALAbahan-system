@@ -10,11 +10,33 @@
             v-for="product in products" 
             :key="product.id" 
             @click="addToCart(product)"
-            customClass="p-6 text-center cursor-pointer hover:bg-white/10 hover:border-indigo-500/50 transition-all group"
+            customClass="p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all group flex flex-col h-full"
           >
-            <span class="text-5xl block mb-4 group-hover:scale-110 transition-transform">{{ product.icon || '🐟' }}</span>
-            <div class="font-bold text-white mb-2">{{ product.name }}</div>
-            <div class="text-emerald-400 font-black text-lg">₱{{ formatNumber(product.selling_price || product.price) }}</div>
+            <!-- Product Image -->
+            <div class="h-40 overflow-hidden relative bg-white/5">
+              <img 
+                v-if="product.image" 
+                :src="getImageUrl(product.image)" 
+                :alt="product.name"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-4xl opacity-50">
+                {{ product.icon || '🐟' }}
+              </div>
+              <!-- Quick Add Badge -->
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span class="bg-white text-slate-900 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider scale-90 group-hover:scale-100 transition-transform">Add to Cart</span>
+              </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="p-4 flex flex-col flex-1">
+              <div class="font-bold text-white mb-1 truncate text-sm md:text-base">{{ product.name }}</div>
+              <div class="flex items-center justify-between mt-auto">
+                <span class="text-xs text-white/40 uppercase tracking-widest font-bold">{{ product.unit || 'piece' }}</span>
+                <div class="text-emerald-400 font-black text-base">₱{{ formatNumber(product.selling_price || product.price) }}</div>
+              </div>
+            </div>
           </GlassCard>
           <div v-if="products.length === 0" class="col-span-full py-24 text-center text-white/20 italic">
             No products available.
@@ -22,35 +44,42 @@
         </div>
 
         <!-- Cart Sidebar -->
-        <GlassCard customClass="w-full lg:w-96 p-8 sticky top-8 border-white/10 bg-black/40">
-          <div class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Current Order</div>
+        <GlassCard customClass="w-full lg:w-96 p-8 sticky top-8 border-white/10 bg-black/40 shadow-2xl backdrop-blur-2xl">
+          <div class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4 flex items-center gap-2">
+            <ShoppingCart class="w-5 h-5 text-indigo-400" />
+            <span>Current Order</span>
+          </div>
           
           <!-- Customer Selection -->
           <div class="mb-6">
+            <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Select Customer</label>
             <select 
               v-model="customerName"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
             >
-              <option value="Walk-in Customer">Walk-in Customer</option>
-              <option v-for="user in customers" :key="user.id" :value="user.username">{{ user.username }}</option>
+              <option value="Walk-in Customer" class="bg-slate-900">Walk-in Customer</option>
+              <option v-for="user in customers" :key="user.id" :value="user.username" class="bg-slate-900">{{ user.username }}</option>
             </select>
           </div>
 
           <!-- Cart Items -->
-          <div class="min-h-[200px] max-h-[400px] overflow-y-auto mb-6 space-y-4">
-            <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-full text-white/20 italic py-12">
+          <div class="min-h-[200px] max-h-[400px] overflow-y-auto mb-6 pr-2 custom-scrollbar">
+            <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-[200px] text-white/20 italic">
               <ShoppingCart class="w-12 h-12 mb-4 opacity-10" />
-              <p>Select items to add to cart</p>
+              <p class="text-xs">Your cart is empty</p>
             </div>
-            <div v-for="item in cart" :key="item.id" class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
-              <div class="flex-1">
-                <div class="font-bold text-sm text-white">{{ item.icon || '🐟' }} {{ item.name }}</div>
-                <div class="text-xs text-emerald-400">₱{{ formatNumber(item.selling_price || item.price) }}</div>
+            <div v-for="item in cart" :key="item.id" class="group flex justify-between items-center py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] -mx-2 px-2 rounded-lg transition-colors">
+              <div class="flex-1 min-w-0 pr-4">
+                <div class="font-bold text-sm text-white truncate">{{ item.name }}</div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-emerald-400 font-bold">₱{{ formatNumber(item.selling_price || item.price) }}</span>
+                  <span class="text-[10px] text-white/30 font-medium">/ {{ item.unit || 'piece' }}</span>
+                </div>
               </div>
-              <div class="flex items-center gap-3">
-                <button @click="changeQty(item, -1)" class="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-red-500/20 rounded-lg text-white transition-colors">-</button>
-                <span class="font-bold text-white w-4 text-center">{{ item.qty }}</span>
-                <button @click="changeQty(item, 1)" class="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-indigo-500/20 rounded-lg text-white transition-colors">+</button>
+              <div class="flex items-center bg-white/5 rounded-xl p-1 gap-1">
+                <button @click="changeQty(item, -1)" class="w-7 h-7 flex items-center justify-center hover:bg-rose-500/20 rounded-lg text-white transition-all active:scale-90">-</button>
+                <span class="font-black text-white text-xs w-6 text-center">{{ item.qty }}</span>
+                <button @click="changeQty(item, 1)" class="w-7 h-7 flex items-center justify-center hover:bg-emerald-500/20 rounded-lg text-white transition-all active:scale-90">+</button>
               </div>
             </div>
           </div>
@@ -104,13 +133,31 @@
   </AdminLayout>
 </template>
 
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.4);
+}
+</style>
+
 <script setup>
+
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import { ShoppingCart } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
 
+const windowObj = window;
 const props = defineProps({
   username: String,
   products: Array,
@@ -131,6 +178,15 @@ const total = computed(() => subtotal.value + tax.value - discount.value);
 
 const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = window.BASE_URL || '';
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  const cleanPath = imagePath.replace(/^\//, '').replace(/^uploads\//, '').replace(/^products\//, '');
+  return `${cleanBaseUrl}/uploads/products/${cleanPath}`;
 };
 
 const addToCart = (product) => {
@@ -164,30 +220,38 @@ const applyVoucher = async () => {
 };
 
 const processCheckout = async () => {
-  if (cart.length === 0) return;
+  if (cart.value.length === 0) return;
   isProcessing.value = true;
 
   try {
-    const payload = {
-      items: cart.value,
-      voucher_code: voucherCode.value,
-      customer_name: customerName.value
-    };
+    const formData = new FormData();
+    formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+    formData.append('customer_name', customerName.value);
+    formData.append('voucher_code', voucherCode.value);
+    formData.append('items', JSON.stringify(cart.value));
 
-    const response = await axios.post('/api/admin/checkout', payload);
+    const response = await axios.post('/admin/checkout', formData);
     if (response.data.status === 'success') {
-      receipt.value = response.data.data;
       cart.value = [];
       voucherCode.value = '';
       voucherStatus.value = null;
       discount.value = 0;
-      alert('Checkout successful!');
+      alert(response.data.message || 'Checkout successful!');
     } else {
       alert(response.data.message || 'Checkout failed');
     }
+    
+    // Update CSRF hash if backend returned a new one
+    if (response.data.token) {
+      window.CSRF_HASH = response.data.token;
+    }
   } catch (error) {
     console.error('Checkout error:', error);
-    alert('Checkout error');
+    const msg = error.response?.data?.message || 'Checkout error';
+    alert(msg);
+    if (error.response?.data?.token) {
+      window.CSRF_HASH = error.response.data.token;
+    }
   } finally {
     isProcessing.value = false;
   }

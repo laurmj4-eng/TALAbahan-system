@@ -42,7 +42,7 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] rounded-xl relative z-10"></div>
+          <div v-if="showRecaptcha" id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] rounded-xl relative z-10"></div>
 
           <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-4 rounded-xl text-xs font-bold mb-4">
             {{ error }}
@@ -118,7 +118,7 @@
 </style>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -131,6 +131,7 @@ const password = ref('');
 const loading = ref(false);
 const googleLoading = ref(false);
 const error = ref('');
+const showRecaptcha = ref(true);
 const siteKey = window.RECAPTCHA_SITE_KEY;
 let recaptchaWidget = null;
 
@@ -162,6 +163,8 @@ onMounted(() => {
 
   // Function to render reCAPTCHA
   const renderRecaptcha = () => {
+    if (!showRecaptcha.value) return true;
+    
     if (window.grecaptcha && window.grecaptcha.render) {
       const container = document.getElementById('recaptcha-container');
       if (container && container.innerHTML === "") {
@@ -188,10 +191,38 @@ onMounted(() => {
   }
 });
 
+// Watch for email changes to show/hide reCAPTCHA
+watch(email, (newEmail) => {
+  const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
+  if (trustedAdminEmail && newEmail.toLowerCase() === trustedAdminEmail.toLowerCase()) {
+    showRecaptcha.value = false;
+  } else {
+    showRecaptcha.value = true;
+  }
+});
+
+// Watch for showRecaptcha changes to re-render if needed
+watch(showRecaptcha, async (newVal) => {
+  if (newVal) {
+    await nextTick();
+    // Give it a small delay for the DOM element to be fully ready
+    setTimeout(() => {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        const container = document.getElementById('recaptcha-container');
+        if (container && container.innerHTML === "") {
+          recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
+            'sitekey': siteKey
+          });
+        }
+      }
+    }, 100);
+  }
+});
+
 const handleLogin = async () => {
-  const recaptchaResponse = window.grecaptcha ? window.grecaptcha.getResponse(recaptchaWidget) : "";
+  const recaptchaResponse = (window.grecaptcha && showRecaptcha.value) ? window.grecaptcha.getResponse(recaptchaWidget) : "";
   
-  if (!recaptchaResponse) {
+  if (showRecaptcha.value && !recaptchaResponse) {
     error.value = 'Please complete the reCAPTCHA verification.';
     return;
   }
@@ -205,7 +236,10 @@ const handleLogin = async () => {
     formData.append('email', email.value);
     formData.append('password', password.value);
     formData.append('provider', 'email');
-    formData.append('g-recaptcha-response', recaptchaResponse);
+    formData.append('is_trusted_device', !showRecaptcha.value);
+    if (showRecaptcha.value) {
+      formData.append('g-recaptcha-response', recaptchaResponse);
+    }
 
     const response = await axios.post('/api/auth/verify', formData);
 
@@ -214,7 +248,14 @@ const handleLogin = async () => {
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
-    if (window.grecaptcha) window.grecaptcha.reset(recaptchaWidget);
+    
+    // If we tried to skip reCAPTCHA but backend required it, show it again
+    if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
+      showRecaptcha.value = true;
+      localStorage.removeItem('trustedAdminEmail');
+    }
+
+    if (window.grecaptcha && recaptchaWidget !== null) window.grecaptcha.reset(recaptchaWidget);
     
     // Update CSRF hash if backend returned a new one
     if (err.response?.data?.token) {
@@ -302,6 +343,11 @@ const handleSuccessfulLogin = (data) => {
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
   localStorage.setItem('username', data.username || '');
+
+  // If the user is an admin, trust this device for future logins
+  if (data.role === 'admin') {
+    localStorage.setItem('trustedAdminEmail', email.value.toLowerCase());
+  }
   
   const redirectPath = data.redirect || (data.data && data.data.redirect);
   console.log("[Auth] Redirect path from backend:", redirectPath);

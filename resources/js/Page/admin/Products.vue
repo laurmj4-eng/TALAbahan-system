@@ -53,7 +53,7 @@
                     <div class="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex items-center justify-center p-1 group-hover:border-violet-500/30 transition-colors">
                       <img 
                         v-if="product.image" 
-                        :src="'/uploads/products/' + product.image" 
+                        :src="getImageUrl(product.image)" 
                         class="w-full h-full object-cover rounded-xl"
                         @error="(e) => e.target.src = '/images/placeholder.png'"
                       >
@@ -119,7 +119,7 @@
             <div v-for="product in products" :key="product.id" class="p-4 space-y-4">
               <div class="flex gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex-shrink-0">
-                  <img v-if="product.image" :src="'/uploads/products/' + product.image" class="w-full h-full object-cover">
+                  <img v-if="product.image" :src="getImageUrl(product.image)" class="w-full h-full object-cover">
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl opacity-20">🐟</div>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -257,6 +257,15 @@ const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http') || imagePath.startsWith('blob:')) return imagePath;
+  const baseUrl = window.BASE_URL || '';
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  const cleanPath = imagePath.replace(/^\//, '').replace(/^uploads\//, '').replace(/^products\//, '');
+  return `${cleanBaseUrl}/uploads/products/${cleanPath}`;
+};
+
 const fetchProducts = async () => {
   try {
     const response = await axios.get('/api/admin/getProducts');
@@ -286,7 +295,7 @@ const openEditModal = (product) => {
     quantity: product.current_stock,
     unit: product.unit || 'kg'
   };
-  imagePreview.value = product.image ? '/uploads/products/' + product.image : null;
+  imagePreview.value = product.image ? getImageUrl(product.image) : null;
   selectedFile.value = null;
   showModal.value = true;
 };
