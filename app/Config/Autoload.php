@@ -43,6 +43,19 @@ class Autoload extends AutoloadConfig
 
     /**
      * -------------------------------------------------------------------
+     * Composer Autoloader
+     * -------------------------------------------------------------------
+     *
+     * If you have installed packages via Composer, you can tell the
+     * autoloader to use it. This will look for a vendor/autoload.php
+     * file and include it.
+     *
+     * @var bool|string
+     */
+    public $composerAutoload = true;
+
+    /**
+     * -------------------------------------------------------------------
      * Class Map
      * -------------------------------------------------------------------
      * The class map provides a map of class names and their exact

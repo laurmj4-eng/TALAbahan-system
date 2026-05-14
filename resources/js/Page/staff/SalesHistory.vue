@@ -13,7 +13,7 @@
       </div>
 
       <!-- Stats Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <GlassCard v-for="stat in stats" :key="stat.label" customClass="p-8 border-white/10 flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
           <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <component :is="stat.icon" class="w-7 h-7" :class="stat.iconColor" />
@@ -30,6 +30,7 @@
               <tr class="text-[0.7rem] font-black text-white/40 uppercase tracking-[0.2em] border-b border-white/5">
                 <th class="px-8 py-5">Transaction Code</th>
                 <th class="px-8 py-5">Date & Time</th>
+                <th class="px-8 py-5">Customer</th>
                 <th class="px-8 py-5">Items Summary</th>
                 <th class="px-8 py-5 text-right">Revenue</th>
               </tr>
@@ -43,8 +44,26 @@
                   <div class="text-white font-medium">{{ formatDate(sale.created_at) }}</div>
                 </td>
                 <td class="px-8 py-6">
-                  <div class="text-white/60 text-sm max-w-md truncate font-medium italic" :title="sale.items_summary">
-                    {{ sale.items_summary }}
+                  <div class="flex flex-col">
+                    <span class="text-white font-medium">{{ getCustomerDisplay(sale) }}</span>
+                    <span v-if="sale.user_id" class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Registered User</span>
+                    <span v-else-if="sale.customer_alias" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Walk-in / {{ sale.customer_name }}</span>
+                    <span v-else class="text-[10px] text-white/30 font-bold uppercase tracking-wider">Walk-in</span>
+                  </div>
+                </td>
+                <td class="px-8 py-6">
+                  <div class="group/items relative inline-block cursor-help">
+                    <span class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white/40 group-hover/items:bg-indigo-500/20 group-hover/items:text-indigo-300 transition-colors">
+                      {{ sale.items_summary.split(',').length }} Items
+                    </span>
+                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50 text-left">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/10 pb-1 italic">Purchased Items</p>
+                      <ul class="space-y-1">
+                        <li v-for="(item, idx) in sale.items_summary.split(',')" :key="idx" class="text-xs text-white/70 flex items-start gap-2">
+                          <span class="text-indigo-400">•</span> {{ item.trim() }}
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </td>
                 <td class="px-8 py-6 text-right">
@@ -52,7 +71,7 @@
                 </td>
               </tr>
               <tr v-if="sales.length === 0">
-                <td colspan="4" class="px-8 py-32 text-center">
+                <td colspan="5" class="px-8 py-32 text-center">
                   <div class="flex flex-col items-center gap-4 opacity-10">
                     <HistoryIcon class="w-16 h-16" />
                     <p class="font-bold text-lg italic">No sales records found.</p>
@@ -79,6 +98,18 @@ const props = defineProps({
   sales: Array
 });
 
+const totalRevenueToday = computed(() => {
+  const today = new Date().toISOString().split('T')[0];
+  return props.sales
+    .filter(s => s.created_at && s.created_at.startsWith(today))
+    .reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
+});
+
+const getCustomerDisplay = (record) => {
+  if (record.user_id) return record.customer_name;
+  return record.customer_alias || record.customer_name || 'Walk-in Customer';
+};
+
 const totalRevenue = computed(() => {
   return props.sales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
 });
@@ -88,7 +119,8 @@ const averageSale = computed(() => {
 });
 
 const stats = computed(() => [
-  { label: 'Total Transactions', value: props.sales.length, icon: TrendingUp, iconColor: 'text-indigo-400' },
+  { label: 'Today\'s Revenue', value: '₱' + formatNumber(totalRevenueToday.value), icon: TrendingUp, iconColor: 'text-emerald-400' },
+  { label: 'Total Transactions', value: props.sales.length, icon: HistoryIcon, iconColor: 'text-indigo-400' },
   { label: 'Total Revenue', value: '₱' + formatNumber(totalRevenue.value), icon: DollarSign, iconColor: 'text-emerald-400' },
   { label: 'Average Sale', value: '₱' + formatNumber(averageSale.value), icon: BarChart3, iconColor: 'text-violet-400' }
 ]);

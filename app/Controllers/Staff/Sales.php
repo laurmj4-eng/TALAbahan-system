@@ -17,10 +17,18 @@ class Sales extends BaseController
         }
 
         $salesModel = new SalesModel();
+        // Join with orders to get customer details
+        $sales = $salesModel->db->table('sales_history s')
+            ->select('s.*, o.customer_name, o.customer_alias, o.user_id')
+            ->join('orders o', 'o.transaction_code = s.transaction_code', 'left')
+            ->orderBy('s.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
         $data = [
             'title'    => 'Sales History - Staff',
             'username' => session()->get('username'),
-            'sales'    => $salesModel->orderBy('created_at', 'DESC')->findAll(),
+            'sales'    => $sales,
         ];
 
         return inertia('staff/SalesHistory', $data);
@@ -36,7 +44,12 @@ class Sales extends BaseController
         }
 
         $salesModel = new SalesModel();
-        $history = $salesModel->orderBy('created_at', 'DESC')->findAll();
+        $history = $salesModel->db->table('sales_history s')
+            ->select('s.*, o.customer_name, o.customer_alias, o.user_id')
+            ->join('orders o', 'o.transaction_code = s.transaction_code', 'left')
+            ->orderBy('s.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
         
         return $this->response->setJSON(['status' => 'success', 'message' => 'Sales history fetched.', 'data' => $history ?? [], 'token' => csrf_hash()]);
     }
