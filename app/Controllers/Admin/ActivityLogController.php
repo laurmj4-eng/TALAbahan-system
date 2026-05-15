@@ -84,6 +84,7 @@ class ActivityLogController extends BaseController
                          ->findAll();
 
         $data = [
+            'id'    => $userId,
             'title' => 'User Timeline: ' . ($user['username'] ?? 'Unknown'),
             'user'  => $user,
             'logs'  => $logs,

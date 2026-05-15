@@ -29,7 +29,11 @@ $routes->group('api', function($routes) {
     $routes->post('admin/products/toggleStatus/(:num)', '\App\Controllers\Admin\ProductController::toggleStatus/$1');
     $routes->post('admin/products/delete', '\App\Controllers\Admin\ProductController::delete');
     $routes->get('staff/getOrders', '\App\Controllers\Staff\Orders::getOrders');
+    $routes->get('staff/getOrderDetail/(:num)', '\App\Controllers\Staff\Orders::getOrderDetail/$1');
     $routes->post('staff/updateOrderStatus', '\App\Controllers\Staff\Orders::updateOrderStatus');
+    $routes->post('staff/updateTracking', '\App\Controllers\Staff\Orders::updateTracking');
+    $routes->get('staff/refunds', '\App\Controllers\Staff\Orders::refunds');
+    $routes->post('staff/updateRefundStatus', '\App\Controllers\Staff\Orders::updateRefundStatus');
     $routes->get('customer/dashboard/data', '\App\Controllers\Customer\Dashboard::getData');
     $routes->get('customer/order-center/data', '\App\Controllers\Customer\Orders::getData');
     $routes->get('customer/order-details/(:num)', '\App\Controllers\Customer\Orders::orderDetails/$1');
@@ -127,9 +131,14 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
     
     // Order Management
     $routes->get('orders', 'Orders::index');
+    $routes->get('orders/items', 'Orders::itemsPage');
+    $routes->get('orders/items/(:num)', 'Orders::items/$1');
     $routes->get('getOrders', 'Orders::getOrders');
     $routes->get('getOrderDetail/(:num)', 'Orders::getOrderDetail/$1');
     $routes->post('updateOrderStatus', 'Orders::updateOrderStatus', ['filter' => 'csrf']);
+    $routes->post('updateTracking', 'Orders::updateTracking', ['filter' => 'csrf']);
+    $routes->get('refunds', 'Orders::refunds');
+    $routes->post('updateRefundStatus', 'Orders::updateRefundStatus', ['filter' => 'csrf']);
     
     // Sales History
     $routes->get('salesHistory', 'Sales::salesHistory');
@@ -144,6 +153,7 @@ $routes->group('staff', ['namespace' => 'App\Controllers\Staff', 'filter' => 'st
 $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' => 'customerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('profile', 'Profile::index');
+    $routes->get('orders', 'Orders::orderCenter');
     $routes->get('order-center', 'Orders::orderCenter');
     $routes->get('order-items', 'Orders::orderItems');
     $routes->post('precheckout', 'Checkout::preCheckout');

@@ -80,14 +80,22 @@ const props = defineProps({
   id: {
     type: [String, Number],
     required: true
+  },
+  user: {
+    type: Object,
+    default: () => ({})
+  },
+  logs: {
+    type: Array,
+    default: () => []
   }
 });
 
-const user = ref({});
-const logs = ref([]);
+const user = ref(props.user || {});
+const logs = ref(props.logs || []);
 
 const isOnline = computed(() => {
-  if (!user.value.last_active) return false;
+  if (!user.value || !user.value.last_active) return false;
   const last = new Date(user.value.last_active).getTime();
   const now = new Date().getTime();
   return (now - last) < 300000; // 5 minutes
@@ -95,6 +103,8 @@ const isOnline = computed(() => {
 
 const groupedLogs = computed(() => {
   const groups = {};
+  if (!Array.isArray(logs.value)) return groups;
+  
   logs.value.forEach(log => {
     const date = new Date(log.created_at).toLocaleDateString('en-PH', { month: 'long', day: '2-digit', year: 'numeric' });
     if (!groups[date]) groups[date] = [];
@@ -109,14 +119,21 @@ const formatTime = (dateStr) => {
 };
 
 const fetchData = async () => {
+  if (!props.id) return;
+  
   try {
     const response = await axios.get(`/api/admin/activity/user/${props.id}`);
-    user.value = response.data.user || {};
-    logs.value = Array.isArray(response.data.logs) ? response.data.logs : [];
+    if (response.data.status === 'success') {
+      user.value = response.data.data.user || {};
+      logs.value = Array.isArray(response.data.data.logs) ? response.data.data.logs : [];
+    }
   } catch (error) {
     console.error('Failed to fetch user timeline:', error);
-    user.value = {};
-    logs.value = [];
+    // Don't clear existing data on refresh error if we already have props data
+    if (!user.value.id) {
+        user.value = {};
+        logs.value = [];
+    }
   }
 };
 

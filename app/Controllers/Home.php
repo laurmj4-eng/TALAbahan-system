@@ -6,7 +6,13 @@ class Home extends BaseController
 {
     public function index()
     {
-        return inertia('LoginPage'); // Default to login or a LandingPage if you have one
+        if (session()->get('isLoggedIn')) {
+            $role = session()->get('role');
+            if ($role === 'admin') return redirect()->to('/admin/dashboard');
+            if ($role === 'staff') return redirect()->to('/staff/dashboard');
+            if ($role === 'customer') return redirect()->to('/customer/dashboard');
+        }
+        return inertia('LoginPage'); 
     }
 
     public function login()
