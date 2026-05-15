@@ -20,6 +20,41 @@ class Chatbot extends BaseController
         // 2. Data Fetcher & Role Security
         $statsContext = "";
         $userRole = session()->get('role');
+        $userId = session()->get('user_id');
+
+        // CUSTOMER LIMIT LOGIC
+        if ($userRole === 'customer' && $userId) {
+            $userModel = new \App\Models\UserModel();
+            $user = $userModel->find($userId);
+            
+            if ($user) {
+                $today = date('Y-m-d');
+                $lastReset = $user['last_reset'] ?? '1970-01-01';
+                $promptCount = (int)($user['prompt_count'] ?? 0);
+
+                // Reset count if it's a new day
+                if ($lastReset !== $today) {
+                    $promptCount = 0;
+                    $userModel->update($userId, [
+                        'prompt_count' => 0,
+                        'last_reset' => $today
+                    ]);
+                }
+
+                // Check limit (15 prompts per day for customers)
+                $limit = 15;
+                if ($promptCount >= $limit) {
+                    if (ob_get_level() > 0) ob_end_clean();
+                    header('Content-Type: text/event-stream');
+                    echo "data: " . json_encode(['text' => "⚠️ You have reached your daily limit of $limit questions. Please come back tomorrow or contact support for assistance! 🌊"]) . "\n\n";
+                    echo "data: [DONE]\n\n";
+                    exit;
+                }
+
+                // Increment count
+                $userModel->update($userId, ['prompt_count' => $promptCount + 1]);
+            }
+        }
 
         // ADMIN ROLE: Receives real-time stats and explicit identity injection
         if ($userRole === 'admin') {
@@ -70,17 +105,41 @@ class Chatbot extends BaseController
         $model = $input['modelName'] ?? "google/gemini-2.0-flash-001";
         $history = $input['history'] ?? [];
         
-        // Inject system prompt if not present or as the first message
-        $messages = [["role" => "system", "content" => $systemPrompt]];
+        // CLEAN HISTORY FOR GEMINI: Ensure alternation and start with user if possible
+        $cleanHistory = [];
+        $lastRole = null;
+        
         foreach ($history as $msg) {
-            $messages[] = ["role" => $msg['role'], "content" => $msg['content']];
+            $role = $msg['role'] === 'assistant' ? 'assistant' : 'user';
+            $content = trim($msg['content']);
+            
+            if ($content === '') continue; // Skip empty messages
+            
+            // Gemini is sensitive to repeated roles
+            if ($role === $lastRole) {
+                $cleanHistory[count($cleanHistory) - 1]['content'] .= "\n" . $content;
+            } else {
+                $cleanHistory[] = ["role" => $role, "content" => $content];
+                $lastRole = $role;
+            }
+        }
+
+        // Ensure history doesn't start with assistant for some models
+        if (!empty($cleanHistory) && $cleanHistory[0]['role'] === 'assistant') {
+            array_shift($cleanHistory);
+        }
+
+        $messages = [["role" => "system", "content" => $systemPrompt]];
+        foreach ($cleanHistory as $msg) {
+            $messages[] = $msg;
         }
 
         // 3. JSON Handling: Proper encoding of the request body
         $payload = json_encode([
             'model'    => $model,
             'messages' => $messages,
-            'stream'   => true, // Enable streaming for the typing effect
+            'stream'   => true,
+            'temperature' => 0.7,
         ]);
 
         $apiKey = env('OPENROUTER_API_KEY');
@@ -100,49 +159,58 @@ class Chatbot extends BaseController
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
         header('X-Accel-Buffering: no'); 
+        
+        // Ensure no output has leaked
+        if (ob_get_level() > 0) ob_end_clean();
 
         try {
             $ch = curl_init();
 
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // We use write function
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
-            // This function processes each chunk from OpenRouter
-            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) {
-                // Log raw chunks for debugging
-                log_message('error', "[OpenRouter Chunk] " . $data);
+            // Buffer for incomplete SSE lines
+            $lineBuffer = "";
 
-                // If the response is a JSON error instead of a stream
-                if (strpos($data, '{') === 0) {
-                    $decoded = json_decode($data, true);
-                    if (isset($decoded['error'])) {
-                        $errorMsg = $decoded['error']['message'] ?? 'Unknown API Error';
-                        echo "data: " . json_encode(['text' => "❌ API Error: " . $errorMsg]) . "\n\n";
-                        return strlen($data);
-                    }
-                }
+            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use (&$lineBuffer) {
+                $lineBuffer .= $data;
+                $lines = explode("\n", $lineBuffer);
+                $lineBuffer = array_pop($lines); // Keep last partial line
 
-                $lines = explode("\n", $data);
                 foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '') continue;
+
                     if (strpos($line, 'data: ') === 0) {
                         $content = trim(substr($line, 6));
+                        
                         if ($content === '[DONE]') {
                             echo "data: [DONE]\n\n";
                         } else {
                             $decoded = json_decode($content, true);
-                            $text = $decoded['choices'][0]['delta']['content'] ?? '';
-                            if ($text !== '') {
-                                echo "data: " . json_encode(['text' => $text]) . "\n\n";
+                            if ($decoded) {
+                                $text = $decoded['choices'][0]['delta']['content'] ?? '';
+                                if ($text !== '') {
+                                    echo "data: " . json_encode(['text' => $text]) . "\n\n";
+                                }
                             }
+                        }
+                    } else if (strpos($line, '{') === 0) {
+                        // Check for JSON error messages
+                        $decoded = json_decode($line, true);
+                        if (isset($decoded['error'])) {
+                            $errorMsg = $decoded['error']['message'] ?? 'Unknown API Error';
+                            echo "data: " . json_encode(['text' => "❌ API Error: " . $errorMsg]) . "\n\n";
                         }
                     }
                 }
 
-                // Flush the output to the browser immediately
                 if (ob_get_level() > 0) ob_flush();
                 flush();
                 
@@ -150,20 +218,16 @@ class Chatbot extends BaseController
             });
 
             curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             
             if (curl_errno($ch)) {
                 $error = curl_error($ch);
-                log_message('error', "[Chatbot CURL Error] " . $error);
                 echo "data: " . json_encode(['text' => "❌ Connection Error: $error"]) . "\n\n";
             }
 
             curl_close($ch);
-            exit; // Exit to prevent CI4 from adding extra output
+            exit;
 
         } catch (\Exception $e) {
-            log_message('error', "[Chatbot Exception] " . $e->getMessage());
-            
             echo "data: " . json_encode(['text' => "❌ System Error: " . $e->getMessage()]) . "\n\n";
             exit;
         }
@@ -216,9 +280,9 @@ class Chatbot extends BaseController
         try {
             $db = \Config\Database::connect();
             $products = $db->table('products')
-                           ->select('name, price, stock, category')
+                           ->select('name, selling_price, current_stock, unit')
                            ->where('is_available', 1)
-                           ->where('stock >', 0)
+                           ->where('current_stock >', 0)
                            ->get()->getResult();
 
             if (empty($products)) {
@@ -227,7 +291,8 @@ class Chatbot extends BaseController
 
             $list = "";
             foreach ($products as $p) {
-                $list .= "\n- " . $p->name . " (" . $p->category . "): ₱" . number_format($p->price, 2) . " [Stock: " . $p->stock . "]";
+                $unit = $p->unit ?: 'kg';
+                $list .= "\n- " . $p->name . ": ₱" . number_format($p->selling_price, 2) . " per " . $unit . " [Stock: " . $p->current_stock . " " . $unit . "]";
             }
             return $list;
         } catch (\Exception $e) {
@@ -268,9 +333,9 @@ class Chatbot extends BaseController
                           ->get()->getRow();
             $topItem = $topItemRow->product_name ?? 'None yet';
 
-            // 4. Low Stock Alerts (Stock < 10)
+            // 4. Low Stock Alerts (Current Stock < 10)
             $lowStockCount = $db->table('products')
-                                ->where('stock <', 10)
+                                ->where('current_stock <', 10)
                                 ->countAllResults();
 
             return [

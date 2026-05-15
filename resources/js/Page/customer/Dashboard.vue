@@ -36,14 +36,13 @@
         </div>
       </header>
 
-      <!-- Responsive Product Grid -->
       <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
-        <article 
-          v-for="product in products" 
-          :key="product.id" 
-          class="group relative flex flex-col bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
-          :class="{ 'opacity-50 grayscale pointer-events-none': product.current_stock <= 0 || product.is_available == 0 }"
-        >
+        <template v-for="product in products" :key="product.id">
+          <article 
+            v-if="product.is_available != 0"
+            class="group relative flex flex-col bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
+            :class="{ 'opacity-50 grayscale pointer-events-none': product.current_stock <= 0 }"
+          >
           <!-- Product Image Container -->
           <div class="aspect-[4/5] w-full overflow-hidden relative">
             <img 
@@ -114,6 +113,7 @@
             </div>
           </div>
         </article>
+      </template>
 
         <!-- Empty State -->
         <div v-if="products.length === 0" class="col-span-full py-40 text-center animate-fade-in">
@@ -295,6 +295,19 @@
  
              <!-- Auto-detection Section -->
             <div v-if="ship_to_all !== '1'" class="space-y-4 sm:space-y-6">
+              <!-- Interactive Map Container -->
+              <div class="relative w-full h-48 sm:h-64 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 group">
+                <div id="checkout-map" class="w-full h-full z-0"></div>
+                <div v-if="!isMapInitialized" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm z-10 pointer-events-none transition-opacity duration-500">
+                  <MapPin class="w-8 h-8 sm:w-10 sm:h-10 text-white/20 mb-2" />
+                  <p class="text-[0.65rem] sm:text-xs font-black text-white/40 uppercase tracking-widest">Map awaiting location...</p>
+                </div>
+                <!-- GPS Coordinates Overlay -->
+                <div v-if="coords" class="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 pointer-events-none">
+                  <p class="text-[0.5rem] font-black text-cyan-400/80 tracking-widest">{{ coords.lat.toFixed(4) }}, {{ coords.lng.toFixed(4) }}</p>
+                </div>
+              </div>
+
               <button @click="getLocation" :disabled="isDetectingLocation" class="w-full py-4 sm:py-5 bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50 group border-dashed hover:border-solid hover:border-cyan-500/30">
                 <Loader2 v-if="isDetectingLocation" class="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-cyan-400" />
                 <MapPin v-else class="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:animate-bounce" />
@@ -536,6 +549,12 @@ const isFetchingQuote = ref(false);
 const isPlacingOrder = ref(false);
 const quote = ref(null);
 
+// Map State
+const isMapInitialized = ref(false);
+const coords = ref(null);
+let leafletMap = null;
+let mapMarker = null;
+
 // Phone Verification State
 const isPhoneVerified = ref(false);
 const isSendingCode = ref(false);
@@ -749,8 +768,18 @@ const verifyOtpCode = async () => {
 watch(showCheckoutModal, (isOpen) => {
   if (isOpen) {
     document.body.style.overflow = 'hidden';
+    // Refresh map if it exists
+    if (leafletMap) {
+      setTimeout(() => leafletMap.invalidateSize(), 400);
+    }
   } else {
     document.body.style.overflow = '';
+  }
+});
+
+watch(currentStep, (step) => {
+  if (step === 2 && leafletMap) {
+    setTimeout(() => leafletMap.invalidateSize(), 400);
   }
 });
 
@@ -791,20 +820,58 @@ const getLocation = () => {
 
   navigator.geolocation.getCurrentPosition(async (position) => {
     const { latitude, longitude } = position.coords;
+    coords.value = { lat: latitude, lng: longitude };
+
+    // Initialize or update Leaflet Map
     try {
-      const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-      const addr = response.data.address;
-      const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
-      
-      if (bgy) {
-        deliveryDetails.value.barangay = bgy;
-        deliveryDetails.value.city = addr.city || addr.town || addr.municipality || '';
-        deliveryDetails.value.street = addr.road || addr.residential || '';
-        fullAddress.value = [deliveryDetails.value.street, bgy, deliveryDetails.value.city, addr.state].filter(Boolean).join(', ');
-        validateBarangay(bgy);
-      } else {
-        locationError.value = "Could not pinpoint your Barangay. Please enter manually.";
+      if (typeof L !== 'undefined') {
+        if (!leafletMap) {
+          leafletMap = L.map('checkout-map', {
+            zoomControl: true,
+            dragging: true,
+            touchZoom: true
+          }).setView([latitude, longitude], 16);
+          
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          }).addTo(leafletMap);
+          
+          isMapInitialized.value = true;
+        } else {
+          leafletMap.setView([latitude, longitude], 16);
+        }
+
+        // Add or move marker
+        if (mapMarker) {
+          mapMarker.setLatLng([latitude, longitude]);
+        } else {
+          mapMarker = L.marker([latitude, longitude], { draggable: true }).addTo(leafletMap);
+          
+          // Handle marker drag
+          mapMarker.on('dragend', (event) => {
+            const marker = event.target;
+            const position = marker.getLatLng();
+            updateLocationFromCoords(position.lat, position.lng);
+          });
+        }
+
+        // Handle map click
+        leafletMap.on('click', (event) => {
+          const { lat, lng } = event.latlng;
+          mapMarker.setLatLng([lat, lng]);
+          updateLocationFromCoords(lat, lng);
+        });
+
+        // Ensure map renders correctly
+        setTimeout(() => leafletMap.invalidateSize(), 200);
       }
+    } catch (err) {
+      console.error('Map initialization error:', err);
+    }
+
+    try {
+      await updateLocationFromCoords(latitude, longitude);
     } catch (error) {
       locationError.value = "Failed to detect location details. Please try again.";
     } finally {
@@ -828,19 +895,43 @@ const getLocation = () => {
   }, options);
 };
 
+const updateLocationFromCoords = async (lat, lng) => {
+  coords.value = { lat, lng };
+  try {
+    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+      withCredentials: false
+    });
+    const addr = response.data.address;
+    const bgy = addr.quarter || addr.suburb || addr.neighbourhood || addr.village || addr.city_district;
+    
+    if (bgy) {
+      deliveryDetails.value.barangay = bgy;
+      deliveryDetails.value.city = addr.city || addr.town || addr.municipality || '';
+      deliveryDetails.value.street = addr.road || addr.residential || '';
+      fullAddress.value = [deliveryDetails.value.street, bgy, deliveryDetails.value.city, addr.state].filter(Boolean).join(', ');
+      validateBarangay(bgy);
+    } else {
+      locationError.value = "Could not pinpoint your Barangay. Please enter manually.";
+    }
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    throw error;
+  }
+};
+
 const validateBarangay = async (bgy) => {
   try {
-    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content || 'csrf_test_name';
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const params = new URLSearchParams();
+    params.append('barangay', bgy);
+    
+    // Add CSRF if available
+    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || window.CSRF_HASH;
+    if (csrfName && csrfToken) {
+      params.append(csrfName, csrfToken);
+    }
 
-    const postData = { barangay: bgy };
-    if (csrfName && csrfToken) postData[csrfName] = csrfToken;
-
-    const headers = {};
-    if (csrfToken) headers[csrfHeader] = csrfToken;
-
-    const response = await axios.post('/customer/validate-location', postData, { headers });
+    const response = await axios.post('/customer/validate-location', params);
     if (response.data.status !== 'success') {
       locationError.value = response.data.message || "We don't deliver to this area yet.";
     } else {
@@ -995,6 +1086,40 @@ onUnmounted(() => {
   background: linear-gradient(to right, #22d3ee, #ffffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+#checkout-map {
+  background: #0f172a;
+}
+
+:deep(.leaflet-tile) {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+:deep(.leaflet-container) {
+  background: #0f172a;
+  color: #fff;
+}
+
+:deep(.leaflet-bar a) {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #22d3ee !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px);
+}
+
+:deep(.leaflet-bar a:hover) {
+  background-color: rgba(30, 41, 59, 1) !important;
+  color: #fff !important;
+}
+
+:deep(.leaflet-control-attribution) {
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+:deep(.leaflet-control-attribution a) {
+  color: rgba(34, 211, 238, 0.5) !important;
 }
 
 @keyframes fadeIn {

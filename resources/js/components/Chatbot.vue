@@ -25,7 +25,7 @@
       :class="{ 'active': isOpen }"
       class="fixed z-[1100] bg-white flex flex-col overflow-hidden transition-all duration-300 ease-in-out border border-black/5 shadow-2xl
              bottom-0 right-0 w-full h-full max-h-full rounded-none 
-             sm:bottom-[105px] sm:right-[30px] sm:w-[360px] sm:h-[540px] sm:max-h-[calc(100vh-125px)] sm:rounded-[2rem]"
+             sm:bottom-[100px] sm:right-[30px] sm:w-[400px] sm:h-[650px] sm:max-h-[min(750px,calc(100vh-250px))] sm:rounded-[2.5rem]"
     >
       <!-- Header -->
       <div class="bg-gradient-to-br from-indigo-600 to-violet-600 p-4 flex justify-between items-center shrink-0 min-h-[85px] border-b border-black/5">
@@ -67,6 +67,15 @@
         ref="messageContainer"
         class="flex-1 p-4 overflow-y-auto bg-[#fafafa] flex flex-col gap-4 scroll-smooth"
       >
+        <!-- Limit Info (Customer only) -->
+        <div v-if="role === 'customer'" class="sticky top-0 z-10 -mx-4 -mt-4 mb-4 px-4 py-2 bg-cyan-50 border-b border-cyan-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></div>
+            <span class="text-[10px] font-bold text-cyan-700 uppercase tracking-wider">Daily Assistant Limit</span>
+          </div>
+          <span class="text-[10px] font-black text-cyan-600 bg-white px-2 py-0.5 rounded-full border border-cyan-100 shadow-sm">15 Questions</span>
+        </div>
+
         <div 
           v-for="(msg, index) in messages" 
           :key="index"
@@ -144,7 +153,7 @@ const userInput = ref('');
 const selectedModel = ref('google/gemini-2.0-flash-001');
 
 const historyKey = computed(() => `mj_chat_history_${props.role}`);
-const messages = ref(JSON.parse(localStorage.getItem(historyKey.value)) || []);
+const messages = ref([]);
 
 const chatbotTitle = computed(() => props.role === 'admin' ? 'MJ Assistant' : 'TALAbahan Assistant');
 const inputPlaceholder = computed(() => props.role === 'admin' ? 'Ask MJ anything...' : 'Ask about our seafood...');
@@ -200,7 +209,9 @@ const addBotMessage = (content) => {
 };
 
 const saveHistory = () => {
-  localStorage.setItem(historyKey.value, JSON.stringify(messages.value));
+  // Only save non-empty messages
+  const toSave = messages.value.filter(m => m.content && m.content.trim() !== '');
+  localStorage.setItem(historyKey.value, JSON.stringify(toSave));
 };
 
 const renderMessage = (content) => {
@@ -309,13 +320,29 @@ const sendMessage = async () => {
   }
 };
 
+// Load history and filter out any empty messages
 onMounted(() => {
-  if (messages.value.length === 0) {
-    if (props.role === 'admin') {
-      addBotMessage('Hello! I am Mj. How can I help you today? ✨');
-    } else {
-      addBotMessage('Welcome to TALAbahan! 🌊 I am your seafood assistant. How can I help you find the freshest catch today? 🦀');
+  const saved = localStorage.getItem(historyKey.value);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      messages.value = parsed.filter(m => m.content && m.content.trim() !== '');
+    } catch (e) {
+      console.error('Failed to parse history:', e);
+      messages.value = [];
     }
+  }
+
+  if (messages.value.length === 0) {
+    const greeting = props.role === 'admin' 
+      ? 'Hello! I am Mj. How can I help you today? ✨' 
+      : 'Welcome to TALAbahan! 🌊 I am your seafood assistant. How can I help you find the freshest catch today? 🦀';
+    
+    messages.value.push({
+      role: 'assistant',
+      content: greeting,
+      timestamp: getTimestamp()
+    });
   }
   scrollToBottom();
 });
@@ -402,16 +429,13 @@ watch(isOpen, (val) => {
   pointer-events: none;
   transform: translateY(20px) scale(0.95);
   transform-origin: bottom right;
-  /* Adjust container position too */
-  bottom: 0;
-  right: 0;
 }
 
 @media (min-width: 1024px) {
   #chat-container {
-    bottom: 210px;
+    bottom: 215px; /* Sits comfortably above the button */
     right: 30px;
-    transform: translateY(40px) scale(0.95);
+    transform: translateY(10px) scale(0.95);
   }
 }
 

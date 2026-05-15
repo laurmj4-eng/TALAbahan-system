@@ -37,6 +37,7 @@
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Category</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Price Point</th>
+                <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-center">Stock</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-center">Visibility</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-right">Actions</th>
               </tr>
@@ -69,6 +70,15 @@
                   ₱{{ formatNumber(product.selling_price) }}
                 </td>
                 <td class="px-8 py-6 text-center">
+                  <span 
+                    :class="parseFloat(product.current_stock) > 0 ? 'text-sky-400' : 'text-rose-400'"
+                    class="font-black text-lg"
+                  >
+                    {{ parseFloat(product.current_stock) }}
+                  </span>
+                  <span class="text-[0.6rem] text-white/30 font-bold ml-1 uppercase">{{ product.unit || 'kg' }}</span>
+                </td>
+                <td class="px-8 py-6 text-center">
                   <button 
                     @click="toggleStatus(product)"
                     class="relative inline-flex items-center cursor-pointer transition-all active:scale-90"
@@ -80,6 +90,9 @@
                       {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
                     </div>
                   </button>
+                  <div v-if="parseInt(product.is_available) === 1 && parseFloat(product.current_stock) <= 0" class="mt-2 text-[0.6rem] font-bold text-rose-400 animate-bounce">
+                    ⚠️ Sold Out to Customers
+                  </div>
                 </td>
                 <td class="px-8 py-6 text-right">
                   <div class="flex justify-end gap-3 transition-opacity">
@@ -119,9 +132,17 @@
               </div>
               
               <div class="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] text-white/40 font-bold uppercase">Unit:</span>
-                  <span class="font-bold text-white">{{ product.unit }}</span>
+                <div class="flex items-center gap-4">
+                  <div class="flex flex-col">
+                    <span class="text-[10px] text-white/40 font-bold uppercase">Unit</span>
+                    <span class="font-bold text-white text-xs">{{ product.unit || 'kg' }}</span>
+                  </div>
+                  <div class="flex flex-col border-l border-white/10 pl-4">
+                    <span class="text-[10px] text-white/40 font-bold uppercase">Stock</span>
+                    <span :class="parseFloat(product.current_stock) > 0 ? 'text-sky-400' : 'text-rose-400'" class="font-black text-xs">
+                      {{ parseFloat(product.current_stock) }}
+                    </span>
+                  </div>
                 </div>
                 <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/10" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
                   {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
@@ -169,14 +190,21 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
                 <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</label>
                 <select v-model="form.unit" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
+                  <option value="kg" class="bg-slate-900">kg</option>
+                  <option value="piece" class="bg-slate-900">piece</option>
+                  <option value="batch" class="bg-slate-900">batch</option>
                   <option value="Per serving" class="bg-slate-900">Per serving</option>
                   <option value="Isa ka basket" class="bg-slate-900">Isa ka basket</option>
                   <option value="Pila ka bilao" class="bg-slate-900">Pila ka bilao</option>
                 </select>
+              </div>
+              <div class="space-y-2">
+                <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Stock Quantity</label>
+                <input v-model="form.current_stock" type="number" step="0.01" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
               </div>
             </div>
 
@@ -220,7 +248,8 @@ const form = ref({
   name: '',
   cost_price: '',
   selling_price: '',
-  unit: 'Per serving'
+  unit: 'Per serving',
+  current_stock: ''
 });
 
 const liveItemsCount = computed(() => {
@@ -254,7 +283,7 @@ const fetchProducts = async () => {
 
 const openAddModal = () => {
   isEditing.value = false;
-  form.value = { id: null, name: '', cost_price: '', selling_price: '', unit: 'Per serving' };
+  form.value = { id: null, name: '', cost_price: '', selling_price: '', unit: 'Per serving', current_stock: 10 };
   imagePreview.value = null;
   selectedFile.value = null;
   showModal.value = true;
@@ -267,7 +296,8 @@ const openEditModal = (product) => {
     name: product.name,
     cost_price: product.cost_price,
     selling_price: product.selling_price,
-    unit: product.unit || 'Per serving'
+    unit: product.unit || 'Per serving',
+    current_stock: product.current_stock
   };
   imagePreview.value = product.image ? getImageUrl(product.image) : null;
   selectedFile.value = null;
@@ -295,6 +325,7 @@ const saveProduct = async () => {
     formData.append('cost_price', form.value.cost_price);
     formData.append('selling_price', form.value.selling_price);
     formData.append('unit', form.value.unit);
+    formData.append('current_stock', form.value.current_stock || 0);
     
     if (selectedFile.value) {
       formData.append('image', selectedFile.value);

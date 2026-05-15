@@ -32,6 +32,10 @@ $routes->group('api', function($routes) {
     $routes->post('staff/updateOrderStatus', '\App\Controllers\Staff\Orders::updateOrderStatus');
     $routes->get('customer/dashboard/data', '\App\Controllers\Customer\Dashboard::getData');
     $routes->get('customer/order-center/data', '\App\Controllers\Customer\Orders::getData');
+    $routes->get('customer/order-details/(:num)', '\App\Controllers\Customer\Orders::orderDetails/$1');
+    $routes->post('customer/cancel-order', '\App\Controllers\Customer\Orders::cancelOrder');
+    $routes->post('customer/pay-now', '\App\Controllers\Customer\Orders::payNow');
+    $routes->get('customer/tracking/(:num)', '\App\Controllers\Customer\Orders::tracking/$1');
     
     // Admin API Routes
     $routes->get('admin/dashboard/data', '\App\Controllers\Admin\Dashboard::getData');

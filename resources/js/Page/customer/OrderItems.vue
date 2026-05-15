@@ -244,5 +244,34 @@ const cancelOrder = async (id) => {
   }
 };
 
+const payNow = async (id) => {
+  try {
+    const response = await axios.post('/api/customer/pay-now', { 
+      id,
+      [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
+    });
+    if (response.data.status === 'success') {
+      alert('Payment successful!');
+      await fetchOrders();
+      closeModal();
+      if (response.data.token) window.CSRF_HASH = response.data.token;
+    }
+  } catch (error) {
+    alert(error.response?.data?.message || 'Payment failed');
+  }
+};
+
+const trackOrder = async (id) => {
+  try {
+    const response = await axios.get(`/api/customer/tracking/${id}`);
+    if (response.data.status === 'success') {
+      const tracking = response.data.data;
+      alert(`Tracking Number: ${tracking.tracking_number || 'Pending'}\nCourier: ${tracking.courier_name || 'Processing'}`);
+    }
+  } catch (error) {
+    console.error('Tracking failed:', error);
+  }
+};
+
 onMounted(fetchOrders);
 </script>

@@ -111,7 +111,7 @@ import {
   UserCircle,
   Fish,
   ClipboardList,
-  Shrimp,
+  Shell,
   LineChart,
   Database,
   History,
@@ -146,7 +146,7 @@ const navSections = [
     title: 'Quick Access',
     icon: Bolt,
     items: [
-      { name: 'Seafood POS', path: '/admin/pos', icon: Shrimp },
+      { name: 'Seafood POS', path: '/admin/pos', icon: Shell },
       { name: 'Sales', path: '/admin/sales', icon: LineChart }
     ],
     divider: true

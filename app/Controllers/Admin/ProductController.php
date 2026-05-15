@@ -74,8 +74,8 @@ class ProductController extends BaseController
             'selling_price' => $this->request->getPost('selling_price'),
             'unit'          => $this->request->getPost('unit'),
             'image'         => $imageName,
-            'initial_stock' => 0,
-            'current_stock' => 0,
+            'initial_stock' => $this->request->getPost('current_stock') ?: 100,
+            'current_stock' => $this->request->getPost('current_stock') ?: 100,
         ];
 
         $db->transBegin();
@@ -167,6 +167,7 @@ class ProductController extends BaseController
             'cost_price'    => (float) $this->request->getPost('cost_price'),
             'selling_price' => (float) $this->request->getPost('selling_price'),
             'unit'          => trim($this->request->getPost('unit')),
+            'current_stock' => (float) $this->request->getPost('current_stock'),
             'image'         => $imageName,
         ];
 
