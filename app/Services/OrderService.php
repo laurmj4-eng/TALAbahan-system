@@ -8,6 +8,8 @@ use App\Models\ProductModel;
 use App\Models\SalesModel;
 use App\Models\UserModel;
 use App\Models\OrderStatusHistoryModel;
+use App\Models\DamagedLedgerModel;
+use App\Models\LossesModel;
 use Exception;
 
 class OrderService
@@ -18,6 +20,8 @@ class OrderService
     protected $salesModel;
     protected $userModel;
     protected $historyModel;
+    protected $damagedLedgerModel;
+    protected $lossesModel;
     protected $emailService;
 
     public function __construct()
@@ -28,6 +32,8 @@ class OrderService
         $this->salesModel = new SalesModel();
         $this->userModel = new UserModel();
         $this->historyModel = new OrderStatusHistoryModel();
+        $this->damagedLedgerModel = new DamagedLedgerModel();
+        $this->lossesModel = new LossesModel();
         $this->emailService = new EmailNotificationService();
     }
 
@@ -80,6 +86,17 @@ class OrderService
                 $orderItems = $this->orderItemModel->where('order_id', $orderId)->findAll();
                 foreach ($orderItems as $item) {
                     $this->productModel->increaseStock((int)$item['product_id'], (float)$item['quantity']);
+                }
+                
+                // 2. If cancelling from Processing status, record as food waste loss
+                if ($oldStatus === OrderModel::STATUS_PROCESSING) {
+                    $recordedBy = session()->get('username') ?? 'System';
+                    $this->lossesModel->recordFoodWasteLoss(
+                        $orderId,
+                        (float) $order['total_amount'],
+                        $recordedBy,
+                        'Order cancelled by admin after cooking started'
+                    );
                 }
             }
 
@@ -213,5 +230,114 @@ class OrderService
         }
 
         return ['ok' => true, 'message' => 'Tracking details updated.'];
+    }
+
+    /**
+     * Cancel an order due to items being damaged in transit
+     */
+    public function cancelDamagedInTransit(int $orderId, string $recordedBy = null, bool $issueRedelivery = false): array
+    {
+        $order = $this->orderModel->find($orderId);
+        if (!$order) {
+            return ['ok' => false, 'message' => 'Order not found.'];
+        }
+
+        $db = db_connect();
+        $db->transBegin();
+
+        try {
+            $oldStatus = $order['status'];
+
+            $orderItems = $this->orderItemModel->where('order_id', $orderId)->findAll();
+
+            if (!$this->orderModel->update($orderId, [
+                'status'        => OrderModel::STATUS_CANCELLED,
+                'cancel_reason' => 'Damaged in transit',
+            ])) {
+                throw new Exception('Failed to update order status.');
+            }
+
+            $this->damagedLedgerModel->recordDamagedOrder($orderId, $orderItems, $recordedBy);
+
+            $changedBy = $recordedBy ?? (session()->get('username') ?? 'System');
+            $this->historyModel->logStatusChange(
+                $orderId,
+                $oldStatus,
+                OrderModel::STATUS_CANCELLED,
+                $changedBy,
+                'Damaged in transit'
+            );
+
+            if ($issueRedelivery) {
+                $newTransactionCode = $order['transaction_code'] . '-RE';
+                $newOrderData = [
+                    'transaction_code' => $newTransactionCode,
+                    'customer_name' => $order['customer_name'],
+                    'customer_alias' => $order['customer_alias'],
+                    'user_id' => $order['user_id'],
+                    'subtotal_amount' => $order['subtotal_amount'],
+                    'shipping_fee' => $order['shipping_fee'],
+                    'voucher_discount' => $order['voucher_discount'],
+                    'final_amount' => $order['final_amount'],
+                    'total_amount' => $order['total_amount'],
+                    'status' => OrderModel::STATUS_PROCESSING,
+                    'notes' => 'Free redelivery for damaged order: ' . $order['transaction_code'],
+                    'payment_method' => $order['payment_method'],
+                    'payment_status' => 'Paid',
+                    'payment_ref' => $order['payment_ref'],
+                    'payment_provider' => $order['payment_provider'],
+                    'applied_vouchers' => $order['applied_vouchers'],
+                    'tracking_number' => null,
+                    'courier_name' => null,
+                    'shipping_barangay' => $order['shipping_barangay'],
+                    'shipping_city' => $order['shipping_city'],
+                    'shipping_street' => $order['shipping_street'],
+                    'shipping_phone' => $order['shipping_phone'],
+                    'is_replacement' => 1,
+                    'replaces_order_id' => $orderId,
+                ];
+
+                if (!$this->orderModel->insert($newOrderData)) {
+                    throw new Exception('Failed to create replacement order.');
+                }
+
+                $newOrderId = (int)$this->orderModel->getInsertID();
+
+                foreach ($orderItems as $item) {
+                    $newItem = $item;
+                    unset($newItem['id']);
+                    $newItem['order_id'] = $newOrderId;
+                    if (!$this->orderItemModel->insert($newItem)) {
+                        throw new Exception('Failed to duplicate order items for replacement.');
+                    }
+                }
+
+                $this->historyModel->logStatusChange(
+                    $newOrderId,
+                    null,
+                    OrderModel::STATUS_PROCESSING,
+                    $changedBy,
+                    'Free redelivery created'
+                );
+            }
+
+            if ($db->transStatus() === false) {
+                throw new Exception('Transaction failed.');
+            }
+
+            $db->transCommit();
+
+            $this->sendStatusChangeNotification($order, OrderModel::STATUS_CANCELLED);
+
+            $message = 'Order cancelled due to damage in transit.';
+            if ($issueRedelivery) {
+                $message .= ' Free redelivery order created.';
+            }
+
+            return ['ok' => true, 'message' => $message];
+        } catch (Exception $e) {
+            $db->transRollback();
+            return ['ok' => false, 'message' => $e->getMessage()];
+        }
     }
 }

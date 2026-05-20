@@ -29,6 +29,22 @@
           :key="order.id"
           customClass="p-6 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all group"
         >
+          <!-- Damaged in Transit Alert -->
+          <div 
+            v-if="order.status === 'Cancelled' && order.cancel_reason === 'Damaged in transit'"
+            class="mb-6 p-4 bg-rose-500/10 border-2 border-rose-500/30 rounded-xl flex items-start gap-4"
+          >
+            <div class="p-2 bg-rose-500/20 rounded-lg flex-shrink-0">
+              <Ban class="w-5 h-5 text-rose-400" />
+            </div>
+            <div class="flex-1">
+              <div class="font-bold text-rose-400 mb-1">Order Cancelled: Items Damaged in Transit</div>
+              <div class="text-sm text-rose-300/70">
+                Your order was reported damaged during delivery. A replacement batch or refund is being handled.
+              </div>
+            </div>
+          </div>
+
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex-1 space-y-2">
               <h3 class="text-xl font-black text-white tracking-wider font-mono">{{ order.transaction_code }}</h3>
@@ -59,9 +75,29 @@
                     <Eye class="w-4 h-4" />
                     <span class="text-xs font-bold uppercase tracking-widest">Details</span>
                   </button>
-                  <button v-if="order.status === 'Processing'" @click="cancelOrder(order.id)" class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all">
-                    <X class="w-4 h-4" />
-                  </button>
+                  <div class="relative group">
+                    <button 
+                      v-if="order.status === 'Pending'" 
+                      @click="cancelOrder(order.id)" 
+                      class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all"
+                    >
+                      <X class="w-4 h-4" />
+                    </button>
+                    <button 
+                      v-else-if="['Processing', 'Shipped', 'Completed'].includes(order.status)"
+                      disabled
+                      class="p-3 bg-white/5 border border-white/10 rounded-xl text-white/20 cursor-not-allowed"
+                    >
+                      <X class="w-4 h-4" />
+                    </button>
+                    <div 
+                      v-if="['Processing', 'Shipped', 'Completed'].includes(order.status)"
+                      class="absolute bottom-full mb-2 right-0 px-3 py-2 bg-black border border-white/20 rounded-lg text-xs text-white/80 whitespace-normal break-words max-w-xs opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                    >
+                      Cooking has started. This order can no longer be cancelled.
+                      <div class="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-white/20"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -119,9 +155,29 @@
                 <CreditCard class="w-4 h-4" />
                 <span>Pay Now</span>
               </button>
-              <button v-if="selectedOrder.can_cancel" @click="cancelOrder(selectedOrder.id)" class="px-6 py-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 rounded-xl font-bold transition-all">
-                Cancel Order
-              </button>
+              <div class="relative group">
+                <button 
+                  v-if="selectedOrder.can_cancel && selectedOrder.status === 'Pending'" 
+                  @click="cancelOrder(selectedOrder.id)" 
+                  class="px-6 py-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 rounded-xl font-bold transition-all"
+                >
+                  Cancel Order
+                </button>
+                <button 
+                  v-else-if="['Processing', 'Shipped', 'Completed'].includes(selectedOrder.status)" 
+                  disabled 
+                  class="px-6 py-3 bg-white/5 border border-white/10 text-white/30 rounded-xl font-bold cursor-not-allowed"
+                >
+                  Cancel Order
+                </button>
+                <div 
+                  v-if="['Processing', 'Shipped', 'Completed'].includes(selectedOrder.status)"
+                  class="absolute bottom-full mb-2 right-0 px-3 py-2 bg-black border border-white/20 rounded-lg text-xs text-white/80 whitespace-normal break-words max-w-xs opacity-0 group-hover:opacity-100 transition-opacity z-50"
+                >
+                  Cooking has started. This order can no longer be cancelled.
+                  <div class="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-white/20"></div>
+                </div>
+              </div>
               <button v-if="selectedOrder.can_track" @click="trackOrder(selectedOrder.id)" class="px-6 py-3 bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 rounded-xl font-bold flex items-center gap-2 transition-all">
                 <Truck class="w-4 h-4" />
                 <span>Track</span>
@@ -138,7 +194,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Calendar, Wallet, Eye, X, PackageOpen, CreditCard, Truck } from 'lucide-vue-next';
+import { Calendar, Wallet, Eye, X, PackageOpen, CreditCard, Truck, Ban } from 'lucide-vue-next';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
 

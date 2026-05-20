@@ -251,4 +251,46 @@ class Orders extends BaseController
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'Refund status updated.']);
     }
+
+    /**
+     * Cancel an order because items were damaged in transit
+     */
+    public function cancelDamagedInTransit()
+    {
+        if (session()->get('role') !== 'admin') {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Access denied.',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(403);
+        }
+
+        $id = (int) $this->request->getPost('id');
+        $issueRedelivery = (bool)$this->request->getPost('issue_redelivery');
+        
+        if (!$id) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid data',
+                'token'   => csrf_hash(),
+            ])->setStatusCode(400);
+        }
+
+        $recordedBy = session()->get('username') ?? 'Admin';
+        $result = $this->orderService->cancelDamagedInTransit($id, $recordedBy, $issueRedelivery);
+        
+        if (!$result['ok']) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => $result['message'],
+                'token'   => csrf_hash(),
+            ])->setStatusCode(400);
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => $result['message'],
+            'token'   => csrf_hash(),
+        ]);
+    }
 }

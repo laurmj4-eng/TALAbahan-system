@@ -48,6 +48,7 @@ $routes->group('api', function($routes) {
     $routes->get('admin/orders', '\App\Controllers\Admin\Orders::getOrders');
     $routes->post('admin/orders/updateStatus', '\App\Controllers\Admin\Orders::updateStatus');
     $routes->post('admin/orders/updateTracking', '\App\Controllers\Admin\Orders::updateTracking');
+    $routes->post('admin/orders/cancelDamagedInTransit', '\App\Controllers\Admin\Orders::cancelDamagedInTransit');
     $routes->get('admin/activity', '\App\Controllers\Admin\ActivityLogController::getLogs');
     $routes->get('admin/activity/user/(:num)', '\App\Controllers\Admin\ActivityLogController::userTimelineApi/$1');
     $routes->get('admin/shipping', '\App\Controllers\Admin\ShippingController::getLocations');
@@ -100,6 +101,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'ad
     $routes->get('orders/items/(:num)', 'Orders::items/$1');
     $routes->post('orders/updateStatus', 'Orders::updateStatus', ['filter' => 'csrf']);
     $routes->post('orders/updateTracking', 'Orders::updateTracking', ['filter' => 'csrf']);
+    $routes->post('orders/cancelDamagedInTransit', 'Orders::cancelDamagedInTransit', ['filter' => 'csrf']);
     $routes->get('orders/refunds', 'Orders::refunds');
     $routes->post('orders/refunds/update', 'Orders::updateRefundStatus', ['filter' => 'csrf']);
 

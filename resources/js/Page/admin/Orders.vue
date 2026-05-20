@@ -68,6 +68,14 @@
                   <td class="px-8 py-6 text-right">
                     <div class="flex justify-end items-center gap-3">
                       <button 
+                        v-if="order.status === 'Shipped'"
+                        @click="cancelDamagedInTransit(order)"
+                        class="flex items-center gap-2 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-5 py-2 text-[0.7rem] font-black tracking-widest uppercase hover:bg-rose-500 hover:text-white transition-all shadow-lg active:scale-95"
+                      >
+                        <Ban class="w-4 h-4" />
+                        Damaged
+                      </button>
+                      <button 
                         v-if="getNextAction(order.status)"
                         @click="updateStatus(order, getNextAction(order.status).next)"
                         class="flex items-center gap-2 bg-black text-white border-2 border-white rounded-xl px-5 py-2 text-[0.7rem] font-black tracking-widest uppercase hover:bg-white hover:text-black transition-all shadow-lg active:scale-95"
@@ -134,6 +142,14 @@
 
               <div class="flex gap-2">
                 <button 
+                  v-if="order.status === 'Shipped'"
+                  @click="cancelDamagedInTransit(order)"
+                  class="flex-1 flex items-center justify-center gap-2 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
+                >
+                  <Ban class="w-4 h-4" />
+                  Damaged
+                </button>
+                <button 
                   v-if="getNextAction(order.status)"
                   @click="updateStatus(order, getNextAction(order.status).next)"
                   class="flex-1 flex items-center justify-center gap-2 bg-white text-black border-2 border-white rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
@@ -169,7 +185,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { 
-  Truck, ReceiptText, Ghost, Check, Truck as TruckIcon, CheckCheck
+  Truck, ReceiptText, Ghost, Check, Truck as TruckIcon, CheckCheck, Ban
 } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
@@ -271,6 +287,33 @@ const viewOrderDetails = (order) => {
   // For now, let's just alert the items count or simple info
   // You might want to implement a proper modal later
   alert(`Order ${order.transaction_code}\nCustomer: ${order.customer_name}\nTotal: ₱${formatNumber(order.total_amount)}`);
+};
+
+const cancelDamagedInTransit = async (order) => {
+  const confirmMessage = `Are you sure you want to mark order ${order.transaction_code} as "Damaged in Transit"?`;
+  
+  const issueRedelivery = confirm(`${confirmMessage}\n\nClick OK to also issue a FREE redelivery, or Cancel to just cancel without redelivery.`);
+  
+  try {
+    const formData = new FormData();
+    formData.append('id', order.id);
+    formData.append('issue_redelivery', issueRedelivery ? '1' : '0');
+    
+    if (window.CSRF_TOKEN_NAME) {
+      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+    }
+
+    const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
+    if (response.data.status === 'success') {
+      alert(response.data.message);
+      await fetchOrders();
+    } else {
+      alert(response.data.message);
+    }
+  } catch (error) {
+    console.error('Cancel damaged order failed:', error);
+    alert('Failed to cancel order. Please try again.');
+  }
 };
 
 onMounted(fetchOrders);

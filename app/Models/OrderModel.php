@@ -46,6 +46,8 @@ class OrderModel extends Model
         'shipping_city',
         'shipping_street',
         'shipping_phone',
+        'is_replacement',
+        'replaces_order_id',
     ];
 
     protected $validationRules = [
@@ -102,6 +104,7 @@ class OrderModel extends Model
         $today = date('Y-m-d');
         $result = $this->selectSum('total_amount')
             ->where('status', self::STATUS_COMPLETED)
+            ->where('is_replacement', 0)
             ->groupStart()
                 ->where('DATE(created_at)', $today)
                 ->orWhere("created_at LIKE '{$today}%'")
@@ -127,6 +130,7 @@ class OrderModel extends Model
             ->select('SUM(oi.subtotal - (oi.cost_price * oi.quantity)) as profit')
             ->join('orders o', 'o.id = oi.order_id')
             ->where('o.status', self::STATUS_COMPLETED)
+            ->where('o.is_replacement', 0)
             ->groupStart()
                 ->where('DATE(o.created_at)', $today)
                 ->orWhere("o.created_at LIKE '{$today}%'")
@@ -144,6 +148,7 @@ class OrderModel extends Model
     {
         $result = $this->selectSum('total_amount')
             ->where('status', self::STATUS_COMPLETED)
+            ->where('is_replacement', 0)
             ->groupStart()
                 ->where('DATE(created_at)', $date)
                 ->orWhere("created_at LIKE '{$date}%'")
@@ -160,6 +165,7 @@ class OrderModel extends Model
     {
         $result = $this->selectSum('total_amount')
             ->where('status', self::STATUS_COMPLETED)
+            ->where('is_replacement', 0)
             ->where("DATE_FORMAT(created_at, '%Y-%m')", $yearMonth)
             ->first();
 
