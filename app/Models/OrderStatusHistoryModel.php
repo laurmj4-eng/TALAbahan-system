@@ -33,7 +33,7 @@ class OrderStatusHistoryModel extends Model
     {
         return $this->insert([
             'order_id'    => $orderId,
-            'status_from' => $from,
+            'status_from' => $from ?? '',
             'status_to'   => $to,
             'changed_by'  => $changedBy,
             'remarks'     => $remarks

@@ -265,19 +265,24 @@ class Orders extends BaseController
             ])->setStatusCode(403);
         }
 
-        $id = (int) $this->request->getPost('id');
-        $issueRedelivery = (bool)$this->request->getPost('issue_redelivery');
+        $id = (int) $this->request->getVar('id');
+        $issueRedeliveryRaw = $this->request->getVar('issue_redelivery');
+        $issueRedelivery = ($issueRedeliveryRaw === '1' || $issueRedeliveryRaw === 1 || $issueRedeliveryRaw === true);
+        
+        error_log('cancelDamagedInTransit called with id: ' . $id . ', issue_redelivery: ' . var_export($issueRedeliveryRaw, true));
         
         if (!$id) {
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Invalid data',
+                'message' => 'Invalid data - missing order ID',
                 'token'   => csrf_hash(),
             ])->setStatusCode(400);
         }
 
         $recordedBy = session()->get('username') ?? 'Admin';
         $result = $this->orderService->cancelDamagedInTransit($id, $recordedBy, $issueRedelivery);
+        
+        error_log('OrderService result: ' . var_export($result, true));
         
         if (!$result['ok']) {
             return $this->response->setJSON([

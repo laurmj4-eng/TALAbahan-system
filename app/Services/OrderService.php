@@ -242,13 +242,13 @@ class OrderService
             return ['ok' => false, 'message' => 'Order not found.'];
         }
 
-        $db = db_connect();
-        $db->transBegin();
-
         try {
+            error_log('Starting cancelDamagedInTransit');
+            
             $oldStatus = $order['status'];
 
             $orderItems = $this->orderItemModel->where('order_id', $orderId)->findAll();
+            error_log('Found ' . count($orderItems) . ' order items');
 
             if (!$this->orderModel->update($orderId, [
                 'status'        => OrderModel::STATUS_CANCELLED,
@@ -256,8 +256,10 @@ class OrderService
             ])) {
                 throw new Exception('Failed to update order status.');
             }
+            error_log('Updated original order status to Cancelled');
 
             $this->damagedLedgerModel->recordDamagedOrder($orderId, $orderItems, $recordedBy);
+            error_log('Recorded damaged ledger');
 
             $changedBy = $recordedBy ?? (session()->get('username') ?? 'System');
             $this->historyModel->logStatusChange(
@@ -267,8 +269,10 @@ class OrderService
                 $changedBy,
                 'Damaged in transit'
             );
+            error_log('Logged status history');
 
             if ($issueRedelivery) {
+                error_log('Creating replacement order');
                 $newTransactionCode = $order['transaction_code'] . '-RE';
                 $newOrderData = [
                     'transaction_code' => $newTransactionCode,
@@ -297,35 +301,46 @@ class OrderService
                     'replaces_order_id' => $orderId,
                 ];
 
+                error_log('Inserting new order: ' . var_export($newOrderData, true));
                 if (!$this->orderModel->insert($newOrderData)) {
+                    error_log('OrderModel errors: ' . var_export($this->orderModel->errors(), true));
                     throw new Exception('Failed to create replacement order.');
                 }
+                error_log('New order inserted');
 
                 $newOrderId = (int)$this->orderModel->getInsertID();
+                error_log('New order ID: ' . $newOrderId);
 
                 foreach ($orderItems as $item) {
-                    $newItem = $item;
-                    unset($newItem['id']);
-                    $newItem['order_id'] = $newOrderId;
+                    $newItem = [
+                        'order_id' => $newOrderId,
+                        'product_id' => $item['product_id'] ?? null,
+                        'product_name' => $item['product_name'],
+                        'unit' => $item['unit'] ?? 'piece',
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'subtotal' => $item['subtotal'],
+                        'cost_price' => $item['cost_price'] ?? null,
+                    ];
+                    error_log('Inserting order item: ' . var_export($newItem, true));
                     if (!$this->orderItemModel->insert($newItem)) {
+                        error_log('OrderItemModel errors: ' . var_export($this->orderItemModel->errors(), true));
                         throw new Exception('Failed to duplicate order items for replacement.');
                     }
                 }
+                error_log('Order items inserted');
 
                 $this->historyModel->logStatusChange(
                     $newOrderId,
-                    null,
+                    '',
                     OrderModel::STATUS_PROCESSING,
                     $changedBy,
                     'Free redelivery created'
                 );
+                error_log('Replacement order history logged');
             }
 
-            if ($db->transStatus() === false) {
-                throw new Exception('Transaction failed.');
-            }
-
-            $db->transCommit();
+            error_log('All operations completed');
 
             $this->sendStatusChangeNotification($order, OrderModel::STATUS_CANCELLED);
 
@@ -336,7 +351,7 @@ class OrderService
 
             return ['ok' => true, 'message' => $message];
         } catch (Exception $e) {
-            $db->transRollback();
+            error_log('cancelDamagedInTransit exception: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
             return ['ok' => false, 'message' => $e->getMessage()];
         }
     }

@@ -99,70 +99,74 @@
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
         <div class="md:hidden space-y-4 pb-20">
-          <div v-for="order in orders" :key="order.id" class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-4">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="font-mono bg-black text-white px-2 py-1 rounded-lg border border-white/20 text-[10px] font-bold inline-block mb-1 shadow-lg">
+          <div v-for="order in orders" :key="order.id" class="p-5 rounded-2xl bg-white/[0.05] border border-white/15 backdrop-blur-md space-y-5">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="font-mono bg-black text-white px-3 py-2 rounded-lg border border-white/25 text-xs font-bold inline-block mb-2 shadow-lg break-all">
                   {{ order.transaction_code }}
                 </div>
-                <div class="text-[9px] text-white/30 font-bold tracking-widest uppercase">
+                <div class="text-[11px] text-white/40 font-bold tracking-widest uppercase">
                   {{ formatDate(order.created_at) }}
                 </div>
               </div>
-              <span class="text-lg font-black text-emerald-400">₱{{ formatNumber(order.total_amount) }}</span>
+              <span class="text-xl font-black text-emerald-400 flex-shrink-0">₱{{ formatNumber(order.total_amount) }}</span>
             </div>
 
-            <div class="flex justify-between items-center">
-              <div>
-                <div class="font-bold text-white text-base">{{ order.customer_name || 'Walk-in' }}</div>
-                <div class="text-[10px] text-white/40">{{ order.item_count }} items recorded</div>
+            <div class="flex justify-between items-center gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-white text-lg truncate">{{ order.customer_name || 'Walk-in' }}</div>
+                <div class="text-xs text-white/40">{{ order.item_count }} items recorded</div>
               </div>
-              <span class="px-2 py-0.5 bg-black text-white border border-white/30 rounded-lg text-[9px] font-black tracking-widest uppercase">
+              <span class="px-3 py-1 bg-black text-white border border-white/30 rounded-lg text-xs font-black tracking-widest uppercase flex-shrink-0">
                 {{ order.payment_method || 'COD' }}
               </span>
             </div>
 
-            <div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
-              <div class="text-[10px] text-white/40 font-bold uppercase tracking-widest">Tracking Info</div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-white/70">{{ order.courier_name || 'No courier' }}</span>
-                <span class="text-[9px] text-white/30 font-mono">{{ order.tracking_number || 'NO-TRACKING' }}</span>
+            <div class="p-4 bg-white/[0.02] rounded-xl border border-white/10 space-y-2">
+              <div class="text-xs text-white/40 font-bold uppercase tracking-widest">Tracking Info</div>
+              <div class="flex flex-col gap-1">
+                <span class="text-sm text-white/70">{{ order.courier_name || 'No courier' }}</span>
+                <span class="text-xs text-white/30 font-mono break-all">{{ order.tracking_number || 'NO-TRACKING' }}</span>
               </div>
             </div>
 
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-4">
               <select 
                 v-model="order.status" 
                 @change="updateStatus(order, $event.target.value)"
-                class="w-full bg-black text-white border-2 border-white rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase focus:outline-none"
+                class="w-full bg-black text-white border-2 border-white rounded-xl px-4 py-3 text-sm font-black tracking-widest uppercase focus:outline-none"
                 :class="getStatusSelectClass(order.status)"
               >
                 <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
               </select>
 
-              <div class="flex gap-2">
-                <button 
-                  v-if="order.status === 'Shipped'"
-                  @click="cancelDamagedInTransit(order)"
-                  class="flex-1 flex items-center justify-center gap-2 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
-                >
-                  <Ban class="w-4 h-4" />
-                  Damaged
-                </button>
-                <button 
-                  v-if="getNextAction(order.status)"
-                  @click="updateStatus(order, getNextAction(order.status).next)"
-                  class="flex-1 flex items-center justify-center gap-2 bg-white text-black border-2 border-white rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
-                >
-                  <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
-                  {{ getNextAction(order.status).label }}
-                </button>
-                <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
-                  <Truck class="w-4 h-4 text-white/60" />
-                </button>
-                <button @click="viewOrderDetails(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
-                  <ReceiptText class="w-4 h-4 text-white/60" />
-                </button>
+              <div class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                  <button 
+                    v-if="order.status === 'Shipped'"
+                    @click="cancelDamagedInTransit(order)"
+                    class="flex-1 flex items-center justify-center gap-2 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-4 py-3 text-xs font-black tracking-widest uppercase active:scale-95 transition-all"
+                  >
+                    <Ban class="w-4 h-4" />
+                    Damaged
+                  </button>
+                  <button 
+                    v-if="getNextAction(order.status)"
+                    @click="updateStatus(order, getNextAction(order.status).next)"
+                    class="flex-1 flex items-center justify-center gap-2 bg-white text-black border-2 border-white rounded-xl px-4 py-3 text-xs font-black tracking-widest uppercase active:scale-95 transition-all"
+                  >
+                    <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
+                    {{ getNextAction(order.status).label }}
+                  </button>
+                </div>
+                <div class="flex gap-2">
+                  <button @click="editTracking(order)" class="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                    <Truck class="w-5 h-5 text-white/60" />
+                  </button>
+                  <button @click="viewOrderDetails(order)" class="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                    <ReceiptText class="w-5 h-5 text-white/60" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -176,6 +180,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Custom Damage Options Modal -->
+    <Teleport to="body">
+      <div v-if="showDamageModal" class="!z-[999999] fixed inset-0 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDamageModal = false"></div>
+        <div class="bg-[#11131e]/95 border border-white/10 p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
+          <button
+            @click="showDamageModal = false"
+            class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <h3 class="text-base sm:text-lg font-semibold mb-2">Damage Options</h3>
+          <p class="text-xs sm:text-sm text-gray-400 mb-6">
+            What would you like to do for Order #<span class="break-all">{{ selectedOrder?.transaction_code }}</span>?
+          </p>
+
+          <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-end sm:gap-3">
+            <button
+              @click="handleCancelNoRedelivery"
+              class="w-full py-3 sm:py-2.5 sm:w-auto border border-white/20 hover:border-white/30 text-white font-medium px-4 rounded-lg transition-colors text-xs sm:text-sm"
+            >
+              Cancel (No Redelivery)
+            </button>
+            <button
+              @click="handleConfirmRedelivery"
+              class="w-full py-3 sm:py-2.5 sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 rounded-lg transition-colors sm:order-2 text-xs sm:text-sm"
+            >
+              OK (Issue Free Redelivery)
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Modal logic remains the same but with enhanced glass styling... -->
   </AdminLayout>
@@ -192,6 +233,8 @@ import GlassCard from '../../components/GlassCard.vue';
 
 const orders = ref([]);
 const statuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
+const showDamageModal = ref(false);
+const selectedOrder = ref(null);
 
 const formatNumber = (num) => {
   return parseFloat(num || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -289,15 +332,18 @@ const viewOrderDetails = (order) => {
   alert(`Order ${order.transaction_code}\nCustomer: ${order.customer_name}\nTotal: ₱${formatNumber(order.total_amount)}`);
 };
 
-const cancelDamagedInTransit = async (order) => {
-  const confirmMessage = `Are you sure you want to mark order ${order.transaction_code} as "Damaged in Transit"?`;
-  
-  const issueRedelivery = confirm(`${confirmMessage}\n\nClick OK to also issue a FREE redelivery, or Cancel to just cancel without redelivery.`);
+const cancelDamagedInTransit = (order) => {
+  selectedOrder.value = order;
+  showDamageModal.value = true;
+};
+
+const handleCancelNoRedelivery = async () => {
+  if (!selectedOrder.value) return;
   
   try {
     const formData = new FormData();
-    formData.append('id', order.id);
-    formData.append('issue_redelivery', issueRedelivery ? '1' : '0');
+    formData.append('id', selectedOrder.value.id);
+    formData.append('issue_redelivery', '0');
     
     if (window.CSRF_TOKEN_NAME) {
       formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
@@ -308,11 +354,50 @@ const cancelDamagedInTransit = async (order) => {
       alert(response.data.message);
       await fetchOrders();
     } else {
-      alert(response.data.message);
+      alert(response.data.message || 'Failed to cancel order');
     }
   } catch (error) {
     console.error('Cancel damaged order failed:', error);
-    alert('Failed to cancel order. Please try again.');
+    let errorMsg = 'Failed to cancel order. Please try again.';
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMsg = error.response.data.message;
+    }
+    alert(errorMsg);
+  } finally {
+    showDamageModal.value = false;
+    selectedOrder.value = null;
+  }
+};
+
+const handleConfirmRedelivery = async () => {
+  if (!selectedOrder.value) return;
+  
+  try {
+    const formData = new FormData();
+    formData.append('id', selectedOrder.value.id);
+    formData.append('issue_redelivery', '1');
+    
+    if (window.CSRF_TOKEN_NAME) {
+      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+    }
+
+    const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
+    if (response.data.status === 'success') {
+      alert(response.data.message);
+      await fetchOrders();
+    } else {
+      alert(response.data.message || 'Failed to cancel order');
+    }
+  } catch (error) {
+    console.error('Cancel damaged order failed:', error);
+    let errorMsg = 'Failed to cancel order. Please try again.';
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMsg = error.response.data.message;
+    }
+    alert(errorMsg);
+  } finally {
+    showDamageModal.value = false;
+    selectedOrder.value = null;
   }
 };
 
