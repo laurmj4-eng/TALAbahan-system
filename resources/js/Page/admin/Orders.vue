@@ -56,7 +56,22 @@
                     <span class="text-xl font-black text-emerald-400">₱{{ formatNumber(order.total_amount) }}</span>
                   </td>
                   <td class="px-8 py-6">
+                    <div v-if="order.status === 'Cancelled'" class="flex items-center">
+                      <span 
+                        v-if="isCancelledByCustomer(order)"
+                        class="px-4 py-2 bg-red-600 text-white border-2 border-red-700 rounded-xl text-[0.7rem] font-black tracking-widest uppercase shadow-lg shadow-red-500/30 animate-pulse"
+                      >
+                        ⚠ CUSTOMER CANCELLED
+                      </span>
+                      <span 
+                        v-else
+                        class="px-4 py-2 bg-gray-600 text-white border-2 border-gray-700 rounded-xl text-[0.7rem] font-black tracking-widest uppercase"
+                      >
+                        Cancelled by Admin
+                      </span>
+                    </div>
                     <select 
+                      v-else
                       v-model="order.status" 
                       @change="updateStatus(order, $event.target.value)"
                       class="bg-black text-white border-2 border-white rounded-xl px-4 py-2 text-[0.7rem] font-black tracking-widest uppercase cursor-pointer focus:outline-none transition-all hover:bg-white hover:text-black"
@@ -131,7 +146,22 @@
             </div>
 
             <div class="flex flex-col gap-4">
+              <div v-if="order.status === 'Cancelled'" class="w-full">
+                <span 
+                  v-if="isCancelledByCustomer(order)"
+                  class="w-full block text-center px-4 py-3 bg-red-600 text-white border-2 border-red-700 rounded-xl text-sm font-black tracking-widest uppercase shadow-lg shadow-red-500/30 animate-pulse"
+                >
+                  ⚠ CUSTOMER CANCELLED
+                </span>
+                <span 
+                  v-else
+                  class="w-full block text-center px-4 py-3 bg-gray-600 text-white border-2 border-gray-700 rounded-xl text-sm font-black tracking-widest uppercase"
+                >
+                  Cancelled by Admin
+                </span>
+              </div>
               <select 
+                v-else
                 v-model="order.status" 
                 @change="updateStatus(order, $event.target.value)"
                 class="w-full bg-black text-white border-2 border-white rounded-xl px-4 py-3 text-sm font-black tracking-widest uppercase focus:outline-none"
@@ -261,6 +291,12 @@ const getStatusSelectClass = (status) => {
   if (s === 'processing') return 'border-sky-500 text-sky-500 hover:!bg-sky-500 hover:!text-white';
   if (s === 'shipped') return 'border-indigo-500 text-indigo-500 hover:!bg-indigo-500 hover:!text-white';
   return 'border-white';
+};
+
+const isCancelledByCustomer = (order) => {
+  if (order.status !== 'Cancelled') return false;
+  const reason = (order.cancel_reason || '').toLowerCase();
+  return reason.includes('customer');
 };
 
 const getNextAction = (status) => {
