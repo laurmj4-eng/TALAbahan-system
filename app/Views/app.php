@@ -16,7 +16,7 @@
         window.BASE_URL = "<?= base_url() ?>";
         window.CSRF_TOKEN_NAME = "<?= csrf_token() ?>";
         window.CSRF_HASH = "<?= csrf_hash() ?>";
-        window.RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+        window.RECAPTCHA_SITE_KEY = "<?= env('RECAPTCHA_SITE_KEY') ?>";
         window.FIREBASE_CONFIG = {
             apiKey: "AIzaSyCqr4BdFF2Xb0oqaeDpW_DWeu_XmUFQ8JA",
             authDomain: "seafood-6844f.firebaseapp.com",

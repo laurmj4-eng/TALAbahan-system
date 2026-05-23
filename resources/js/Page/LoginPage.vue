@@ -7,8 +7,8 @@
     }"
   >
     <div class="login-content-container">
-    <div class="w-full max-w-[400px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-6 md:p-8 text-center transition-transform hover:-translate-y-1 duration-500">
+    <div class="w-full max-w-[400px] px-2 md:px-0 sm:max-w-[450px]">
+      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center transition-transform hover:-translate-y-1 duration-500">
         
         <!-- Logo -->
         <div class="mb-4 md:mb-6">
@@ -18,7 +18,7 @@
         <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
         <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
 
-        <form @submit.prevent="handleLogin" class="space-y-3 md:space-y-4">
+        <form @submit.prevent="handleLogin" class="space-y-2 md:space-y-4">
           <div class="relative">
             <input
               v-model="email"
@@ -42,9 +42,13 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div v-if="showRecaptcha" id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] rounded-xl relative z-10"></div>
+          <div v-if="showRecaptcha" class="recaptcha-wrapper">
+            <div class="recaptcha-box">
+              <div id="recaptcha-container" class="recaptcha-container"></div>
+            </div>
+          </div>
 
-          <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-4 rounded-xl text-xs font-bold mb-4">
+          <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-3 md:px-4 rounded-xl text-xs font-bold mb-2 md:mb-4 text-center">
             {{ error }}
           </div>
 
@@ -114,6 +118,145 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+}
+
+/* reCAPTCHA Wrapper Styling */
+.recaptcha-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.25rem auto;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  z-index: 10;
+  flex-direction: column;
+}
+
+.recaptcha-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  flex-direction: column;
+}
+
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 78px;
+  flex-direction: column;
+}
+
+/* Mobile optimizations for reCAPTCHA */
+@media (max-width: 640px) {
+  .recaptcha-wrapper {
+    margin: 1rem 0;
+  }
+
+  .recaptcha-box {
+    padding: 0.75rem;
+    border-radius: 0.875rem;
+  }
+
+  .recaptcha-container {
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+
+  /* Adjust for very small screens */
+  @media (max-width: 380px) {
+    .recaptcha-container {
+      transform: scale(0.8);
+    }
+
+    .recaptcha-box {
+      padding: 0.5rem;
+    }
+  }
+}
+
+/* Tablet and larger screens */
+@media (min-width: 641px) and (max-width: 768px) {
+  .recaptcha-wrapper {
+    margin: 1.25rem 0;
+  }
+
+  .recaptcha-box {
+    padding: 0.875rem;
+  }
+
+  .recaptcha-container {
+    transform: scale(0.95);
+  }
+}
+
+/* Hover effect for better UX */
+.recaptcha-box:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Ensure reCAPTCHA iframe is properly contained */
+:deep(.g_recaptcha_container) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* Handle reCAPTCHA iframe */
+:deep(iframe[title*="recaptcha"]) {
+  border-radius: 0.5rem;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Center the reCAPTCHA div */
+:deep(div.g_recaptcha) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* Logo responsive sizing */
+@media (max-width: 480px) {
+  img {
+    width: 5rem !important;
+    height: auto !important;
+  }
+}
+
+/* Title responsive sizing */
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Heading and paragraph spacing for mobile */
+@media (max-width: 640px) {
+  h2 {
+    margin-bottom: 0.25rem !important;
+  }
+
+  p {
+    margin-bottom: 1rem !important;
+  }
 }
 </style>
 
