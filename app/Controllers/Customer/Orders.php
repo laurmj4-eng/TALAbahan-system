@@ -56,10 +56,19 @@ class Orders extends BaseController
         $dashboard = new Dashboard();
         $counts = $dashboard->getCustomerOrderCounts($customerName);
         
-        $orderModel = new OrderModel();
-        $orders = $orderModel->where('customer_name', $customerName)
-                             ->orderBy('created_at', 'DESC')
-                             ->findAll();
+        $db = db_connect();
+        $orders = $db->table('orders')
+                     ->select('id, transaction_code, customer_name, status, total_amount, subtotal_amount, shipping_fee, voucher_discount, final_amount, payment_method, payment_status, tracking_number, courier_name, shipped_at, delivered_at, cancel_reason, created_at, updated_at')
+                     ->where('customer_name', $customerName)
+                     ->orderBy('created_at', 'DESC')
+                     ->get()
+                     ->getResultArray();
+
+        log_message('info', "getData() called for customer: {$customerName}, found " . count($orders) . " orders");
+        if (!empty($orders)) {
+            $firstOrder = $orders[0];
+            log_message('info', "First order sample: ID={$firstOrder['id']}, Status={$firstOrder['status']}, Transaction={$firstOrder['transaction_code']}");
+        }
 
         return $this->response->setJSON([
             'status' => 'success',
@@ -99,26 +108,63 @@ class Orders extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
-        $orderId = $this->request->getPost('id');
+        // Get JSON payload from request body (axios sends JSON, not form data)
+        $json = $this->request->getJSON();
+        $orderId = (int) ($json->id ?? 0);
+        
+        $customerUsername = session()->get('username');
         $orderModel = new OrderModel();
         $orderItemModel = new OrderItemModel();
         $db = db_connect();
 
+        // Debug logging
+        log_message('info', "Cancel Order Request - Order ID: {$orderId}, Customer: {$customerUsername}");
+
+        // Check if order exists by ID
+        $orderById = $orderModel->find($orderId);
+        if (!$orderById) {
+            log_message('warning', "Order {$orderId} not found in database");
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Order not found',
+                'debug_order_id' => $orderId
+            ])->setStatusCode(404);
+        }
+
+        log_message('info', "Order found by ID: {$orderId}, Status: {$orderById['status']}, Customer: {$orderById['customer_name']}");
+
+        // Verify customer ownership
         $order = $orderModel->where('id', $orderId)
-                           ->where('customer_name', session()->get('username'))
+                           ->where('customer_name', $customerUsername)
                            ->first();
 
         if (!$order) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Order not found'])->setStatusCode(404);
-        }
-
-        $lifecycle = $this->buildLifecycleState($order);
-        if (! ($lifecycle['actions']['can_cancel'] ?? false)) {
+            log_message('warning', "Order {$orderId} found but does not belong to customer {$customerUsername}. Actual customer: {$orderById['customer_name']}");
             return $this->response->setJSON([
                 'status' => 'error',
-                'message' => 'Cancellation window has closed. Please contact seller support.',
-            ])->setStatusCode(400);
+                'message' => 'Order not found or does not belong to you',
+                'debug_actual_customer' => $orderById['customer_name']
+            ])->setStatusCode(404);
         }
+
+        // Step 2: Verify order is eligible for cancellation in the current state
+        $eligibleStatuses = ['Pending', 'Unpaid'];
+        if (! in_array($order['status'], $eligibleStatuses, true)) {
+            log_message('warning', "Cannot cancel - Wrong status - Order Status: {$order['status']}");
+            return $this->response
+                ->setJSON([
+                    'status' => 'error',
+                    'message' => "Cannot cancel order with status '{$order['status']}'",
+                    'code' => 'CANCELLATION_NOT_ALLOWED',
+                    'current_status' => $order['status'],
+                    'support_message' => 'Please contact seller support if you need to cancel this order'
+                ])
+                ->setStatusCode(400);
+        }
+
+        // No time restrictions - customers can cancel Pending or Unpaid orders anytime
+        log_message('info', "Cancellation eligibility verified - Order {$orderId} can be cancelled");
+        log_message('info', "Proceeding to cancel order {$orderId} with status {$order['status']}");
 
         $db->transBegin();
         try {
@@ -161,7 +207,10 @@ class Orders extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Access Denied'])->setStatusCode(403);
         }
 
-        $orderId = (int) $this->request->getPost('id');
+        // Get JSON payload from request body (axios sends JSON, not form data)
+        $json = $this->request->getJSON();
+        $orderId = (int) ($json->id ?? 0);
+        
         $orderModel = new OrderModel();
         $paymentAttemptModel = new PaymentAttemptModel();
 
@@ -279,10 +328,10 @@ class Orders extends BaseController
             'cancel_deadline_at' => date('Y-m-d H:i:s', $cancelDeadlineTs),
             'refund_deadline_at' => $refundDeadlineTs ? date('Y-m-d H:i:s', $refundDeadlineTs) : null,
             'actions' => [
-                'can_pay_now' => $status === OrderModel::STATUS_PENDING
+                'can_pay_now' => ($status === OrderModel::STATUS_PENDING || $status === 'Unpaid')
                     && $paymentMethod !== 'COD'
                     && in_array($paymentStatus, ['unpaid', 'failed', 'pending_confirmation'], true),
-                'can_cancel' => $status === OrderModel::STATUS_PROCESSING && $now <= $cancelDeadlineTs,
+                'can_cancel' => in_array($status, [OrderModel::STATUS_PENDING, 'Unpaid'], true),
                 'can_track' => $status === OrderModel::STATUS_SHIPPED && trim((string) ($order['tracking_number'] ?? '')) !== '',
                 'can_review' => $status === OrderModel::STATUS_COMPLETED && ! $hasReview,
                 'can_refund_request' => $status === OrderModel::STATUS_COMPLETED

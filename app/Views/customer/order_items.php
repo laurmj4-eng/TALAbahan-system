@@ -296,7 +296,7 @@
                                 <button class="btn-action btn-view" onclick="viewDetails(<?= $o['id'] ?>)">
                                     <i class="fas fa-eye"></i> Details
                                 </button>
-                                <?php if ($o['status'] === 'Processing'): ?>
+                                <?php if (in_array($o['status'], ['Pending', 'Unpaid'], true)): ?>
                                     <button class="btn-action btn-cancel" onclick="cancelOrder(<?= $o['id'] ?>)">
                                         <i class="fas fa-times"></i> Cancel
                                     </button>
@@ -524,6 +524,8 @@
                 formData.append('id', orderId);
                 formData.append(csrfName, csrfHash);
 
+                console.log('Cancelling order:', orderId, 'CSRF:', csrfName);
+
                 const response = await fetch('<?= site_url('customer/cancel-order') ?>', {
                     method: 'POST',
                     body: formData,
@@ -533,15 +535,18 @@
                 });
 
                 const result = await response.json();
+                console.log('Cancel response:', result, 'Status:', response.status);
                 if (result.status === 'success') {
                     alert(result.message);
                     location.reload();
                 } else {
-                    alert(result.message || 'Failed to cancel order');
+                    const errorMsg = `${result.message || 'Failed to cancel order'}${result.debug_order_id ? ` [Order ID: ${result.debug_order_id}]` : ''}${result.debug_actual_customer ? ` [Expected: ${result.debug_actual_customer}]` : ''}`;
+                    alert(errorMsg);
+                    console.error('Cancel error details:', result);
                 }
             } catch (error) {
                 console.error(error);
-                alert('Connection error');
+                alert('Connection error: ' + error.message);
             }
         }
 

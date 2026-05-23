@@ -78,7 +78,7 @@
                   <div class="relative group">
                     <button 
                       v-if="order.status === 'Pending'" 
-                      @click="cancelOrder(order.id)" 
+                      @click="(() => { if (!order.id) { console.error('Order missing ID field:', order); alert('Error: Order ID not found. Please refresh.'); } else { console.log('Quick cancel - Order object:', order); cancelOrder(order.id); } })()" 
                       class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all"
                     >
                       <X class="w-4 h-4" />
@@ -267,6 +267,7 @@ const viewDetails = async (order) => {
       selectedOrder.value = {
         ...order,
         ...response.data.data,
+        id: order.id, // Preserve the original order ID
         stage_label: response.data.data.lifecycle?.stage_key || 'Order',
         can_pay_now: response.data.data.lifecycle?.actions?.can_pay_now,
         can_cancel: response.data.data.lifecycle?.actions?.can_cancel,
@@ -284,19 +285,37 @@ const closeModal = () => {
   selectedOrder.value = null;
 };
 
-const cancelOrder = async (id) => {
+const cancelOrder = async (orderId) => {
   if (!confirm('Are you sure you want to cancel this order?')) return;
+  
+  // Debug logging
+  const actualId = parseInt(orderId, 10);
+  console.log('Attempting to cancel order ID:', orderId, 'Parsed:', actualId, 'Type:', typeof orderId);
+  
+  // Validate order ID
+  if (!actualId || actualId === 0 || isNaN(actualId)) {
+    alert('Error: Invalid order ID. Order ID must be a valid number. Please refresh the page and try again.');
+    console.error('Cancel request aborted: orderId is invalid', { original: orderId, parsed: actualId });
+    return;
+  }
+  
   try {
     const response = await axios.post('/api/customer/cancel-order', { 
-      id,
+      id: actualId,
       [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
     });
     if (response.data.status === 'success') {
+      alert('Order cancelled successfully!');
       await fetchOrders();
+      closeModal();
       if (response.data.token) window.CSRF_HASH = response.data.token;
+    } else {
+      alert(`Cancellation failed: ${response.data.message || 'Unknown error'}`);
+      console.error('Cancel error response:', response.data);
     }
   } catch (error) {
     console.error('Cancel failed:', error);
+    alert(`Error: ${error.response?.data?.message || error.message || 'Connection error'}`);
   }
 };
 

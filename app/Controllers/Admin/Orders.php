@@ -137,8 +137,15 @@ class Orders extends BaseController
             ])->setStatusCode(403);
         }
 
-        $id     = (int) $this->request->getPost('id');
-        $status = trim((string) $this->request->getPost('status'));
+        // Try JSON first (from axios), then POST data
+        $json = $this->request->getJSON();
+        if ($json) {
+            $id = (int) ($json->id ?? 0);
+            $status = trim((string) ($json->status ?? ''));
+        } else {
+            $id     = (int) $this->request->getPost('id');
+            $status = trim((string) $this->request->getPost('status'));
+        }
         
         if (!$id || !$status) {
             return $this->response->setJSON([
@@ -265,8 +272,15 @@ class Orders extends BaseController
             ])->setStatusCode(403);
         }
 
-        $id = (int) $this->request->getVar('id');
-        $issueRedeliveryRaw = $this->request->getVar('issue_redelivery');
+        // Try JSON first (from axios), then fallback to GET/POST vars
+        $json = $this->request->getJSON();
+        if ($json) {
+            $id = (int) ($json->id ?? 0);
+            $issueRedeliveryRaw = $json->issue_redelivery ?? '0';
+        } else {
+            $id = (int) $this->request->getVar('id');
+            $issueRedeliveryRaw = $this->request->getVar('issue_redelivery');
+        }
         $issueRedelivery = ($issueRedeliveryRaw === '1' || $issueRedeliveryRaw === 1 || $issueRedeliveryRaw === true);
         
         error_log('cancelDamagedInTransit called with id: ' . $id . ', issue_redelivery: ' . var_export($issueRedeliveryRaw, true));
