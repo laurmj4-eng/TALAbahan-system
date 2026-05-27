@@ -77,7 +77,7 @@
             animation: gradientBg 15s ease infinite;
             color: #ffffff; 
             display: flex; 
-            min-height: 100vh; 
+            min-height: 100dvh; 
             overflow-x: hidden;
         }
         
@@ -457,7 +457,7 @@
             padding: 40px; 
             overflow-y: auto; 
             overflow-x: hidden; /* Prevent horizontal scroll on the main container */
-            height: 100vh;
+            height: 100dvh;
             max-width: none !important;
             width: 100% !important;
             margin: 0 !important;

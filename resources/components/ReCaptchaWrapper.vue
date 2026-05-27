@@ -95,27 +95,60 @@ defineExpose({
 .recaptcha-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
+  padding: 0.25rem 0;
+  margin: 0 auto;
 }
 
 .recaptcha-inner {
-  /* Ensures reCAPTCHA is centered and responsive */
+  /* Minimal, clean styling - reCAPTCHA widget centered */
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transition: all 0.3s ease;
 }
 
-/* Scale down reCAPTCHA for very small screens (< 350px) */
-@media (max-width: 350px) {
+/* Desktop - minimal padding */
+@media (min-width: 768px) {
   .recaptcha-inner {
-    transform: scale(0.9);
-    transform-origin: top center;
+    padding: 0.25rem 0;
   }
 }
 
-/* Further scale for ultra-small screens */
+/* Tablet and mobile - tight spacing */
+@media (max-width: 767px) {
+  .recaptcha-container {
+    padding: 0.125rem 0;
+  }
+
+  .recaptcha-inner {
+    padding: 0.375rem 0;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .recaptcha-inner {
+    padding: 0.25rem 0;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 375px) {
+  .recaptcha-inner {
+    padding: 0.125rem 0;
+  }
+}
+
+/* Ultra-small screens (320px and below) */
 @media (max-width: 320px) {
   .recaptcha-inner {
-    transform: scale(0.75);
+    padding: 0;
   }
 }
 </style>

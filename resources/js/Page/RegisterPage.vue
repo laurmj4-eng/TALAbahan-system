@@ -94,10 +94,10 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
 }
 
@@ -113,6 +113,8 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  margin: auto;
+  flex-direction: column;
 }
 </style>
 
@@ -138,7 +140,8 @@ onMounted(() => {
       const container = document.getElementById('recaptcha-container');
       if (container && container.innerHTML === "") {
         recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': siteKey
+          'sitekey': siteKey,
+          'size': 'compact'
         });
       }
       return true;

@@ -66,7 +66,7 @@
 
       <!-- Users Table -->
       <GlassCard customClass="overflow-hidden flex-1 flex flex-col min-h-0">
-        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-450px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100dvh-450px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <table class="w-full text-left border-collapse">
             <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/5 border-b border-white/10">

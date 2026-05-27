@@ -64,7 +64,7 @@
     right: 30px; 
     width: 360px;
     height: 540px; 
-    max-height: calc(100vh - 125px); /* Forces it to shrink if the window is too small */
+    max-height: calc(100dvh - 125px); /* Forces it to shrink if the window is too small */
     background-color: var(--chat-bg);
     border-radius: 20px;
     box-shadow: var(--shadow-heavy);

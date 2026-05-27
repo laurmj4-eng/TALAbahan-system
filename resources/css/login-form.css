@@ -232,7 +232,11 @@ body {
   transition: transform var(--transition-normal);
 }
 
-/* Responsive scaling for reCAPTCHA */
+.recaptcha-inner {
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 380px) {
   .recaptcha-wrapper {
     transform: scale(0.98);

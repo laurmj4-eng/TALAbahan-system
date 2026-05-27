@@ -11,7 +11,7 @@
         border-right: 1px solid rgba(255,255,255,0.08);
         background: rgba(0, 0, 0, 0.3); 
         backdrop-filter: blur(20px);
-        min-height: 100vh;
+        min-height: 100dvh;
         transition: 0.3s; /* Transition as requested */
         visibility: visible !important;
     }
@@ -34,7 +34,7 @@
             left: -280px; /* Fully off-screen */
             top: 0;
             z-index: 40 !important; /* Sidebar at z-40 */
-            min-height: 100vh;
+            min-height: 100dvh;
             width: 260px !important;
             min-width: 260px !important;
             box-shadow: 20px 0 50px rgba(0,0,0,0.5);

@@ -25,7 +25,7 @@
         
         <!-- reCAPTCHA Container -->
         <div style="margin-bottom: 20px; display: flex !important; justify-content: center !important; width: 100% !important; min-height: 80px;">
-            <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" style="margin: 0 auto !important; display: block !important;"></div>
+            <div class="g-recaptcha" data-sitekey="<?= env('RECAPTCHA_SITE_KEY') ?>" data-size="compact" style="margin: 0 auto !important; display: block !important;"></div>
         </div>
         
         <button type="submit">Sign Up Now</button>

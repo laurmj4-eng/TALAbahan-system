@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: talabahan-system
+    env: docker
+    repo: <your-github-repo-url>
+    branch: main
+    
+    # Build configuration
+    dockerfilePath: ./Dockerfile.production
+    buildCommand: npm ci && npm run build
+    
+    # Health check
+    healthCheckPath: /health
+    
+    # Port configuration (Render will set PORT env variable)
+    envVars:
+      - key: CI_ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 8080
+      - key: INERTIA_VERSION
+        sync: false
+      
+      # Database (set these in Render dashboard for security)
+      - key: DB_HOSTNAME
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        value: 3306
+      
+      # Security keys (set these in Render dashboard)
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: RECAPTCHA_SITE_KEY
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      
+      # Firebase (set these in Render dashboard)
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      
+      # API Keys (set these in Render dashboard)
+      - key: OPENROUTER_API_KEY
+        sync: false
+    
+    # Auto-deploy on push
+    autoDeploy: true
+    
+    # Timeout configurations
+    preDeployCommand: |
+      # You can add pre-deployment hooks here
+      echo "Preparing application for deployment..."
+
+# Optional: Add cron jobs for maintenance
+# cronJobs:
+#   - name: "Clean old logs"
+#     schedule: "0 2 * * *"
+#     command: "php spark logs:clean"

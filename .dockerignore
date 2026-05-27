@@ -1,0 +1,69 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment files (use Render secrets instead)
+.env
+.env.local
+.env.*.local
+
+# Node modules (will be rebuilt in Docker)
+node_modules/
+npm-debug.log
+npm-error.log
+yarn-error.log
+pnpm-error.log
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+*.iml
+
+# Build artifacts (temp)
+dist/
+build/
+
+# Testing
+tests/
+phpunit.xml
+phpunit.xml.dist
+.phpunit.cache/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+README.md
+CONTRIBUTING.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# PHP development
+writable/logs/*
+writable/cache/*
+writable/debugbar/*
+!writable/.gitkeep
+
+# Uploads (can be synced from storage service)
+uploads/
+
+# Development tools
+Makefile
+docker-compose.override.yml
+.editorconfig
+
+# PHP vendor (will be handled by composer if needed in production)
+# Uncomment if not using PHP composer in Docker:
+# vendor/

@@ -7,19 +7,19 @@
 
     <!-- Main Login Card -->
     <div
-      class="relative w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl"
+      class="relative w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] p-6 sm:p-8 md:p-10 shadow-2xl overflow-hidden"
     >
       <!-- Header -->
-      <div class="mb-8 text-center">
-        <h1 class="text-3xl font-black text-white mb-2">Welcome Back</h1>
-        <p class="text-white/60 text-sm">Sign in to your account</p>
+      <div class="mb-6 sm:mb-8 text-center">
+        <h1 class="text-2xl sm:text-3xl font-black text-white mb-1 sm:mb-2 leading-tight">Welcome Back</h1>
+        <p class="text-white/60 text-xs sm:text-sm">Sign in to your account</p>
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="handleLogin" class="space-y-6">
+      <form @submit.prevent="handleLogin" class="space-y-4 sm:space-y-6">
         <!-- Email Input -->
-        <div class="space-y-2">
-          <label for="email" class="block text-sm font-semibold text-white/90">
+        <div class="space-y-1.5 sm:space-y-2">
+          <label for="email" class="block text-xs sm:text-sm font-semibold text-white/90">
             Email Address
           </label>
           <input
@@ -28,16 +28,16 @@
             type="email"
             placeholder="you@example.com"
             required
-            class="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/10 transition-all duration-200"
+            class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/10 transition-all duration-200"
           />
-          <span v-if="errors.email" class="text-red-400 text-xs mt-1">
+          <span v-if="errors.email" class="text-red-400 text-xs mt-1 block">
             {{ errors.email }}
           </span>
         </div>
 
         <!-- Password Input -->
-        <div class="space-y-2">
-          <label for="password" class="block text-sm font-semibold text-white/90">
+        <div class="space-y-1.5 sm:space-y-2">
+          <label for="password" class="block text-xs sm:text-sm font-semibold text-white/90">
             Password
           </label>
           <div class="relative">
@@ -47,16 +47,16 @@
               :type="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
               required
-              class="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/10 transition-all duration-200"
+              class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/10 transition-all duration-200"
             />
             <button
               type="button"
               @click="showPassword = !showPassword"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/90 transition-colors"
+              class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/90 transition-colors p-1"
             >
               <svg
                 v-if="!showPassword"
-                class="w-5 h-5"
+                class="w-4 h-4 sm:w-5 sm:h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -76,7 +76,7 @@
               </svg>
               <svg
                 v-else
-                class="w-5 h-5"
+                class="w-4 h-4 sm:w-5 sm:h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -90,43 +90,47 @@
               </svg>
             </button>
           </div>
-          <span v-if="errors.password" class="text-red-400 text-xs mt-1">
+          <span v-if="errors.password" class="text-red-400 text-xs mt-1 block">
             {{ errors.password }}
           </span>
         </div>
 
-        <!-- Spacing and Visual Separator for reCAPTCHA -->
-        <div class="py-2"></div>
+        <!-- reCAPTCHA Section with Professional Styling -->
+        <div class="pt-2 pb-4 sm:pt-4 sm:pb-6">
+          <!-- Visual Separator -->
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            <span class="text-white/40 text-xs font-medium uppercase tracking-wider">Verification</span>
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          </div>
 
-        <!-- reCAPTCHA Wrapper -->
-        <div class="flex justify-center">
-          <ReCaptchaWrapper
-            ref="recaptchaRef"
-            :site-key="RECAPTCHA_SITE_KEY"
-            theme="dark"
-            size="normal"
-            @verify="handleRecaptchaVerify"
-            @expire="handleRecaptchaExpire"
-            @error="handleRecaptchaError"
-          />
+          <!-- reCAPTCHA Wrapper with Enhanced Container -->
+          <div class="flex justify-center px-2 sm:px-0">
+            <ReCaptchaWrapper
+              ref="recaptchaRef"
+              :site-key="RECAPTCHA_SITE_KEY"
+              theme="dark"
+              size="normal"
+              @verify="handleRecaptchaVerify"
+              @expire="handleRecaptchaExpire"
+              @error="handleRecaptchaError"
+            />
+          </div>
         </div>
 
-        <!-- Spacing after reCAPTCHA -->
-        <div class="py-2"></div>
-
         <!-- Remember Me & Forgot Password -->
-        <div class="flex items-center justify-between text-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm">
           <label class="flex items-center cursor-pointer group">
             <input
               v-model="formData.rememberMe"
               type="checkbox"
-              class="w-4 h-4 rounded bg-white/10 border border-white/20 text-white accent-white cursor-pointer"
+              class="w-4 h-4 rounded bg-white/10 border border-white/20 text-white accent-white cursor-pointer hover:bg-white/15 transition-colors"
             />
-            <span class="ml-2 text-white/70 group-hover:text-white/90 transition-colors">
+            <span class="ml-2 text-white/70 group-hover:text-white/90 transition-colors select-none">
               Remember me
             </span>
           </label>
-          <a href="#" class="text-white/60 hover:text-white/90 transition-colors">
+          <a href="#" class="text-white/60 hover:text-white/90 transition-colors whitespace-nowrap">
             Forgot password?
           </a>
         </div>
@@ -135,7 +139,7 @@
         <button
           type="submit"
           :disabled="isLoading || !recaptchaVerified"
-          class="w-full py-3 mt-8 px-6 rounded-2xl bg-white text-slate-950 font-black text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:opacity-50 hover:shadow-lg hover:shadow-white/20 active:scale-95"
+          class="w-full py-2.5 sm:py-3 mt-6 sm:mt-8 px-6 rounded-xl sm:rounded-2xl bg-white text-slate-950 font-black text-sm sm:text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:disabled:opacity-50 hover:shadow-lg hover:shadow-white/20 active:scale-95"
         >
           <span v-if="!isLoading">Sign In</span>
           <span v-else class="flex items-center justify-center gap-2">
@@ -159,7 +163,7 @@
         </button>
 
         <!-- Sign Up Link -->
-        <p class="text-center text-white/60 text-sm mt-6">
+        <p class="text-center text-white/60 text-xs sm:text-sm mt-4 sm:mt-6">
           Don't have an account?
           <a href="#" class="text-white font-semibold hover:text-white/80 transition-colors">
             Sign up here
@@ -178,7 +182,7 @@
       >
         <div
           v-if="globalError"
-          class="mt-6 p-4 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm"
+          class="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-2xl bg-red-500/20 border border-red-500/30 text-red-300 text-xs sm:text-sm"
         >
           {{ globalError }}
         </div>

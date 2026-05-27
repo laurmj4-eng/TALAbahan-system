@@ -42,9 +42,9 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div v-if="showRecaptcha" class="recaptcha-wrapper">
-            <div class="recaptcha-box">
-              <div id="recaptcha-container" class="recaptcha-container"></div>
+          <div v-if="showRecaptcha" class="recaptcha-section">
+            <div class="recaptcha-inner flex justify-center w-full translate-x-5 lg:translate-x-0">
+              <div id="recaptcha-container"></div>
             </div>
           </div>
 
@@ -99,10 +99,10 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
 }
 
@@ -118,122 +118,70 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-}
-
-/* reCAPTCHA Wrapper Styling */
-.recaptcha-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 1.25rem auto;
-  width: 100%;
-  max-width: 100%;
-  position: relative;
-  z-index: 10;
+  margin: auto;
   flex-direction: column;
 }
 
-.recaptcha-box {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  padding: 1rem;
+/* ── reCAPTCHA Section ─────────────────────────────────────── */
+.recaptcha-section {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  flex-direction: column;
+  padding: 0;
 }
 
-.recaptcha-container {
+.recaptcha-inner {
+  /* Minimal, clean - just center the widget */
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  min-height: 78px;
-  flex-direction: column;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transition: all 0.2s ease;
 }
 
-/* Mobile optimizations for reCAPTCHA */
-@media (max-width: 640px) {
-  .recaptcha-wrapper {
-    margin: 1rem 0;
-  }
-
-  .recaptcha-box {
-    padding: 0.75rem;
-    border-radius: 0.875rem;
-  }
-
-  .recaptcha-container {
-    transform: scale(0.9);
-    transform-origin: center;
-  }
-
-  /* Adjust for very small screens */
-  @media (max-width: 380px) {
-    .recaptcha-container {
-      transform: scale(0.8);
-    }
-
-    .recaptcha-box {
-      padding: 0.5rem;
-    }
-  }
+/* The actual Google widget sits inside – keep it block-level */
+#recaptcha-container {
+  display: flex;
+  justify-content: center;
+  line-height: 0; /* removes phantom gap below iframe */
 }
 
-/* Tablet and larger screens */
-@media (min-width: 641px) and (max-width: 768px) {
-  .recaptcha-wrapper {
-    margin: 1.25rem 0;
-  }
-
-  .recaptcha-box {
-    padding: 0.875rem;
-  }
-
-  .recaptcha-container {
-    transform: scale(0.95);
-  }
-}
-
-/* Hover effect for better UX */
-.recaptcha-box:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Ensure reCAPTCHA iframe is properly contained */
-:deep(.g_recaptcha_container) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: 100% !important;
-  margin: 0 auto !important;
-}
-
-/* Handle reCAPTCHA iframe */
-:deep(iframe[title*="recaptcha"]) {
-  border-radius: 0.5rem;
-  max-width: 100%;
-  height: auto;
+/* No rounding on iframe - let Google's default show */
+:deep(#recaptcha-container iframe) {
   display: block;
-  margin: 0 auto;
 }
 
-/* Center the reCAPTCHA div */
-:deep(div.g_recaptcha) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: 100% !important;
-  margin: 0 auto !important;
+/* ── Desktop (≥ 769 px) ───────────────────────────── */
+@media (min-width: 769px) {
+  .recaptcha-section {
+    padding: 0.5rem 0;
+  }
 }
 
-/* Logo responsive sizing */
+/* ── Tablet (641 – 768 px) ─────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 768px) {
+  .recaptcha-section {
+    padding: 0.375rem 0;
+  }
+}
+
+/* ── Mobile (≤ 640 px) ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .recaptcha-section {
+    padding: 0.25rem 0;
+  }
+
+  .recaptcha-inner {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ── Logo responsive sizing ────────────────────────────────── */
 @media (max-width: 480px) {
   img {
     width: 5rem !important;
@@ -241,14 +189,14 @@
   }
 }
 
-/* Title responsive sizing */
+/* ── Title responsive sizing ───────────────────────────────── */
 @media (max-width: 480px) {
   h2 {
     font-size: 1.5rem !important;
   }
 }
 
-/* Heading and paragraph spacing for mobile */
+/* ── Heading / paragraph spacing for mobile ────────────────── */
 @media (max-width: 640px) {
   h2 {
     margin-bottom: 0.25rem !important;
@@ -312,7 +260,8 @@ onMounted(() => {
       const container = document.getElementById('recaptcha-container');
       if (container && container.innerHTML === "") {
         recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': siteKey
+          'sitekey': siteKey,
+          'size': 'compact'
         });
       }
       return true;
@@ -354,7 +303,8 @@ watch(showRecaptcha, async (newVal) => {
         const container = document.getElementById('recaptcha-container');
         if (container && container.innerHTML === "") {
           recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-            'sitekey': siteKey
+            'sitekey': siteKey,
+            'size': 'compact'
           });
         }
       }

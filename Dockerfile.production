@@ -1,0 +1,127 @@
+# Stage 1: Build Frontend Assets
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+# Copy source files
+COPY resources ./resources
+COPY vite.config.js ./
+COPY postcss.config.js ./
+COPY tailwind.config.js ./
+
+# Build assets with version hashing
+RUN npm run build
+
+# Stage 2: Production Server
+FROM php:8.2-apache
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libicu-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    curl \
+    && docker-php-ext-install intl zip mysqli pdo_mysql \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules required for rewriting and proxy
+RUN a2enmod rewrite headers
+
+# Configure Apache to use dynamic PORT
+RUN echo "Listen \${PORT}" >> /etc/apache2/ports.conf
+
+# Remove default site and create new one
+RUN a2dissite 000-default
+RUN rm /etc/apache2/sites-available/000-default.conf
+
+# Create custom Apache vhost with dynamic port
+RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
+<VirtualHost *:${PORT}>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/public
+
+    <Directory /var/www/html/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^(.*)$ index.php/$1 [L]
+        </IfModule>
+    </Directory>
+
+    <Directory /var/www/html>
+        AllowOverride All
+    </Directory>
+
+    # Disable direct access to system directory
+    <Directory /var/www/html/system>
+        Deny from all
+    </Directory>
+
+    # Enable GZIP compression
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+    </IfModule>
+
+    # Set cache headers for static assets
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css "access plus 1 year"
+        ExpiresByType application/javascript "access plus 1 year"
+        ExpiresByType image/jpeg "access plus 1 year"
+        ExpiresByType image/gif "access plus 1 year"
+        ExpiresByType image/png "access plus 1 year"
+        ExpiresByType font/woff "access plus 1 year"
+        ExpiresByType font/woff2 "access plus 1 year"
+    </IfModule>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+
+RUN a2ensite 000-default
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application code
+COPY --chown=www-data:www-data . .
+
+# Copy built assets from frontend-builder stage
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/build ./public/build
+
+# Ensure build directory exists
+RUN mkdir -p ./public/build
+
+# Set permissions for CI4 writable directory
+RUN chmod -R 775 writable && \
+    chmod -R 775 uploads && \
+    chown -R www-data:www-data writable uploads
+
+# Set PHP configuration for production
+RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
+# Create health check script
+RUN echo '#!/bin/bash\ncurl -f http://localhost:${PORT}/health || exit 1' > /healthcheck.sh && \
+    chmod +x /healthcheck.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Set default PORT
+ENV PORT=8080
+
+# Use Apache foreground command
+CMD ["apache2-foreground"]
