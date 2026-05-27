@@ -34,6 +34,9 @@ class Dashboard extends BaseController
         $products = $productModel->findAll();
         
         foreach ($products as &$p) {
+            // Typecast status/visibility to integer for strict JS comparison
+            $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
+
             // Get actual sold count from order_items
             $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
             
@@ -77,6 +80,9 @@ class Dashboard extends BaseController
         $products = $productModel->findAll();
         
         foreach ($products as &$p) {
+            // Typecast status/visibility to integer for strict JS comparison
+            $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
+
             $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
             
             $orderIds = array_column($orderItemModel->where('product_id', $p['id'])->select('order_id')->findAll(), 'order_id');

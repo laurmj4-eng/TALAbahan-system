@@ -8,7 +8,7 @@
   >
     <div class="login-content-container">
     <div class="w-full max-w-[400px] px-2 md:px-0 sm:max-w-[450px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center transition-transform hover:-translate-y-1 duration-500">
+      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center duration-500">
         
         <!-- Logo -->
         <div class="mb-4 md:mb-6">

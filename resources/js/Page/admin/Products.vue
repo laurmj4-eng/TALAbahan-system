@@ -35,9 +35,8 @@
             <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
               <tr class="bg-white/[0.02] border-b border-white/10">
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
-                <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Category</th>
+                <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Price Point</th>
-                <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-center">Stock</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-center">Visibility</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest text-right">Actions</th>
               </tr>
@@ -62,21 +61,12 @@
                   </div>
                 </td>
                 <td class="px-8 py-6">
-                  <span class="px-3 py-1 bg-white/[0.05] border border-white/10 rounded-lg text-[0.7rem] font-bold text-white/60 uppercase tracking-wider">
-                    {{ product.category || 'Seafood' }}
+                  <span class="px-3 py-1 bg-violet-500/10 border border-violet-500/20 rounded-lg text-[0.7rem] font-bold text-violet-300 uppercase tracking-wider">
+                    {{ product.unit || 'kg' }}
                   </span>
                 </td>
                 <td class="px-8 py-6 font-black text-emerald-400 text-lg">
                   ₱{{ formatNumber(product.selling_price) }}
-                </td>
-                <td class="px-8 py-6 text-center">
-                  <span 
-                    :class="parseFloat(product.current_stock) > 0 ? 'text-sky-400' : 'text-rose-400'"
-                    class="font-black text-lg"
-                  >
-                    {{ parseFloat(product.current_stock) }}
-                  </span>
-                  <span class="text-[0.6rem] text-white/30 font-bold ml-1 uppercase">{{ product.unit || 'kg' }}</span>
                 </td>
                 <td class="px-8 py-6 text-center">
                   <button 
@@ -90,9 +80,6 @@
                       {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
                     </div>
                   </button>
-                  <div v-if="parseInt(product.is_available) === 1 && parseFloat(product.current_stock) <= 0" class="mt-2 text-[0.6rem] font-bold text-rose-400 animate-bounce">
-                    ⚠️ Sold Out to Customers
-                  </div>
                 </td>
                 <td class="px-8 py-6 text-right">
                   <div class="flex justify-end gap-3 transition-opacity">
@@ -106,7 +93,7 @@
                 </td>
               </tr>
               <tr v-if="products.length === 0">
-                <td colspan="6" class="px-8 py-32 text-center">
+                <td colspan="5" class="px-8 py-32 text-center">
                   <div class="text-white/10 flex flex-col items-center gap-4">
                     <Ghost class="w-16 h-16 opacity-5" />
                     <p class="italic text-lg">No products found in database.</p>
@@ -126,7 +113,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="font-bold text-white text-lg truncate">{{ product.name }}</div>
-                  <div class="text-[10px] text-white/30 font-mono mb-2 uppercase">{{ product.category || 'Seafood' }}</div>
+                  <div class="text-[10px] text-white/30 font-mono mb-2 uppercase">{{ product.unit || 'kg' }}</div>
                   <div class="font-black text-emerald-400 text-xl">₱{{ formatNumber(product.selling_price) }}</div>
                 </div>
               </div>
@@ -136,12 +123,6 @@
                   <div class="flex flex-col">
                     <span class="text-[10px] text-white/40 font-bold uppercase">Unit</span>
                     <span class="font-bold text-white text-xs">{{ product.unit || 'kg' }}</span>
-                  </div>
-                  <div class="flex flex-col border-l border-white/10 pl-4">
-                    <span class="text-[10px] text-white/40 font-bold uppercase">Stock</span>
-                    <span :class="parseFloat(product.current_stock) > 0 ? 'text-sky-400' : 'text-rose-400'" class="font-black text-xs">
-                      {{ parseFloat(product.current_stock) }}
-                    </span>
                   </div>
                 </div>
                 <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/10" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
@@ -190,22 +171,16 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</label>
-                <select v-model="form.unit" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
-                  <option value="kg" class="bg-slate-900">kg</option>
-                  <option value="piece" class="bg-slate-900">piece</option>
-                  <option value="batch" class="bg-slate-900">batch</option>
-                  <option value="Per serving" class="bg-slate-900">Per serving</option>
-                  <option value="Isa ka basket" class="bg-slate-900">Isa ka basket</option>
-                  <option value="Pila ka bilao" class="bg-slate-900">Pila ka bilao</option>
-                </select>
-              </div>
-              <div class="space-y-2">
-                <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Stock Quantity</label>
-                <input v-model="form.current_stock" type="number" step="0.01" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
-              </div>
+            <div class="space-y-2">
+              <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</label>
+              <select v-model="form.unit" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
+                <option value="kg" class="bg-slate-900">kg</option>
+                <option value="piece" class="bg-slate-900">piece</option>
+                <option value="batch" class="bg-slate-900">batch</option>
+                <option value="Per serving" class="bg-slate-900">Per serving</option>
+                <option value="Isa ka basket" class="bg-slate-900">Isa ka basket</option>
+                <option value="Pila ka bilao" class="bg-slate-900">Pila ka bilao</option>
+              </select>
             </div>
 
             <div class="space-y-2">
@@ -248,8 +223,7 @@ const form = ref({
   name: '',
   cost_price: '',
   selling_price: '',
-  unit: 'Per serving',
-  current_stock: ''
+  unit: 'Per serving'
 });
 
 const liveItemsCount = computed(() => {
@@ -283,7 +257,7 @@ const fetchProducts = async () => {
 
 const openAddModal = () => {
   isEditing.value = false;
-  form.value = { id: null, name: '', cost_price: '', selling_price: '', unit: 'Per serving', current_stock: 10 };
+  form.value = { id: null, name: '', cost_price: '', selling_price: '', unit: 'Per serving' };
   imagePreview.value = null;
   selectedFile.value = null;
   showModal.value = true;
@@ -296,8 +270,7 @@ const openEditModal = (product) => {
     name: product.name,
     cost_price: product.cost_price,
     selling_price: product.selling_price,
-    unit: product.unit || 'Per serving',
-    current_stock: product.current_stock
+    unit: product.unit || 'Per serving'
   };
   imagePreview.value = product.image ? getImageUrl(product.image) : null;
   selectedFile.value = null;
@@ -325,7 +298,7 @@ const saveProduct = async () => {
     formData.append('cost_price', form.value.cost_price);
     formData.append('selling_price', form.value.selling_price);
     formData.append('unit', form.value.unit);
-    formData.append('current_stock', form.value.current_stock || 0);
+
     
     if (selectedFile.value) {
       formData.append('image', selectedFile.value);

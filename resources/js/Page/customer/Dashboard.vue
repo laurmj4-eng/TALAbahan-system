@@ -39,9 +39,9 @@
       <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
         <template v-for="product in products" :key="product.id">
           <article 
-            v-if="product.is_available != 0"
+            v-if="parseInt(product.is_available) === 1"
             class="group relative flex flex-col bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
-            :class="{ 'opacity-50 grayscale pointer-events-none': product.current_stock <= 0 }"
+            :class="{ 'opacity-50 grayscale pointer-events-none': parseInt(product.is_available) !== 1 }"
           >
           <!-- Product Image Container -->
           <div class="aspect-[4/5] w-full overflow-hidden relative">
@@ -55,7 +55,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-[#020617]/90 via-transparent to-transparent opacity-60"></div>
             
             <!-- Sold Out Badge -->
-            <div v-if="product.current_stock <= 0" class="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
+            <div v-if="parseInt(product.is_available) !== 1" class="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
               <span class="px-2 py-1 sm:px-4 sm:py-2 border sm:border-2 border-white/30 rounded-lg sm:rounded-xl font-black text-white tracking-widest uppercase text-[0.5rem] sm:text-sm bg-black/40 backdrop-blur-md">Sold Out</span>
             </div>
 
@@ -72,14 +72,13 @@
               <h3 class="text-xs sm:text-sm md:text-lg font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-cyan-300 transition-colors duration-300 leading-tight">
                 {{ product.name }}
               </h3>
-              
               <div class="flex items-baseline gap-1 sm:gap-2">
                 <span class="text-sm sm:text-lg md:text-2xl font-black text-cyan-400 tracking-tighter">₱{{ formatNumber(product.selling_price) }}</span>
-                <span class="text-white/20 text-[0.5rem] sm:text-[0.6rem] font-black uppercase tracking-widest">/ {{ product.unit || 'kg' }}</span>
+                <span class="text-slate-300 text-[0.5rem] sm:text-[0.6rem] font-black uppercase tracking-widest">/ {{ product.unit || 'kg' }}</span>
               </div>
 
               <div class="flex items-center gap-2 pt-0.5">
-                <div class="flex items-center gap-1 sm:gap-1.5 text-white/40 text-[0.5rem] sm:text-[0.6rem] font-black uppercase tracking-widest">
+                <div class="flex items-center gap-1 sm:gap-1.5 text-amber-400/90 text-[0.5rem] sm:text-[0.6rem] font-black uppercase tracking-widest">
                   <ShoppingBag class="w-2.5 h-2.5 sm:w-3 h-3" />
                   <span>{{ product.real_sold_count || 0 }} Sold</span>
                 </div>
@@ -89,7 +88,7 @@
             <!-- Action Buttons -->
             <div class="flex flex-col gap-1.5 sm:gap-2 mt-auto">
               <button 
-                v-if="product.is_available != 0 && product.current_stock > 0"
+                v-if="parseInt(product.is_available) === 1"
                 @click="buyNow(product)"
                 class="w-full bg-cyan-400 text-slate-950 hover:bg-cyan-300 font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-cyan-400/10 group/buy"
               >
@@ -98,7 +97,7 @@
               </button>
 
               <button 
-                v-if="product.is_available != 0 && product.current_stock > 0"
+                v-if="parseInt(product.is_available) === 1"
                 @click="addToCart(product)"
                 class="w-full bg-white/5 border border-white/10 text-white/60 font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs hover:bg-white hover:text-slate-950 hover:border-white transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 group/cart"
               >
@@ -106,7 +105,7 @@
                 <span>Add to Cart</span>
               </button>
 
-              <div v-if="product.is_available == 0" class="w-full bg-rose-500/10 border border-rose-500/20 text-rose-400 font-black py-3 rounded-xl text-[0.65rem] uppercase tracking-widest text-center flex items-center justify-center gap-2">
+              <div v-if="parseInt(product.is_available) !== 1" class="w-full bg-rose-500/10 border border-rose-500/20 text-rose-400 font-black py-3 rounded-xl text-[0.65rem] uppercase tracking-widest text-center flex items-center justify-center gap-2">
                 <Ban class="w-3 h-3" />
                 Not Available
               </div>

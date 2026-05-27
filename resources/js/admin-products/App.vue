@@ -38,11 +38,10 @@
           <tr class="border-b border-white/10 bg-white/5">
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">PICTURE</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">PRODUCT NAME</th>
+            <th class="px-6 py-4 text-sm font-semibold text-gray-300">UNIT</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">COST PRICE</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">SELLING PRICE</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-300">STOCK LEVEL</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-300">STATUS</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-300">LIVE STATUS</th>
+            <th class="px-6 py-4 text-sm font-semibold text-gray-300">VISIBILITY</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300 sticky right-0 bg-[#1a1a1a]/80 backdrop-blur-md border-l border-white/10">ACTIONS</th>
           </tr>
         </thead>
@@ -54,26 +53,13 @@
             <td class="px-6 py-4">
               <div class="text-white font-medium">{{ product.name }}</div>
             </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 backdrop-blur-sm capitalize">
+                {{ product.unit ?? 'kg' }}
+              </span>
+            </td>
             <td class="px-6 py-4 text-gray-400">₱{{ formatPrice(product.cost_price) }}</td>
             <td class="px-6 py-4 text-white font-semibold">₱{{ formatPrice(product.selling_price) }}</td>
-            <td class="px-6 py-4">
-              <span class="text-white">{{ product.current_stock }}</span>
-              <span class="text-gray-500 text-xs ml-1">{{ product.unit }}</span>
-            </td>
-            <td class="px-6 py-4">
-              <span 
-                v-if="product.current_stock > 0"
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20 backdrop-blur-sm"
-              >
-                In Stock
-              </span>
-              <span 
-                v-else
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20 backdrop-blur-sm"
-              >
-                Out of Stock
-              </span>
-            </td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 <div class="w-12 flex justify-center">
@@ -176,18 +162,7 @@
                   </div>
                 </div>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-400 mb-1">
-                  {{ isEditing ? 'Current Stock' : 'Initial Stock' }}
-                </label>
-                <input 
-                  v-model="form.quantity" 
-                  type="number" 
-                  step="0.01" 
-                  required
-                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
+
             </div>
             
             <div class="space-y-4">
@@ -262,7 +237,6 @@ const form = ref({
   unit: '',
   cost_price: 0,
   selling_price: 0,
-  quantity: 0,
   image: null
 });
 
@@ -303,7 +277,6 @@ const openAddModal = () => {
     unit: '',
     cost_price: 0,
     selling_price: 0,
-    quantity: 0,
     image: null
   };
   imagePreview.value = null;
@@ -318,7 +291,6 @@ const openEditModal = (product) => {
     unit: product.unit,
     cost_price: product.cost_price,
     selling_price: product.selling_price,
-    quantity: product.current_stock,
     image: null
   };
   imagePreview.value = getImageUrl(product.image);
@@ -360,10 +332,7 @@ const handleSubmit = async () => {
     }
   });
   
-  if (isEditing.value) {
-    // For update, we use current_stock field name as expected by the controller
-    formData.append('current_stock', form.value.quantity);
-  }
+
 
   formData.append('csrf_test_name', csrfToken.value);
 

@@ -12,26 +12,14 @@
       >
         {{ product.is_available == 1 ? 'LIVE' : 'HIDDEN' }}
       </div>
-      <div 
-        v-if="product.current_stock > 0"
-        class="absolute top-3 right-3 bg-blue-500/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg"
-      >
-        In Stock
-      </div>
-      <div 
-        v-else
-        class="absolute top-3 right-3 bg-red-500/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg"
-      >
-        Out of Stock
-      </div>
     </div>
     
     <div class="p-4 flex-grow">
       <h3 class="text-lg font-semibold text-white truncate">{{ product.name }}</h3>
       <div class="mt-2 space-y-1">
         <div class="flex justify-between text-sm">
-          <span class="text-gray-400">Stock:</span>
-          <span class="text-white font-medium">{{ product.current_stock }} {{ product.unit }}</span>
+          <span class="text-gray-400">Unit:</span>
+          <span class="text-white font-medium capitalize">{{ product.unit ?? 'kg' }}</span>
         </div>
         <div class="flex justify-between text-sm">
           <span class="text-gray-400">Cost:</span>
