@@ -16,6 +16,7 @@ $routes->get('/', 'Home::index');
 $routes->get('login', 'Home::login');
 $routes->get('logout', 'Auth::logout');
 $routes->get('register', 'Home::register');
+$routes->get('products/(:num)/details', '\App\Controllers\Customer\Dashboard::details/$1', ['filter' => 'customerGuard']);
 
 // --- API ROUTES (JSON) ---
 $routes->options('api/(:any)', function() {

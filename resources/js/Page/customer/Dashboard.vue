@@ -72,7 +72,7 @@
               <h3 class="text-xs sm:text-sm md:text-lg font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-cyan-300 transition-colors duration-300 leading-tight">
                 {{ product.name }}
               </h3>
-              <div class="flex items-baseline gap-1 sm:gap-2">
+              <div class="flex items-baseline gap-1 sm:gap-2 whitespace-nowrap">
                 <span class="text-sm sm:text-lg md:text-2xl font-black text-cyan-400 tracking-tighter">₱{{ formatNumber(product.selling_price) }}</span>
                 <span class="text-slate-300 text-[0.5rem] sm:text-[0.6rem] font-black uppercase tracking-widest">/ {{ product.unit || 'kg' }}</span>
               </div>
@@ -83,6 +83,17 @@
                   <span>{{ product.real_sold_count || 0 }} Sold</span>
                 </div>
               </div>
+            </div>
+
+            <!-- Product Details Link -->
+            <div class="mt-1 mb-1">
+              <Link 
+                :href="`/products/${product.id}/details`"
+                class="group/link inline-flex items-center gap-1.5 text-xs font-medium text-cyan-400/80 transition-all duration-300 hover:text-cyan-300 hover:underline hover:underline-offset-4 hover:decoration-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 rounded"
+              >
+                ✨ Click here for more details
+                <ChevronDown class="w-3.5 h-3.5 transition-transform duration-300 group-hover/link:translate-y-1" />
+              </Link>
             </div>
 
             <!-- Action Buttons -->
@@ -489,7 +500,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { 
   ShoppingCart, 
@@ -508,7 +519,8 @@ import {
   X,
   Trash2,
   Minus,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-vue-next';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';
 

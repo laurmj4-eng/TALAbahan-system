@@ -144,4 +144,37 @@ class Dashboard extends BaseController
             'completed' => $completed,
         ];
     }
+
+    public function details($id)
+    {
+        if (session()->get('role') !== 'customer') {
+            return redirect()->to('/login');
+        }
+
+        $productModel = new ProductModel();
+        $product = $productModel->find($id);
+
+        if (!$product) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Product with ID $id not found");
+        }
+
+        // Prepare data with fallbacks for UI richness
+        $data = [
+            'product' => [
+                'id' => (int)$product['id'],
+                'name' => $product['name'],
+                'description' => $product['description'] ?? 'Experience the ultimate seafood delight. A rich, deep flavor profile infused with our signature spices and a hint of smoky essence, crafted to perfection.',
+                'price' => (float)$product['selling_price'],
+                'unit' => $product['unit'] ?? 'Per serving',
+                'image' => $product['image'] ?? '',
+                'category' => $product['category'] ?? 'Premium',
+                'prep_style' => $product['prep_style'] ?? 'Kinilaw / Grilled',
+                'flavor_notes' => $product['flavor_notes'] ?? 'Spicy, Citrusy, Savory',
+                'portion_size' => $product['portion_size'] ?? 'Good for 2-3 persons',
+                'stock_status' => ((int)$product['is_available'] === 1) ? 'available' : 'out_of_stock'
+            ]
+        ];
+
+        return inertia('customer/ProductDetails', $data);
+    }
 }
