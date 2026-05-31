@@ -31,22 +31,52 @@ const emit = defineEmits<Emits>()
 const recaptchaElement = ref<HTMLDivElement | null>(null)
 const recaptchaId = ref<number | null>(null)
 
-onMounted(() => {
-  // Load Google's reCAPTCHA script if not already loaded
-  if (!window.grecaptcha) {
+const loadScript = () =>
+  new Promise((resolve) => {
+    if (window.grecaptcha?.ready) {
+      window.grecaptcha.ready(resolve)
+      return
+    }
+    const existing = document.querySelector('script[src*="google.com/recaptcha/api.js"]')
+    if (existing) {
+      const deadline = Date.now() + 15000
+      const tick = () => {
+        if (window.grecaptcha?.ready) {
+          window.grecaptcha.ready(resolve)
+        } else if (Date.now() < deadline) {
+          setTimeout(tick, 100)
+        } else {
+          resolve()
+        }
+      }
+      tick()
+      return
+    }
     const script = document.createElement('script')
-    script.src = 'https://www.google.com/recaptcha/api.js'
+    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit'
     script.async = true
     script.defer = true
-    script.onload = () => initRecaptcha()
+    script.onload = () => (window.grecaptcha?.ready ? window.grecaptcha.ready(resolve) : resolve())
     document.head.appendChild(script)
-  } else {
-    initRecaptcha()
-  }
+  })
+
+onMounted(async () => {
+  await loadScript()
+  initRecaptcha()
 })
 
 const initRecaptcha = () => {
-  if (recaptchaElement.value && window.grecaptcha) {
+  if (!props.siteKey || props.siteKey === 'YOUR_RECAPTCHA_V2_SITE_KEY') {
+    onRecaptchaError()
+    return
+  }
+  if (!recaptchaElement.value || !window.grecaptcha?.ready) {
+    return
+  }
+  window.grecaptcha.ready(() => {
+    if (!recaptchaElement.value || recaptchaId.value !== null) {
+      return
+    }
     recaptchaId.value = window.grecaptcha.render(recaptchaElement.value, {
       sitekey: props.siteKey,
       theme: props.theme,
@@ -56,7 +86,7 @@ const initRecaptcha = () => {
       'expired-callback': onRecaptchaExpire,
       'error-callback': onRecaptchaError
     })
-  }
+  })
 }
 
 const onRecaptchaSuccess = (token: string) => {

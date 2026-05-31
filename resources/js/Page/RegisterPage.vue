@@ -64,7 +64,12 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div id="recaptcha-container" class="flex justify-center my-4 md:my-6 min-h-[78px] rounded-xl relative z-10"></div>
+          <div class="recaptcha-section my-4 md:my-6">
+            <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
+            <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
+              {{ recaptchaError }}
+            </p>
+          </div>
 
           <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-4 rounded-xl text-xs font-bold mb-4">
             {{ error }}
@@ -116,12 +121,30 @@
   margin: auto;
   flex-direction: column;
 }
+
+.recaptcha-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+}
+
+.recaptcha-widget-host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 78px;
+  width: 100%;
+  overflow: visible;
+}
 </style>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useRecaptcha } from '../composables/useRecaptcha';
 
 const windowObj = window;
 const username = ref('');
@@ -130,35 +153,9 @@ const password = ref('');
 const confirmPassword = ref('');
 const loading = ref(false);
 const error = ref('');
-const siteKey = window.RECAPTCHA_SITE_KEY;
-let recaptchaWidget = null;
-
-onMounted(() => {
-  // Function to render reCAPTCHA
-  const renderRecaptcha = () => {
-    if (window.grecaptcha && window.grecaptcha.render) {
-      const container = document.getElementById('recaptcha-container');
-      if (container && container.innerHTML === "") {
-        recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': siteKey,
-          'size': 'compact'
-        });
-      }
-      return true;
-    }
-    return false;
-  };
-
-  // Try to render immediately
-  if (!renderRecaptcha()) {
-    const interval = setInterval(() => {
-      if (renderRecaptcha()) {
-        clearInterval(interval);
-      }
-    }, 500);
-    setTimeout(() => clearInterval(interval), 10000);
-  }
-});
+const recaptchaContainerRef = ref(null);
+const { recaptchaError, getResponse, reset: resetRecaptcha } =
+  useRecaptcha(recaptchaContainerRef, { theme: 'light' });
 
 const handleRegister = async () => {
   if (password.value !== confirmPassword.value) {
@@ -166,7 +163,7 @@ const handleRegister = async () => {
     return;
   }
 
-  const recaptchaResponse = window.grecaptcha ? window.grecaptcha.getResponse(recaptchaWidget) : "";
+  const recaptchaResponse = getResponse();
   
   if (!recaptchaResponse) {
     error.value = 'Please complete the reCAPTCHA verification.';
@@ -191,7 +188,7 @@ const handleRegister = async () => {
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed. Please try again.';
-    if (window.grecaptcha) window.grecaptcha.reset(recaptchaWidget);
+    resetRecaptcha();
     if (err.response?.data?.token) {
       window.CSRF_HASH = err.response.data.token;
     }

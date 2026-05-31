@@ -8,7 +8,7 @@
   >
     <div class="login-content-container">
     <div class="w-full max-w-[400px] px-2 md:px-0 sm:max-w-[450px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center duration-500">
+      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center duration-500 overflow-visible">
         
         <!-- Logo -->
         <div class="mb-4 md:mb-6">
@@ -43,9 +43,12 @@
 
           <!-- reCAPTCHA Widget -->
           <div v-if="showRecaptcha" class="recaptcha-section">
-            <div class="recaptcha-inner flex justify-center w-full translate-x-5 lg:translate-x-0">
-              <div id="recaptcha-container"></div>
+            <div class="recaptcha-inner">
+              <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
             </div>
+            <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
+              {{ recaptchaError }}
+            </p>
           </div>
 
           <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-3 md:px-4 rounded-xl text-xs font-bold mb-2 md:mb-4 text-center">
@@ -126,9 +129,11 @@
 .recaptcha-section {
   width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0;
+  padding: 0.25rem 0;
+  overflow: visible;
 }
 
 .recaptcha-inner {
@@ -143,16 +148,19 @@
   transition: all 0.2s ease;
 }
 
-/* The actual Google widget sits inside – keep it block-level */
-#recaptcha-container {
+/* Host for Google reCAPTCHA iframe */
+.recaptcha-widget-host {
   display: flex;
   justify-content: center;
-  line-height: 0; /* removes phantom gap below iframe */
+  align-items: center;
+  min-height: 78px;
+  width: 100%;
+  overflow: visible;
 }
 
-/* No rounding on iframe - let Google's default show */
-:deep(#recaptcha-container iframe) {
+:deep(.recaptcha-widget-host iframe) {
   display: block;
+  max-width: 100%;
 }
 
 /* ── Desktop (≥ 769 px) ───────────────────────────── */
@@ -210,8 +218,9 @@
 
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
-import { router, Link } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useRecaptcha } from '../composables/useRecaptcha';
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -223,13 +232,20 @@ const loading = ref(false);
 const googleLoading = ref(false);
 const error = ref('');
 const showRecaptcha = ref(true);
-const siteKey = window.RECAPTCHA_SITE_KEY;
-let recaptchaWidget = null;
+const recaptchaContainerRef = ref(null);
+const { recaptchaError, getResponse, reset: resetRecaptcha, rerender: rerenderRecaptcha } =
+  useRecaptcha(recaptchaContainerRef, { theme: 'light' });
 
 let auth = null;
 let provider = null;
 
 onMounted(() => {
+  // If a previous admin login hid captcha for this device, show it unless email matches
+  const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
+  if (trustedAdminEmail && email.value && email.value.toLowerCase() === trustedAdminEmail.toLowerCase()) {
+    showRecaptcha.value = false;
+  }
+
   // Initialize Firebase
   if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
     try {
@@ -252,35 +268,6 @@ onMounted(() => {
     }
   }
 
-  // Function to render reCAPTCHA
-  const renderRecaptcha = () => {
-    if (!showRecaptcha.value) return true;
-    
-    if (window.grecaptcha && window.grecaptcha.render) {
-      const container = document.getElementById('recaptcha-container');
-      if (container && container.innerHTML === "") {
-        recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-          'sitekey': siteKey,
-          'size': 'compact'
-        });
-      }
-      return true;
-    }
-    return false;
-  };
-
-  // Try to render immediately
-  if (!renderRecaptcha()) {
-    // If not loaded yet, check periodically
-    const interval = setInterval(() => {
-      if (renderRecaptcha()) {
-        clearInterval(interval);
-      }
-    }, 500);
-
-    // Stop checking after 10 seconds to avoid infinite loop if something is wrong
-    setTimeout(() => clearInterval(interval), 10000);
-  }
 });
 
 // Watch for email changes to show/hide reCAPTCHA
@@ -293,27 +280,15 @@ watch(email, (newEmail) => {
   }
 });
 
-// Watch for showRecaptcha changes to re-render if needed
 watch(showRecaptcha, async (newVal) => {
   if (newVal) {
     await nextTick();
-    // Give it a small delay for the DOM element to be fully ready
-    setTimeout(() => {
-      if (window.grecaptcha && window.grecaptcha.render) {
-        const container = document.getElementById('recaptcha-container');
-        if (container && container.innerHTML === "") {
-          recaptchaWidget = window.grecaptcha.render('recaptcha-container', {
-            'sitekey': siteKey,
-            'size': 'compact'
-          });
-        }
-      }
-    }, 100);
+    setTimeout(() => rerenderRecaptcha(), 150);
   }
 });
 
 const handleLogin = async () => {
-  const recaptchaResponse = (window.grecaptcha && showRecaptcha.value) ? window.grecaptcha.getResponse(recaptchaWidget) : "";
+  const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
   
   if (showRecaptcha.value && !recaptchaResponse) {
     error.value = 'Please complete the reCAPTCHA verification.';
@@ -348,7 +323,7 @@ const handleLogin = async () => {
       localStorage.removeItem('trustedAdminEmail');
     }
 
-    if (window.grecaptcha && recaptchaWidget !== null) window.grecaptcha.reset(recaptchaWidget);
+    if (showRecaptcha.value) resetRecaptcha();
     
     // Update CSRF hash if backend returned a new one
     if (err.response?.data?.token) {
