@@ -6,9 +6,21 @@ use CodeIgniter\Database\Config;
 
 /**
  * Database Configuration
+ *
+ * - testing:     in-memory SQLite (PHPUnit)
+ * - development: fixed XAMPP defaults (localhost / mj_chatbot / root)
+ * - production:  credentials from environment (Render dashboard / .env secrets)
  */
 class Database extends Config
 {
+    /**
+     * Local XAMPP defaults — only applied when CI_ENVIRONMENT is development.
+     */
+    private const LOCAL_HOSTNAME = 'localhost';
+    private const LOCAL_DATABASE = 'mj_chatbot';
+    private const LOCAL_USERNAME = 'root';
+    private const LOCAL_PASSWORD = '';
+
     /**
      * The directory that holds the Migrations and Seeds directories.
      */
@@ -26,10 +38,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'sql206.infinityfree.com',
-        'username'     => 'if0_41764652',
-        'password'     => 'yEEY6EnLGIFdD',
-        'database'     => 'if0_41764652_mj_chatbot',
+        'hostname'     => 'localhost',
+        'username'     => '',
+        'password'     => '',
+        'database'     => '',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
@@ -90,13 +102,82 @@ class Database extends Config
 
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
+
             return;
         }
 
-        // FORCE LOCAL DATABASE SETTINGS FOR DEVELOPMENT
-        $this->default['hostname'] = 'localhost';
-        $this->default['database'] = 'mj_chatbot';
-        $this->default['username'] = 'root';
-        $this->default['password'] = '';
+        if (ENVIRONMENT === 'production') {
+            $this->applyProductionCredentials();
+
+            return;
+        }
+
+        // development and any other non-production local runtimes (XAMPP)
+        $this->applyLocalDevelopmentCredentials();
+    }
+
+    /**
+     * XAMPP / local defaults — not read from production env vars.
+     */
+    private function applyLocalDevelopmentCredentials(): void
+    {
+        $this->default['hostname'] = self::LOCAL_HOSTNAME;
+        $this->default['database'] = self::LOCAL_DATABASE;
+        $this->default['username'] = self::LOCAL_USERNAME;
+        $this->default['password'] = self::LOCAL_PASSWORD;
+        $this->default['port']     = 3306;
+        $this->default['DBDebug']  = true;
+    }
+
+    /**
+     * Render / production — from CI4 dotted keys or DB_* aliases via getenv().
+     */
+    private function applyProductionCredentials(): void
+    {
+        $this->default['hostname'] = $this->envString(
+            'database.default.hostname',
+            'DB_HOSTNAME',
+            'DB_HOST',
+        );
+        $this->default['database'] = $this->envString(
+            'database.default.database',
+            'DB_NAME',
+            'DB_DATABASE',
+        );
+        $this->default['username'] = $this->envString(
+            'database.default.username',
+            'DB_USERNAME',
+            'DB_USER',
+        );
+        $this->default['password'] = $this->envString(
+            'database.default.password',
+            'DB_PASSWORD',
+            'DB_PASS',
+        );
+        $this->default['port'] = (int) $this->envString(
+            'database.default.port',
+            'DB_PORT',
+        ) ?: 3306;
+        $this->default['DBDebug'] = false;
+        $this->default['encrypt'] = filter_var(
+            $this->envString('database.default.encrypt', 'DB_ENCRYPT') ?: 'false',
+            FILTER_VALIDATE_BOOL,
+        );
+    }
+
+    /**
+     * Read the first set value from getenv() (empty string is valid, e.g. XAMPP root password).
+     */
+    private function envString(string ...$keys): string
+    {
+        foreach ($keys as $key) {
+            $value = getenv($key);
+
+            if ($value !== false) {
+                return $value;
+            }
+        }
+
+        return '';
     }
 }

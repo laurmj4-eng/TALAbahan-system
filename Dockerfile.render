@@ -1,0 +1,88 @@
+# Stage 1: Composer + Vite (build.sh)
+FROM php:8.2-cli AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    curl \
+    libicu-dev \
+    libzip-dev \
+    && docker-php-ext-install intl zip \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . .
+
+RUN chmod +x build.sh docker-entrypoint.sh && ./build.sh
+
+# Stage 2: Apache + PHP runtime
+FROM php:8.2-apache
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libicu-dev \
+    libzip-dev \
+    curl \
+    && docker-php-ext-install intl zip mysqli pdo_mysql \
+    && a2enmod rewrite headers deflate expires \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN a2dissite 000-default 2>/dev/null || true \
+    && rm -f /etc/apache2/sites-available/000-default.conf
+
+RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
+<VirtualHost *:8080>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/public
+
+    <Directory /var/www/html/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^(.*)$ index.php/$1 [L]
+        </IfModule>
+    </Directory>
+
+    <Directory /var/www/html/system>
+        Require all denied
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+
+RUN a2ensite 000-default
+
+WORKDIR /var/www/html
+
+COPY --from=builder --chown=www-data:www-data /app /var/www/html
+
+RUN mkdir -p public/uploads/products uploads writable/session writable/cache writable/logs \
+    && chmod -R 775 writable uploads public/uploads \
+    && chown -R www-data:www-data writable uploads public/uploads
+
+RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
+ENV PORT=8080
+ENV CI_ENVIRONMENT=production
+
+EXPOSE 8080
+
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f "http://127.0.0.1:8080/health" || exit 1
+
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]

@@ -12,8 +12,11 @@ if (!function_exists('vite_asset')) {
         }
         
         // Production mode: read from manifest
-        $manifestPath = FCPATH . 'public/build/manifest.json';
-        
+        $manifestPath = FCPATH . 'build/manifest.json';
+        if (! file_exists($manifestPath)) {
+            $manifestPath = FCPATH . 'public/build/manifest.json';
+        }
+
         if (!file_exists($manifestPath)) {
             log_message('error', '[Vite] Manifest file not found: ' . $manifestPath);
             // Fallback to static path

@@ -1,66 +1,54 @@
+# Render Blueprint — TALAbahan System (Docker + MySQL)
+# https://render.com/docs/blueprint-spec
+
 services:
   - type: web
     name: talabahan-system
-    env: docker
-    repo: <your-github-repo-url>
-    branch: main
-    
-    # Build configuration
-    dockerfilePath: ./Dockerfile.production
-    buildCommand: npm ci && npm run build
-    
-    # Health check
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: starter
     healthCheckPath: /health
-    
-    # Port configuration (Render will set PORT env variable)
+    autoDeploy: true
     envVars:
       - key: CI_ENVIRONMENT
         value: production
       - key: PORT
-        value: 8080
+        value: "8080"
+      - key: app.forceGlobalSecureRequests
+        value: "true"
+      - key: database.default.port
+        value: "3306"
       - key: INERTIA_VERSION
         sync: false
-      
-      # Database (set these in Render dashboard for security)
-      - key: DB_HOSTNAME
+      - key: database.default.hostname
         sync: false
-      - key: DB_NAME
+      - key: database.default.database
         sync: false
-      - key: DB_USERNAME
+      - key: database.default.username
         sync: false
-      - key: DB_PASSWORD
+      - key: database.default.password
         sync: false
-      - key: DB_PORT
-        value: 3306
-      
-      # Security keys (set these in Render dashboard)
-      - key: ENCRYPTION_KEY
+      - key: encryption.key
         sync: false
       - key: RECAPTCHA_SITE_KEY
         sync: false
       - key: RECAPTCHA_SECRET_KEY
         sync: false
-      
-      # Firebase (set these in Render dashboard)
       - key: FIREBASE_API_KEY
+        sync: false
+      - key: FIREBASE_AUTH_DOMAIN
         sync: false
       - key: FIREBASE_PROJECT_ID
         sync: false
-      
-      # API Keys (set these in Render dashboard)
-      - key: OPENROUTER_API_KEY
+      - key: FIREBASE_STORAGE_BUCKET
         sync: false
-    
-    # Auto-deploy on push
-    autoDeploy: true
-    
-    # Timeout configurations
-    preDeployCommand: |
-      # You can add pre-deployment hooks here
-      echo "Preparing application for deployment..."
-
-# Optional: Add cron jobs for maintenance
-# cronJobs:
-#   - name: "Clean old logs"
-#     schedule: "0 2 * * *"
-#     command: "php spark logs:clean"
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: FIREBASE_APP_ID
+        sync: false
+      - key: FIREBASE_MEASUREMENT_ID
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: app.baseURL
+        sync: false

@@ -56,7 +56,12 @@ class Inertia
 
         // Auto-detect from environment in production
         if (ENVIRONMENT === 'production') {
-            return env('INERTIA_VERSION', hash('crc32', filemtime(FCPATH . 'public/build/manifest.json')));
+            $manifest = FCPATH . 'build/manifest.json';
+            if (! is_file($manifest)) {
+                $manifest = FCPATH . 'public/build/manifest.json';
+            }
+
+            return env('INERTIA_VERSION', is_file($manifest) ? hash('crc32', (string) filemtime($manifest)) : '1');
         }
 
         // Development: use timestamp for frequent updates

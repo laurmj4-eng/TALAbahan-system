@@ -45,8 +45,10 @@ README.md
 CONTRIBUTING.md
 *.md
 
-# Docker
-Dockerfile*
+# Docker (keep Dockerfile.render + entrypoint in build context)
+Dockerfile
+Dockerfile.production
+Dockerfile.backup
 docker-compose*.yml
 .dockerignore
 

@@ -25,8 +25,8 @@ class ActivityLogger implements FilterInterface
         $ip = $request->getIPAddress();
         $path = uri_string();
 
-        // Skip logging for debug toolbar and internal AJAX requests if necessary
-        if (strpos($path, 'debugbar') !== false || $request->isAJAX()) {
+        // Skip logging for probes, debug toolbar, and internal AJAX requests
+        if ($path === 'health' || strpos($path, 'debugbar') !== false || $request->isAJAX()) {
             return;
         }
 

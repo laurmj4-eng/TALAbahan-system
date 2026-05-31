@@ -21,14 +21,15 @@ export default defineConfig({
   build: {
     outDir: 'public/build',
     emptyOutDir: true,
-    manifest: true,
+    manifest: 'manifest.json',
     rollupOptions: {
       input: path.resolve(__dirname, 'resources/js/main.js'),
       output: {
-        entryFileNames: `assets/index.js`,
-        chunkFileNames: `assets/[name].js`,
-        assetFileNames: `assets/index.[ext]`,
+        entryFileNames: `assets/[name].[hash].js`,
+        chunkFileNames: `assets/[name].[hash].js`,
+        assetFileNames: `assets/[name].[hash][extname]`,
       },
     },
+    sourcemap: process.env.CI_ENVIRONMENT !== 'production' ? 'inline' : false,
   },
 });

@@ -1,0 +1,18 @@
+# CodeIgniter 4 — Apache rewrite (document root: public/)
+<IfModule mod_rewrite.c>
+    Options -Indexes
+    RewriteEngine On
+    RewriteBase /
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([\s\S]*)$ index.php/$1 [L,NC,QSA]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.+)\.(css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?)$ - [NC,L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Options -Indexes
+    ErrorDocument 404 index.php
+</IfModule>

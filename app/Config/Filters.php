@@ -46,8 +46,7 @@ class Filters extends BaseFilters
     public array $required = [
         'before' => [
             // 'cors', // Handled in index.php now for maximum compatibility
-            'forcehttps', 
-            'pagecache',  
+            'pagecache',
         ],
         'after' => [
             'pagecache',   
@@ -61,6 +60,8 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            // Render HTTP probes must not hit ForceHTTPS (except avoids 301 loops)
+            'forcehttps' => ['except' => ['health']],
             // 'honeypot',
             'csrf' => ['except' => [
                 'api/*',
@@ -83,7 +84,7 @@ class Filters extends BaseFilters
         'after' => [
             // 'honeypot',
             // 'secureheaders',
-            'activityLogger',
+            'activityLogger' => ['except' => ['health']],
         ],
     ];
 
