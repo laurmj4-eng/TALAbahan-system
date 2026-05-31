@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
+    <!-- reCAPTCHA v2 script injected by Vue composable (recaptchaLoader.js) -->
     
     <script>
         window.BASE_URL = "<?= base_url() ?>";

@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TALAbahan System</title>
     <link rel="icon" href="<?= base_url('favicon.ico') ?>">
-    <!-- reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
+    <!-- reCAPTCHA v2: loaded once by resources/js/composables/recaptchaLoader.js -->
     <script>
         window.BASE_URL = "<?= base_url() ?>";
         window.CSRF_TOKEN_NAME = "<?= csrf_token() ?>";

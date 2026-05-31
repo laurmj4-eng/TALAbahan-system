@@ -1,12 +1,17 @@
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { loadRecaptchaV2Script, whenRecaptchaReady } from './recaptchaLoader';
+import { getRecaptchaOriginDiagnostic, logRecaptchaOriginDiagnostic } from './recaptchaDiagnostics';
 
 /**
- * Load and render Google reCAPTCHA v2 (checkbox / image challenge).
- * Uses grecaptcha.ready() so it works with api.js?render=explicit from app.php.
+ * Google reCAPTCHA v2 (checkbox) for Vue 3 — vanilla grecaptcha.render, no wrapper library.
+ *
+ * Site key: window.RECAPTCHA_SITE_KEY (from spa.php / .env) or options.siteKey.
+ * Script: loaded once via recaptchaLoader (v2 explicit onload callback).
  */
 export function useRecaptcha(containerRef, options = {}) {
   const recaptchaError = ref('');
   const widgetId = ref(null);
+  const scriptReady = ref(false);
 
   const siteKey = options.siteKey ?? window.RECAPTCHA_SITE_KEY;
 
@@ -15,7 +20,7 @@ export function useRecaptcha(containerRef, options = {}) {
     return typeof window !== 'undefined' && window.innerWidth < 480 ? 'compact' : 'normal';
   };
 
-  const renderWidget = () => {
+  const renderWidget = async () => {
     if (!siteKey || siteKey === 'undefined' || siteKey === 'null') {
       recaptchaError.value =
         'reCAPTCHA is not configured. Set RECAPTCHA_SITE_KEY in your .env file and restart the server.';
@@ -30,13 +35,21 @@ export function useRecaptcha(containerRef, options = {}) {
       return;
     }
 
-    if (!window.grecaptcha?.ready) {
-      recaptchaError.value = 'reCAPTCHA script did not load. Check your network or ad blocker.';
+    try {
+      await loadRecaptchaV2Script();
+      scriptReady.value = true;
+    } catch (err) {
+      recaptchaError.value = err.message;
       return;
     }
 
-    window.grecaptcha.ready(() => {
+    await whenRecaptchaReady(() => {
       if (!containerRef.value || widgetId.value !== null) {
+        return;
+      }
+
+      if (!window.grecaptcha?.render) {
+        recaptchaError.value = 'reCAPTCHA script did not initialize grecaptcha.render.';
         return;
       }
 
@@ -45,76 +58,64 @@ export function useRecaptcha(containerRef, options = {}) {
           sitekey: siteKey,
           theme: options.theme ?? 'light',
           size: getSize(),
-          callback: options.onVerify,
+          callback: (token) => {
+            recaptchaError.value = '';
+            options.onVerify?.(token);
+            if (options.debug) {
+              logRecaptchaOriginDiagnostic(siteKey, containerRef.value);
+            }
+          },
           'expired-callback': options.onExpire,
           'error-callback': () => {
             recaptchaError.value =
-              'reCAPTCHA failed to load. In Google reCAPTCHA Admin, add this site domain (e.g. localhost) to your key.';
+              'reCAPTCHA failed to load. In Google reCAPTCHA Admin, add this host to your v2 key domains (localhost and/or 127.0.0.1).';
             options.onError?.();
+            if (options.debug) {
+              logRecaptchaOriginDiagnostic(siteKey, containerRef.value);
+            }
           },
         });
+
+        if (options.debug) {
+          setTimeout(
+            () => logRecaptchaOriginDiagnostic(siteKey, containerRef.value),
+            800,
+          );
+        }
       } catch (err) {
         console.error('[reCAPTCHA] render error:', err);
         recaptchaError.value =
-          'Could not display reCAPTCHA. Refresh the page. If it persists, verify your site key is reCAPTCHA v2 and domains are allowed.';
+          'Could not display reCAPTCHA. Confirm the key is reCAPTCHA v2 ("I\'m not a robot"), not v3 or Enterprise.';
       }
     });
   };
 
-  const ensureScript = () =>
-    new Promise((resolve) => {
-      if (window.grecaptcha?.ready) {
-        window.grecaptcha.ready(resolve);
-        return;
-      }
-
-      const existing = document.querySelector('script[src*="google.com/recaptcha/api.js"]');
-      if (existing) {
-        const deadline = Date.now() + 15000;
-        const tick = () => {
-          if (window.grecaptcha?.ready) {
-            window.grecaptcha.ready(resolve);
-          } else if (Date.now() < deadline) {
-            setTimeout(tick, 100);
-          } else {
-            recaptchaError.value = 'reCAPTCHA script timed out loading.';
-            resolve();
-          }
-        };
-        tick();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (window.grecaptcha?.ready) {
-          window.grecaptcha.ready(resolve);
-        } else {
-          resolve();
-        }
-      };
-      script.onerror = () => {
-        recaptchaError.value =
-          'Could not load Google reCAPTCHA. Disable ad blockers or allow google.com / gstatic.com.';
-        resolve();
-      };
-      document.head.appendChild(script);
-    });
-
-  onMounted(async () => {
-    await nextTick();
-    await ensureScript();
-    renderWidget();
-  });
-
-  onBeforeUnmount(() => {
+  const destroyWidget = () => {
     if (containerRef.value) {
       containerRef.value.innerHTML = '';
     }
     widgetId.value = null;
+  };
+
+  onMounted(async () => {
+    await nextTick();
+    if (containerRef.value) {
+      await renderWidget();
+    }
+  });
+
+  watch(
+    () => containerRef.value,
+    async (el) => {
+      if (el && widgetId.value === null && scriptReady.value) {
+        await nextTick();
+        await renderWidget();
+      }
+    },
+  );
+
+  onBeforeUnmount(() => {
+    destroyWidget();
   });
 
   const getResponse = () => {
@@ -131,19 +132,22 @@ export function useRecaptcha(containerRef, options = {}) {
   };
 
   const rerender = async () => {
-    if (containerRef.value) {
-      containerRef.value.innerHTML = '';
-    }
-    widgetId.value = null;
+    destroyWidget();
     recaptchaError.value = '';
     await nextTick();
-    renderWidget();
+    await renderWidget();
   };
+
+  const runOriginDiagnostic = () =>
+    getRecaptchaOriginDiagnostic(siteKey, containerRef.value);
 
   return {
     recaptchaError,
+    scriptReady,
     getResponse,
     reset,
     rerender,
+    runOriginDiagnostic,
+    logOriginDiagnostic: () => logRecaptchaOriginDiagnostic(siteKey, containerRef.value),
   };
 }

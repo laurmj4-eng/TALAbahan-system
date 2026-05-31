@@ -42,9 +42,7 @@ if (!function_exists('vite_asset')) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
-    
+    <!-- reCAPTCHA v2: loaded by Vue composable (recaptchaLoader.js) -->
     <script>
         window.BASE_URL = "<?= base_url() ?>";
         window.CSRF_TOKEN_NAME = "<?= csrf_token() ?>";

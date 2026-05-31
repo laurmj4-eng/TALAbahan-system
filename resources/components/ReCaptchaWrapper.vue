@@ -5,7 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
+import { whenRecaptchaReady } from '../js/composables/recaptchaLoader'
 
 interface Props {
   siteKey: string
@@ -31,38 +32,8 @@ const emit = defineEmits<Emits>()
 const recaptchaElement = ref<HTMLDivElement | null>(null)
 const recaptchaId = ref<number | null>(null)
 
-const loadScript = () =>
-  new Promise((resolve) => {
-    if (window.grecaptcha?.ready) {
-      window.grecaptcha.ready(resolve)
-      return
-    }
-    const existing = document.querySelector('script[src*="google.com/recaptcha/api.js"]')
-    if (existing) {
-      const deadline = Date.now() + 15000
-      const tick = () => {
-        if (window.grecaptcha?.ready) {
-          window.grecaptcha.ready(resolve)
-        } else if (Date.now() < deadline) {
-          setTimeout(tick, 100)
-        } else {
-          resolve()
-        }
-      }
-      tick()
-      return
-    }
-    const script = document.createElement('script')
-    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit'
-    script.async = true
-    script.defer = true
-    script.onload = () => (window.grecaptcha?.ready ? window.grecaptcha.ready(resolve) : resolve())
-    document.head.appendChild(script)
-  })
-
 onMounted(async () => {
-  await loadScript()
-  initRecaptcha()
+  await whenRecaptchaReady(initRecaptcha)
 })
 
 const initRecaptcha = () => {

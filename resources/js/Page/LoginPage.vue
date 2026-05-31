@@ -233,8 +233,15 @@ const googleLoading = ref(false);
 const error = ref('');
 const showRecaptcha = ref(true);
 const recaptchaContainerRef = ref(null);
-const { recaptchaError, getResponse, reset: resetRecaptcha, rerender: rerenderRecaptcha } =
-  useRecaptcha(recaptchaContainerRef, { theme: 'light' });
+
+const {
+  recaptchaError,
+  getResponse,
+  reset: resetRecaptcha,
+  rerender: rerenderRecaptcha,
+} = useRecaptcha(recaptchaContainerRef, {
+  theme: 'light',
+});
 
 let auth = null;
 let provider = null;
@@ -267,7 +274,6 @@ onMounted(() => {
       console.error("Firebase init error:", err);
     }
   }
-
 });
 
 // Watch for email changes to show/hide reCAPTCHA
@@ -283,7 +289,9 @@ watch(email, (newEmail) => {
 watch(showRecaptcha, async (newVal) => {
   if (newVal) {
     await nextTick();
-    setTimeout(() => rerenderRecaptcha(), 150);
+    setTimeout(async () => {
+      await rerenderRecaptcha();
+    }, 150);
   }
 });
 
