@@ -12,10 +12,10 @@
           v-for="tab in tabs" 
           :key="tab.id"
           @click="activeTab = tab.id"
-          class="px-6 py-3 rounded-2xl font-extrabold text-sm transition-all flex items-center gap-3 border"
+          class="px-6 py-3 rounded-2xl font-extrabold text-sm transition-all flex items-center gap-3 border-b-2 border"
           :class="activeTab === tab.id 
-            ? 'bg-violet-600/20 text-white border-violet-500/30 shadow-lg shadow-violet-500/10' 
-            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'"
+            ? 'bg-violet-600/20 text-cyan-400 border-violet-500/30 border-b-cyan-400 shadow-lg shadow-violet-500/10' 
+            : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10 hover:text-slate-200'"
         >
           <span>{{ tab.label }}</span>
           <span class="px-2 py-0.5 bg-white/10 rounded-lg text-[0.7rem]">{{ counts[tab.id] || 0 }}</span>
@@ -200,7 +200,7 @@ import GlassCard from '../../components/GlassCard.vue';
 
 const activeTab = ref('all');
 const orders = ref([]);
-const counts = ref({ all: 0, to_pay: 0, to_ship: 0, to_receive: 0, completed: 0 });
+const counts = ref({ all: 0, to_pay: 0, to_ship: 0, to_receive: 0, completed: 0, cancelled: 0 });
 const showModal = ref(false);
 const selectedOrder = ref(null);
 
@@ -209,7 +209,8 @@ const tabs = [
   { id: 'to_pay', label: 'To Pay' },
   { id: 'to_ship', label: 'To Ship' },
   { id: 'to_receive', label: 'To Receive' },
-  { id: 'completed', label: 'Completed' }
+  { id: 'completed', label: 'Completed' },
+  { id: 'cancelled', label: 'Cancelled' }
 ];
 
 const filteredOrders = computed(() => {
@@ -220,6 +221,7 @@ const filteredOrders = computed(() => {
     if (activeTab.value === 'to_ship') return status === 'processing';
     if (activeTab.value === 'to_receive') return status === 'shipped';
     if (activeTab.value === 'completed') return status === 'completed';
+    if (activeTab.value === 'cancelled') return status === 'cancelled';
     return true;
   });
 });

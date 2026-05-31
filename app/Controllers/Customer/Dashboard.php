@@ -136,12 +136,18 @@ class Dashboard extends BaseController
             ->where('status', OrderModel::STATUS_COMPLETED)
             ->countAllResults();
 
+        $cancelled = (int) (new OrderModel())
+            ->where('customer_name', $customerName)
+            ->where('status', OrderModel::STATUS_CANCELLED)
+            ->countAllResults();
+
         return [
             'all' => $all,
             'to_pay' => $toPay,
             'to_ship' => $toShip,
             'to_receive' => $toReceive,
             'completed' => $completed,
+            'cancelled' => $cancelled,
         ];
     }
 

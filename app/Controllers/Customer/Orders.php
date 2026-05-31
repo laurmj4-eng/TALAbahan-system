@@ -13,7 +13,7 @@ class Orders extends BaseController
 {
     private const REMORSE_WINDOW_MINUTES = 60;
     private const REFUND_WINDOW_DAYS = 7;
-    private const ORDER_CENTER_TABS = ['all', 'to_pay', 'to_ship', 'to_receive', 'completed'];
+    private const ORDER_CENTER_TABS = ['all', 'to_pay', 'to_ship', 'to_receive', 'completed', 'cancelled'];
 
     public function orderItems()
     {
@@ -401,6 +401,8 @@ class Orders extends BaseController
             $orderModel->where('status', OrderModel::STATUS_SHIPPED);
         } elseif ($tab === 'completed') {
             $orderModel->where('status', OrderModel::STATUS_COMPLETED);
+        } elseif ($tab === 'cancelled') {
+            $orderModel->where('status', OrderModel::STATUS_CANCELLED);
         }
 
         return $orderModel->orderBy('created_at', 'DESC')->findAll();
