@@ -212,7 +212,7 @@ const buyNow = () => {
                     <Link 
                         v-if="isBackButtonVisible"
                         href="/customer/dashboard" 
-                        class="fixed top-6 left-6 z-[9999] flex items-center gap-3 text-slate-400 hover:text-cyan-400 bg-slate-950/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 hover:border-cyan-500/30 hover:bg-slate-900/60 transition-all duration-300 group shadow-lg hover:-translate-x-1"
+                        class="fixed top-6 left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-3 text-slate-400 hover:text-cyan-400 bg-slate-950/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 hover:border-cyan-500/30 hover:bg-slate-900/60 transition-all duration-300 group shadow-lg hover:-translate-x-1"
                     >
                         <span class="inline-block transition-transform duration-300 group-hover:-translate-x-1">
                             <ArrowLeft class="w-4 h-4" />
