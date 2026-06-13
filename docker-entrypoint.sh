@@ -12,4 +12,8 @@ fi
 sed -i "s/<VirtualHost \*:[0-9]*>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf 2>/dev/null || true
 sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf 2>/dev/null || true
 
+# Run database migrations on startup
+echo "Running database migrations..."
+php spark migrate --force || echo "Warning: Migrations failed or already up to date"
+
 exec apache2-foreground
