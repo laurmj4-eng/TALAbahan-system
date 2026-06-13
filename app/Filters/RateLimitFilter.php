@@ -41,10 +41,10 @@ class RateLimitFilter implements FilterInterface
 
     private function resolveKey(RequestInterface $request): string
     {
-        $ip = $request->getIPAddress() ?: 'unknown';
+        $ip   = $request->getIPAddress() ?: 'unknown';
         $path = $request->getUri()->getPath();
 
-        return $ip . '_' . md5($path);
+        return md5($ip . '_' . $path);
     }
 
     private function tooManyRequests(): ResponseInterface
