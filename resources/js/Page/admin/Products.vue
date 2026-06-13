@@ -50,7 +50,7 @@
                         v-if="product.image" 
                         :src="getImageUrl(product.image)" 
                         class="w-full h-full object-cover rounded-xl"
-                        @error="(e) => e.target.src = '/images/placeholder.png'"
+                        @error="(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }"
                       >
                       <div v-else class="text-2xl opacity-20">🐟</div>
                     </div>
