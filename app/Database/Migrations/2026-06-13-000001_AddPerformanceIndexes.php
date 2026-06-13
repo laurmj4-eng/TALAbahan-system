@@ -8,46 +8,45 @@ class AddPerformanceIndexes extends Migration
 {
     public function up()
     {
-        $tables = [
+        $indexes = [
             'orders' => [
-                'idx_orders_status_created' => ['status', 'created_at'],
-                'idx_orders_customer_name'  => ['customer_name'],
-                'idx_orders_payment_status' => ['payment_status'],
+                'idx_orders_status_created' => '(`status`, `created_at`)',
+                'idx_orders_customer_name'  => '(`customer_name`(50))',
+                'idx_orders_payment_status' => '(`payment_method`, `payment_status`)',
             ],
             'order_items' => [
-                'idx_order_items_order_id'    => ['order_id'],
-                'idx_order_items_product_id'  => ['product_id'],
+                'idx_order_items_order_id'    => '(`order_id`)',
+                'idx_order_items_product_id'  => '(`product_id`)',
             ],
             'users' => [
-                'idx_users_email' => ['email'],
+                'idx_users_email' => '(`email`(100))',
             ],
         ];
 
-        foreach ($tables as $table => $indexes) {
+        foreach ($indexes as $table => $tableIndexes) {
             if (!$this->db->tableExists($table)) {
                 continue;
             }
-            foreach ($indexes as $name => $columns) {
-                $this->forge->addKey($table, $columns, false, $name);
+            foreach ($tableIndexes as $name => $cols) {
+                $this->db->query("ALTER TABLE `{$table}` ADD INDEX `{$name}` {$cols}");
             }
         }
-        $this->forge->createIndex();
     }
 
     public function down()
     {
-        $indexes = [
-            'orders' => ['idx_orders_status_created', 'idx_orders_customer_name', 'idx_orders_payment_status'],
-            'order_items' => ['idx_order_items_order_id', 'idx_order_items_product_id'],
-            'users' => ['idx_users_email'],
+        $drops = [
+            'orders'     => ['idx_orders_status_created', 'idx_orders_customer_name', 'idx_orders_payment_status'],
+            'order_items'=> ['idx_order_items_order_id', 'idx_order_items_product_id'],
+            'users'      => ['idx_users_email'],
         ];
 
-        foreach ($indexes as $table => $names) {
+        foreach ($drops as $table => $names) {
             if (!$this->db->tableExists($table)) {
                 continue;
             }
             foreach ($names as $name) {
-                $this->forge->dropKey($table, $name);
+                $this->db->query("ALTER TABLE `{$table}` DROP INDEX `{$name}`");
             }
         }
     }
