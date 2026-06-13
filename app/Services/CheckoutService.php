@@ -15,6 +15,7 @@ use App\Models\ProductPaymentConstraintModel;
 use App\Models\CodComplianceModel;
 use App\Models\UserModel;
 use App\Models\OrderStatusHistoryModel;
+use Config\AppConfig;
 use Exception;
 
 class CheckoutService
@@ -92,7 +93,7 @@ class CheckoutService
             // Mock a shipping location if global shipping is enabled
             $shippingLocation = [
                 'barangay_name' => $barangay,
-                'shipping_fee' => 49.00 // Default fee for global shipping
+                'shipping_fee' => AppConfig::DEFAULT_SHIPPING_FEE
             ];
         } else {
             $shippingLocation = $this->shippingLocationModel->where('barangay_name', $barangay)

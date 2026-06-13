@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Controllers\Admin; // Updated namespace for the subfolder
+namespace App\Controllers\Admin;
 
-// Import the necessary classes from their respective locations
 use App\Controllers\BaseController;
+use App\Controllers\Traits\ApiResponseTrait;
 use App\Models\ProductModel;
 
 class ProductController extends BaseController
 {
+    use ApiResponseTrait;
     /**
      * Display the Daily Seafood Inventory
      */
@@ -30,17 +31,13 @@ class ProductController extends BaseController
     public function list()
     {
         if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+            return $this->errorResponse('Access denied', 403);
         }
 
         $model = new ProductModel();
         $products = $model->getDailyInventory();
 
-        return $this->response->setJSON([
-            'status' => 'success',
-            'data' => $products,
-            'token' => csrf_hash()
-        ]);
+        return $this->successResponse($products);
     }
 
     /**
@@ -49,7 +46,7 @@ class ProductController extends BaseController
     public function store()
     {
         if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied'])->setStatusCode(403);
+            return $this->errorResponse('Access denied', 403);
         }
 
         $model = new ProductModel();
@@ -64,7 +61,7 @@ class ProductController extends BaseController
         if ($img && $img->isValid() && ! $img->hasMoved()) {
             $imageName = $img->getRandomName();
             if (! $img->move($uploadDir, $imageName)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to upload image'])->setStatusCode(500);
+                return $this->errorResponse('Failed to upload image', 500);
             }
         }
 
@@ -82,19 +79,19 @@ class ProductController extends BaseController
         if (! $model->save($data)) {
             $db->transRollback();
             if ($this->request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => implode(' ', $model->errors())])->setStatusCode(400);
+                return $this->errorResponse(implode(' ', $model->errors()), 400);
             }
             return redirect()->back()->with('error', implode(' ', $model->errors()))->withInput();
         }
 
         if ($db->transStatus() === false) {
             $db->transRollback();
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to save product'])->setStatusCode(500);
+            return $this->errorResponse('Failed to save product', 500);
         }
         $db->transCommit();
         
         if ($this->request->isAJAX()) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Seafood stock added successfully!']);
+            return $this->successResponse([], 'Seafood stock added successfully!');
         }
 
         // Redirect back to the inventory list
@@ -107,7 +104,7 @@ class ProductController extends BaseController
     public function getDetails($productId)
     {
         if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+            return $this->errorResponse('Access denied', 403);
         }
 
         $productModel = new ProductModel();

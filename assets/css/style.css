@@ -111,13 +111,13 @@ body {
         margin: 15px 0 !important;
     }
 
-    /* Scale reCAPTCHA and its container to fit perfectly */
     #captcha-container {
-        height: 72px !important; /* Adjusted height for scaled captcha */
+        height: auto !important;
+        min-height: 78px;
         margin-bottom: 10px !important;
-        transform: scale(0.85); /* Slightly larger than 0.75 for readability */
-        transform-origin: center center;
+        transform: none !important;
         width: 100% !important;
+        overflow: visible !important;
     }
 
     .g-recaptcha {
@@ -134,18 +134,18 @@ body {
     width: fit-content;
 }
 
+/* Do not scale .g-recaptcha — breaks reCAPTCHA image puzzle popup */
 @media (max-width: 480px) {
-    .g-recaptcha {
-        transform: scale(0.85);
+    .g-recaptcha:not(.recaptcha-widget-host *) {
+        transform: none;
         transform-origin: center center;
     }
 }
 
-/* Very small screens - prevent overflow */
 @media (max-width: 350px) {
-    .g-recaptcha {
-        transform: scale(0.85);
-        transform-origin: 0 0;
+    .g-recaptcha:not(.recaptcha-widget-host *) {
+        transform: none;
+        transform-origin: center center;
     }
 }
 
@@ -357,7 +357,9 @@ button[type="button"]:not(.google-btn):hover {
     margin: 20px 0;
     display: flex;
     justify-content: center;
-    filter: brightness(0.9) contrast(1.1);
+    transform: none !important;
+    filter: none !important;
+    overflow: visible !important;
 }
 
 /* =========================================

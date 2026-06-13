@@ -107,7 +107,7 @@ class OrderModel extends Model
             ->where('is_replacement', 0)
             ->groupStart()
                 ->where('DATE(created_at)', $today)
-                ->orWhere("created_at LIKE '{$today}%'")
+                ->orWhere('created_at LIKE', $today . '%')
             ->groupEnd()
             ->first();
         return $result['total_amount'] ?? 0;
@@ -133,7 +133,7 @@ class OrderModel extends Model
             ->where('o.is_replacement', 0)
             ->groupStart()
                 ->where('DATE(o.created_at)', $today)
-                ->orWhere("o.created_at LIKE '{$today}%'")
+                ->orWhere('o.created_at LIKE', $today . '%')
             ->groupEnd()
             ->get()
             ->getRowArray();
@@ -151,7 +151,7 @@ class OrderModel extends Model
             ->where('is_replacement', 0)
             ->groupStart()
                 ->where('DATE(created_at)', $date)
-                ->orWhere("created_at LIKE '{$date}%'")
+                ->orWhere('created_at LIKE', $date . '%')
             ->groupEnd()
             ->first();
 

@@ -5,22 +5,35 @@ import { getRecaptchaOriginDiagnostic, logRecaptchaOriginDiagnostic } from './re
 /**
  * Google reCAPTCHA v2 (checkbox) for Vue 3 — vanilla grecaptcha.render, no wrapper library.
  *
- * Site key: window.RECAPTCHA_SITE_KEY (from spa.php / .env) or options.siteKey.
+ * Site key: window.RECAPTCHA_SITE_KEY (from app.php / .env) or options.siteKey.
  * Script: loaded once via recaptchaLoader (v2 explicit onload callback).
  */
+function isRecaptchaEnabled(options) {
+  if (options.enabled === false) {
+    return false;
+  }
+  if (options.enabled === true) {
+    return true;
+  }
+  return window.RECAPTCHA_ENABLED !== false;
+}
+
 export function useRecaptcha(containerRef, options = {}) {
   const recaptchaError = ref('');
   const widgetId = ref(null);
   const scriptReady = ref(false);
+  const enabled = isRecaptchaEnabled(options);
 
   const siteKey = options.siteKey ?? window.RECAPTCHA_SITE_KEY;
 
-  const getSize = () => {
-    if (options.size) return options.size;
-    return typeof window !== 'undefined' && window.innerWidth < 480 ? 'compact' : 'normal';
-  };
+  // Always "normal" — compact + parent transforms break the image puzzle popup.
+  const getSize = () => options.size ?? 'normal';
 
   const renderWidget = async () => {
+    if (!enabled) {
+      return;
+    }
+
     if (!siteKey || siteKey === 'undefined' || siteKey === 'null') {
       recaptchaError.value =
         'reCAPTCHA is not configured. Set RECAPTCHA_SITE_KEY in your .env file and restart the server.';
@@ -142,6 +155,7 @@ export function useRecaptcha(containerRef, options = {}) {
     getRecaptchaOriginDiagnostic(siteKey, containerRef.value);
 
   return {
+    enabled,
     recaptchaError,
     scriptReady,
     getResponse,

@@ -50,7 +50,9 @@ if (!function_exists('vite_asset')) {
         window.BASE_URL = "<?= base_url() ?>";
         window.CSRF_TOKEN_NAME = "<?= csrf_token() ?>";
         window.CSRF_HASH = "<?= csrf_hash() ?>";
-        window.RECAPTCHA_SITE_KEY = "<?= env('RECAPTCHA_SITE_KEY') ?>";
+        <?php $recaptcha = config('Recaptcha'); ?>
+        window.RECAPTCHA_ENABLED = <?= json_encode($recaptcha->isEnabled()) ?>;
+        window.RECAPTCHA_SITE_KEY = <?= json_encode($recaptcha->siteKey) ?>;
         window.FIREBASE_CONFIG = {
             apiKey: "<?= env('FIREBASE_API_KEY') ?>",
             authDomain: "<?= env('FIREBASE_AUTH_DOMAIN') ?>",

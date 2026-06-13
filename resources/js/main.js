@@ -2,6 +2,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import axios from 'axios';
 import '../css/app.css';
+import '../css/recaptcha.css';
 
 // Configure Axios
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

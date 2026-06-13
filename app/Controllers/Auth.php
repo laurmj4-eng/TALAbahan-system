@@ -46,40 +46,9 @@ class Auth extends BaseController
                 }
 
                 if (!$skipRecaptcha) {
-                    if (empty($recaptchaResponse)) {
-                        return $this->response->setJSON([
-                            'status'  => 'error',
-                            'message' => 'Please complete the reCAPTCHA verification.',
-                            'token'   => csrf_hash()
-                        ])->setStatusCode(400);
-                    }
-
-                    $secret = env('RECAPTCHA_SECRET_KEY'); 
-                    
-                    $ch = curl_init();
-                    curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-                        'secret'   => $secret,
-                        'response' => $recaptchaResponse
-                    ]));
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-                    $verify = curl_exec($ch);
-                    curl_close($ch);
-                    
-                    if ($verify !== false) {
-                        $captchaData = json_decode($verify);
-                        if (!$captchaData || !$captchaData->success) {
-                            return $this->response->setJSON([
-                                'status'  => 'error',
-                                'message' => 'reCAPTCHA verification failed. Please try again.',
-                                'token'   => csrf_hash()
-                            ])->setStatusCode(400);
-                        }
-                    } else {
-                        // If verification service is down, we might want to log it and proceed or fail
-                        log_message('error', 'reCAPTCHA verification service unreachable.');
+                    $captcha = verify_recaptcha_response($recaptchaResponse);
+                    if (!$captcha['ok']) {
+                        return recaptcha_json_error($captcha);
                     }
                 }
             }
@@ -177,29 +146,9 @@ class Auth extends BaseController
 
     public function createAccount()
     {
-        // 1. Verify reCAPTCHA (Server-side) - Using CURL for better compatibility on InfinityFree
-        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-        if (!empty($recaptchaResponse)) {
-            $secret = env('RECAPTCHA_SECRET_KEY');
-            
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-                'secret'   => $secret,
-                'response' => $recaptchaResponse
-            ]));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-            $verify = curl_exec($ch);
-            curl_close($ch);
-            
-            if ($verify !== false) {
-                $captchaData = json_decode($verify);
-                if (!$captchaData || !$captchaData->success) {
-                    return redirect()->back()->with('error', 'reCAPTCHA verification failed. Please try again.')->withInput();
-                }
-            }
+        $captcha = verify_recaptcha_response($this->request->getPost('g-recaptcha-response'));
+        if (!$captcha['ok']) {
+            return redirect()->back()->with('error', $captcha['message'])->withInput();
         }
 
         $userModel = new UserModel();
@@ -223,39 +172,9 @@ class Auth extends BaseController
     public function createAccountApi()
     {
         try {
-            // 1. Verify reCAPTCHA (Server-side)
-            $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-            if (empty($recaptchaResponse)) {
-                return $this->response->setJSON([
-                    'status'  => 'error',
-                    'message' => 'Please complete the reCAPTCHA verification.',
-                    'token'   => csrf_hash()
-                ])->setStatusCode(400);
-            }
-
-            $secret = env('RECAPTCHA_SECRET_KEY');
-            
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-                'secret'   => $secret,
-                'response' => $recaptchaResponse
-            ]));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-            $verify = curl_exec($ch);
-            curl_close($ch);
-            
-            if ($verify !== false) {
-                $captchaData = json_decode($verify);
-                if (!$captchaData || !$captchaData->success) {
-                    return $this->response->setJSON([
-                        'status'  => 'error',
-                        'message' => 'reCAPTCHA verification failed. Please try again.',
-                        'token'   => csrf_hash()
-                    ])->setStatusCode(400);
-                }
+            $captcha = verify_recaptcha_response($this->request->getPost('g-recaptcha-response'));
+            if (!$captcha['ok']) {
+                return recaptcha_json_error($captcha);
             }
 
             $userModel = new UserModel();

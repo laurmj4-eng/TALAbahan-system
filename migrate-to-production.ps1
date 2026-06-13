@@ -149,5 +149,5 @@ Write-Host ""
 Write-Host "✅ Migration Complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "📚 Read the full guide: RENDER_DEPLOYMENT_GUIDE.md" -ForegroundColor Cyan
-Write-Host "📊 Review the audit report: AUDIT_REPORT.md" -ForegroundColor Cyan
+Write-Host "📊 Deployment complete. Verify /health and login flow." -ForegroundColor Cyan
 Write-Host ""

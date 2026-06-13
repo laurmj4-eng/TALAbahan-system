@@ -25,9 +25,9 @@ $routes->get('products/(:num)/details', '\App\Controllers\Customer\Dashboard::de
 $routes->options('api/(:any)', function() {
     return response()->setStatusCode(200);
 });
-$routes->group('api', function($routes) {
-    $routes->post('auth/verify', 'Auth::verify');
-    $routes->post('auth/register', 'Auth::createAccountApi');
+$routes->group('api', ['filter' => 'apiAuth'], function($routes) {
+    $routes->post('auth/verify', 'Auth::verify', ['filter' => 'rateLimit']);
+    $routes->post('auth/register', 'Auth::createAccountApi', ['filter' => 'rateLimit']);
     $routes->get('admin/products/list', '\App\Controllers\Admin\ProductController::list');
     $routes->post('admin/products/store', '\App\Controllers\Admin\ProductController::store');
     $routes->post('admin/products/update', '\App\Controllers\Admin\ProductController::update');

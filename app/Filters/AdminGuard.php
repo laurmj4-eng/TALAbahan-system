@@ -8,12 +8,19 @@ use CodeIgniter\Filters\FilterInterface;
 
 class AdminGuard implements FilterInterface
 {
+    private const CHATBOT_PREFIXES = [
+        'admin/chatbot/process',
+        'admin/chatbot/deleteHistory',
+    ];
+
     public function before(RequestInterface $request, $arguments = null)
     {
-        // Skip chatbot routes - they have their own chatbotGuard filter
         $path = $request->getUri()->getPath();
-        if (strpos($path, '/admin/chatbot/') !== false) {
-            return null; // Allow chatbot routes to pass through
+
+        foreach (self::CHATBOT_PREFIXES as $prefix) {
+            if (strpos($path, $prefix) !== false) {
+                return null;
+            }
         }
 
         if (!session()->get('isLoggedIn') || session()->get('role') !== 'admin') {

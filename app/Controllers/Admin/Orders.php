@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Controllers\Traits\ApiResponseTrait;
 use App\Models\CodComplianceModel;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
@@ -12,6 +13,8 @@ use App\Services\OrderService;
 
 class Orders extends BaseController
 {
+    use ApiResponseTrait;
+
     protected $orderService;
 
     public function __construct()
@@ -40,17 +43,37 @@ class Orders extends BaseController
     }
 
     /**
-     * Get Orders (JSON) for SPA
+     * Get Orders (JSON) for SPA with pagination
      */
     public function getOrders()
     {
         if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
+            return $this->errorResponse('Access denied', 403);
         }
 
+        $page  = (int) ($this->request->getGet('page') ?? 1);
+        $limit = (int) ($this->request->getGet('limit') ?? 15);
+        $offset = ($page - 1) * $limit;
+
         $orderModel = new OrderModel();
-        $orders = $orderModel->getOrdersWithItemCount();
-        return $this->response->setJSON(['status' => 'success', 'message' => 'Orders fetched.', 'data' => $orders, 'token' => csrf_hash()]);
+        $db = db_connect();
+
+        $total = $db->table('orders o')
+            ->select('COUNT(DISTINCT o.id) as cnt')
+            ->join('order_items oi', 'oi.order_id = o.id', 'left')
+            ->get()
+            ->getRow()->cnt;
+
+        $orders = $db->table('orders o')
+            ->select('o.*, COUNT(oi.id) as item_count')
+            ->join('order_items oi', 'oi.order_id = o.id', 'left')
+            ->groupBy('o.id')
+            ->orderBy('o.created_at', 'DESC')
+            ->limit($limit, $offset)
+            ->get()
+            ->getResultArray();
+
+        return $this->paginatedResponse($orders, (int) $total, $page, $limit, 'Orders fetched.');
     }
 
     public function show($id)

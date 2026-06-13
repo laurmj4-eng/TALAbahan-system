@@ -16,6 +16,25 @@
 npm-debug.log
 yarn-error.log
 
+# Build / debug artifacts
+/dist/
+/public/dist/
+test.php
+test_orders.php
+composer.phar
+
+# Composer cache (never commit)
+.composer/cache/
+
+# Firebase deploy cache
+.firebase/
+
+# Duplicate agent skills (keep .agents/skills only)
+.trae/
+
+# Accidental path commits
+%USERPROFILE%/
+
 # IDE Files
 .vscode/
 .idea/

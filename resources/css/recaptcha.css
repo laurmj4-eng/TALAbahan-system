@@ -1,0 +1,41 @@
+/**
+ * reCAPTCHA v2 — keep image challenge popup visible and clickable.
+ * backdrop-filter / transform on ancestors breaks position:fixed overlays.
+ */
+
+.recaptcha-section,
+.recaptcha-inner,
+.recaptcha-widget-host {
+  overflow: visible !important;
+  transform: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+.recaptcha-widget-host > div {
+  transform: none !important;
+}
+
+/* Checkbox widget — no scaling (scaling breaks the challenge iframe) */
+.recaptcha-widget-host iframe[src*="anchor"],
+.recaptcha-widget-host .g-recaptcha {
+  transform: none !important;
+  max-width: 100%;
+}
+
+/* Image puzzle overlay (Google appends near body; raise stacking when present) */
+iframe[title="recaptcha challenge"],
+iframe[src*="bframe"] {
+  z-index: 2147483646 !important;
+}
+
+.g-recaptcha-bubble-arrow,
+div[style*="z-index: 2000000000"],
+div[style*="z-index:2000000000"] {
+  z-index: 2147483646 !important;
+}

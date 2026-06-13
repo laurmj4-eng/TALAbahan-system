@@ -8,7 +8,7 @@
   >
     <div class="login-content-container">
     <div class="w-full max-w-[400px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-6 md:p-8 text-center transition-transform hover:-translate-y-1 duration-500">
+      <div class="login-glass-card bg-white/15 border border-white/20 rounded-[2.5rem] shadow-2xl p-6 md:p-8 text-center duration-500 overflow-visible">
         
         <!-- Logo -->
         <div class="mb-4 md:mb-6">
@@ -64,7 +64,7 @@
           </div>
 
           <!-- reCAPTCHA Widget -->
-          <div class="recaptcha-section my-4 md:my-6">
+          <div v-if="recaptchaRequired" class="recaptcha-section my-4 md:my-6">
             <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
             <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
               {{ recaptchaError }}
@@ -122,6 +122,11 @@
   flex-direction: column;
 }
 
+.login-glass-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .recaptcha-section {
   width: 100%;
   display: flex;
@@ -153,6 +158,7 @@ const password = ref('');
 const confirmPassword = ref('');
 const loading = ref(false);
 const error = ref('');
+const recaptchaRequired = window.RECAPTCHA_ENABLED !== false;
 const recaptchaContainerRef = ref(null);
 const { recaptchaError, getResponse, reset: resetRecaptcha } =
   useRecaptcha(recaptchaContainerRef, { theme: 'light' });
@@ -163,9 +169,9 @@ const handleRegister = async () => {
     return;
   }
 
-  const recaptchaResponse = getResponse();
-  
-  if (!recaptchaResponse) {
+  const recaptchaResponse = recaptchaRequired ? getResponse() : '';
+
+  if (recaptchaRequired && !recaptchaResponse) {
     error.value = 'Please complete the reCAPTCHA verification.';
     return;
   }
@@ -179,7 +185,9 @@ const handleRegister = async () => {
     formData.append('username', username.value);
     formData.append('email', email.value);
     formData.append('password', password.value);
-    formData.append('g-recaptcha-response', recaptchaResponse);
+    if (recaptchaRequired) {
+      formData.append('g-recaptcha-response', recaptchaResponse);
+    }
 
     const response = await axios.post('/api/auth/register', formData);
 

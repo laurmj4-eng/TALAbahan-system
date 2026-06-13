@@ -10,6 +10,8 @@ use App\Models\SalesModel;
 
 class Dashboard extends BaseController
 {
+    private const CACHE_TTL = 300; // 5 minutes
+
     public function index()
     {
         if (session()->get('role') !== 'admin') {
@@ -18,6 +20,7 @@ class Dashboard extends BaseController
 
         $userModel = new UserModel();
         $orderModel = new OrderModel();
+        $cache = cache();
         
         $data = [
             'title'    => 'Admin Dashboard',
@@ -29,22 +32,60 @@ class Dashboard extends BaseController
             ],
         ];
 
-        // 7-day trend
-        for ($i = 6; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-{$i} day"));
-            $data['chart']['labels'][] = date('M d', strtotime($date));
-            $data['chart']['sales'][] = round($orderModel->getDailyRevenue($date), 2);
+        $chartCacheKey = 'admin_dashboard_chart_' . date('Y-m-d');
+        $data['chart'] = $cache->get($chartCacheKey) ?? $this->buildChartData($orderModel);
+        $cache->save($chartCacheKey, $data['chart'], self::CACHE_TTL);
+
+        $statsCacheKey = 'admin_dashboard_stats_' . date('Y-m-d');
+        $cachedStats = $cache->get($statsCacheKey);
+
+        if ($cachedStats) {
+            $data['cards'] = $cachedStats['cards'];
+            $data['stale_orders'] = $cachedStats['stale_orders'];
+            $data['stale_orders_count'] = $cachedStats['stale_orders_count'];
+        } else {
+            $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
+            $data['cards']['today_profit'] = round((float) $orderModel->getTodayProfit(), 2);
+            
+            $data['cards']['profit_margin'] = 0;
+            if ($data['cards']['today_sales'] > 0) {
+                $data['cards']['profit_margin'] = round(($data['cards']['today_profit'] / $data['cards']['today_sales']) * 100, 1);
+            }
+
+            $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
+            $growth = 0;
+            if ($yesterdaySales > 0) {
+                $growth = (($data['cards']['today_sales'] - $yesterdaySales) / $yesterdaySales) * 100;
+            } elseif ($data['cards']['today_sales'] > 0) {
+                $growth = 100;
+            }
+            $data['cards']['sales_growth'] = round($growth, 1);
+
+            $today = date('Y-m-d');
+            $data['cards']['today_orders'] = (int) $orderModel
+                ->groupStart()
+                    ->where('DATE(created_at)', $today)
+                    ->orWhere('created_at LIKE', $today . '%')
+                ->groupEnd()
+                ->countAllResults();
+
+            $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
+            $data['stale_orders'] = $orderModel
+                ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
+                ->where('created_at <', $yesterday)
+                ->orderBy('created_at', 'ASC')
+                ->findAll();
+            
+            $data['cards']['stale_orders_count'] = count($data['stale_orders']);
+
+            $cache->save($statsCacheKey, [
+                'cards' => $data['cards'],
+                'stale_orders' => $data['stale_orders'],
+                'stale_orders_count' => $data['cards']['stale_orders_count'],
+            ], self::CACHE_TTL);
         }
 
-        $data['cards']['today_sales'] = round((float) $orderModel->getTodayRevenue(), 2);
-        $data['cards']['today_profit'] = round((float) $orderModel->getTodayProfit(), 2);
-        
-        $data['cards']['profit_margin'] = 0;
-        if ($data['cards']['today_sales'] > 0) {
-            $data['cards']['profit_margin'] = round(($data['cards']['today_profit'] / $data['cards']['today_sales']) * 100, 1);
-        }
-        
-        // --- ADDED LEDGER DATA FETCHING ---
+        // Ledger History
         try {
             $salesModel = new SalesModel();
             $data['ledger_history'] = $salesModel->orderBy('created_at', 'DESC')->findAll();
@@ -52,34 +93,6 @@ class Dashboard extends BaseController
             log_message('error', 'Dashboard Ledger Fetch Error: ' . $e->getMessage());
             $data['ledger_history'] = [];
         }
-
-        // Calculate Growth Metric (Today vs Yesterday)
-        $yesterdaySales = round($orderModel->getDailyRevenue(date('Y-m-d', strtotime('-1 day'))), 2);
-        $growth = 0;
-        if ($yesterdaySales > 0) {
-            $growth = (($data['cards']['today_sales'] - $yesterdaySales) / $yesterdaySales) * 100;
-        } elseif ($data['cards']['today_sales'] > 0) {
-            $growth = 100;
-        }
-        $data['cards']['sales_growth'] = round($growth, 1);
-
-        $today = date('Y-m-d');
-        $data['cards']['today_orders'] = (int) $orderModel
-            ->groupStart()
-                ->where('DATE(created_at)', $today)
-                ->orWhere("created_at LIKE '{$today}%'")
-            ->groupEnd()
-            ->countAllResults();
-
-        // --- ORDER AGING ALERTS ---
-        $yesterday = date('Y-m-d H:i:s', strtotime('-24 hours'));
-        $data['stale_orders'] = $orderModel
-            ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
-            ->where('created_at <', $yesterday)
-            ->orderBy('created_at', 'ASC')
-            ->findAll();
-        
-        $data['cards']['stale_orders_count'] = count($data['stale_orders']);
 
         // Top 3 Selling Products
         $db = \Config\Database::connect();
@@ -163,6 +176,17 @@ class Dashboard extends BaseController
         return inertia('admin/Dashboard', $data);
     }
 
+    private function buildChartData(OrderModel $orderModel): array
+    {
+        $chart = ['labels' => [], 'sales' => []];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} day"));
+            $chart['labels'][] = date('M d', strtotime($date));
+            $chart['sales'][] = round($orderModel->getDailyRevenue($date), 2);
+        }
+        return $chart;
+    }
+
     public function getTodaySalesData()
     {
         if (session()->get('role') !== 'admin') {
@@ -211,7 +235,7 @@ class Dashboard extends BaseController
         $todayOrders = (int) $orderModel
             ->groupStart()
                 ->where('DATE(created_at)', $today)
-                ->orWhere("created_at LIKE '{$today}%'")
+                ->orWhere('created_at LIKE', $today . '%')
             ->groupEnd()
             ->countAllResults();
 

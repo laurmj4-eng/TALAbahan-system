@@ -62,7 +62,7 @@ export function loadRecaptchaV2Script() {
       return;
     }
 
-    // Drop legacy tags from spa.php (api.js without our onload hook) to avoid double init.
+    // Drop legacy tags from old PHP shells (api.js without our onload hook) to avoid double init.
     document.querySelectorAll('script[src*="google.com/recaptcha/api.js"]').forEach((node) => {
       if (node.id !== RECAPTCHA_SCRIPT_ID) {
         node.remove();

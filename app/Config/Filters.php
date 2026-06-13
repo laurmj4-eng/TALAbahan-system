@@ -37,6 +37,8 @@ class Filters extends BaseFilters
         'staffGuard'    => \App\Filters\StaffGuard::class,    // Role: Staff
         'customerGuard' => \App\Filters\CustomerGuard::class, // Role: Customer
         'chatbotGuard'  => \App\Filters\ChatbotGuard::class,  // Role: Admin or Customer
+        'apiAuth'       => \App\Filters\ApiAuthFilter::class,  // API role-based auth
+        'rateLimit'     => \App\Filters\RateLimitFilter::class, // Request throttling
         'activityLogger' => \App\Filters\ActivityLogger::class,
     ];
 
@@ -64,8 +66,9 @@ class Filters extends BaseFilters
             'forcehttps' => ['except' => ['health']],
             // 'honeypot',
             'csrf' => ['except' => [
-                'api/*',
+                'api/auth/*',
                 'admin/chatbot/process',
+                'admin/chatbot/deleteHistory',
                 'api/admin/products/toggleStatus/*',
                 'api/admin/products/delete',
                 'api/admin/products/store',
@@ -78,7 +81,7 @@ class Filters extends BaseFilters
                 'customer/precheckout',
                 'customer/placeOrder',
                 'customer/validate-location'
-            ]], // Exclude API and Admin Product routes from global CSRF as we handle it or use AJAX
+            ]], // Auth endpoints are public; chatbot/product routes handle CSRF internally
             // 'invalidchars',
         ],
         'after' => [
