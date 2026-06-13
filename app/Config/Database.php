@@ -106,8 +106,18 @@ class Database extends Config
             return;
         }
 
-        if (ENVIRONMENT === 'production') {
+        // Check if database environment variables are set
+        $hasEnvDb = getenv('database.default.hostname') !== false 
+                 || getenv('DB_HOST') !== false 
+                 || getenv('DB_HOSTNAME') !== false;
+
+        if (ENVIRONMENT === 'production' || $hasEnvDb) {
             $this->applyProductionCredentials();
+            
+            // Keep error reporting active if we are debugging in development mode
+            if (ENVIRONMENT === 'development') {
+                $this->default['DBDebug'] = true;
+            }
 
             return;
         }
