@@ -11,6 +11,9 @@ echo "==> Node / Vite"
 npm ci
 npm run build
 
+echo "==> Remove Vite hot file (must NOT exist in production)"
+rm -f public/hot
+
 echo "==> Writable / uploads permissions"
 chmod -R 775 writable 2>/dev/null || true
 mkdir -p uploads public/uploads/products

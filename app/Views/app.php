@@ -1,26 +1,44 @@
 <?php
 /**
- * Asset helper function to get versioned asset URLs from Vite manifest
+ * Vite asset helper functions.
+ *
+ * Dev mode  → public/hot exists (Vite dev server running on localhost:5173)
+ * Prod mode → public/hot absent  (compiled manifest at public/build/manifest.json)
+ *
+ * NEVER rely solely on CI_ENVIRONMENT / ENVIRONMENT because the constant
+ * is locked in at PHP bootstrap and can be wrong during Docker image builds.
+ */
+
+/**
+ * Returns true when the Vite dev server is active (public/hot file present).
+ */
+if (!function_exists('vite_is_dev')) {
+    function vite_is_dev(): bool {
+        return file_exists(FCPATH . 'hot');
+    }
+}
+
+/**
+ * Reads the compiled manifest and returns the hashed file URL.
  */
 if (!function_exists('vite_asset')) {
-    function vite_asset($path) {
-        // Development mode: serve from Vite dev server
-        if (ENVIRONMENT === 'development') {
+    function vite_asset(string $path): string {
+        if (vite_is_dev()) {
             return "http://localhost:5173/{$path}";
         }
 
-        // Production mode: FCPATH already points to public/, so manifest is at public/build/manifest.json
-        $manifestPath = FCPATH . 'build/manifest.json';
-
-        if (!file_exists($manifestPath)) {
-            log_message('error', '[Vite] Manifest file not found at: ' . $manifestPath);
-            return base_url("build/{$path}");
+        static $manifest = null;
+        if ($manifest === null) {
+            $manifestPath = FCPATH . 'build/manifest.json';
+            if (!file_exists($manifestPath)) {
+                log_message('error', '[Vite] Manifest not found at: ' . $manifestPath);
+                return base_url("build/{$path}");
+            }
+            $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
         }
 
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-
         if (!isset($manifest[$path])) {
-            log_message('warning', '[Vite] Asset not found in manifest: ' . $path);
+            log_message('warning', '[Vite] Asset not in manifest: ' . $path);
             return base_url("build/{$path}");
         }
 
@@ -28,24 +46,28 @@ if (!function_exists('vite_asset')) {
     }
 }
 
+/**
+ * Returns an array of CSS URLs for the given entry (prod only).
+ */
 if (!function_exists('vite_css')) {
-    function vite_css($path) {
-        if (ENVIRONMENT === 'development') {
+    function vite_css(string $path): ?array {
+        if (vite_is_dev()) {
             return null; // CSS is injected by Vite HMR in dev
         }
 
-        $manifestPath = FCPATH . 'build/manifest.json';
-        if (!file_exists($manifestPath)) {
+        static $manifest = null;
+        if ($manifest === null) {
+            $manifestPath = FCPATH . 'build/manifest.json';
+            if (!file_exists($manifestPath)) {
+                return null;
+            }
+            $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
+        }
+
+        if (empty($manifest[$path]['css'])) {
             return null;
         }
 
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-
-        if (!isset($manifest[$path]['css'])) {
-            return null;
-        }
-
-        // Return array of CSS file URLs
         return array_map(fn($css) => base_url('build/' . $css), $manifest[$path]['css']);
     }
 }
@@ -80,8 +102,8 @@ if (!function_exists('vite_css')) {
         };
     </script>
 
-    <?php if (ENVIRONMENT === 'development'): ?>
-        <!-- Development: Load from Vite dev server -->
+    <?php if (vite_is_dev()): ?>
+        <!-- Development: Load from Vite dev server (public/hot exists) -->
         <script type="module" src="http://localhost:5173/@vite/client"></script>
         <script type="module" src="http://localhost:5173/resources/js/main.js"></script>
     <?php else: ?>
