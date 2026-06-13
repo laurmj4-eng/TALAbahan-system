@@ -14,6 +14,9 @@ npm run build
 echo "==> Remove Vite hot file (must NOT exist in production)"
 rm -f public/hot
 
+echo "==> Ensure static assets are in public/"
+mkdir -p public/images public/uploads/products
+
 echo "==> Writable / uploads permissions"
 chmod -R 775 writable 2>/dev/null || true
 mkdir -p uploads public/uploads/products
