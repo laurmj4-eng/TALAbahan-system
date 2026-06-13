@@ -32,7 +32,26 @@ class Auth extends BaseController
             $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
             $isTrustedDevice = $this->request->getPost('is_trusted_device') === 'true';
 
-            // 3. Connect to database
+            // 3. Sanitize email into a PSR-16-compliant cache key.
+            // Raw emails contain '@' and '.' which are reserved characters in PSR-16,
+            // causing: InvalidArgumentException: Cache key contains reserved characters {}()/\@:
+            // md5() produces a safe 32-char lowercase hex string with no reserved characters.
+            $cacheKey = 'google_login_' . md5($email);
+
+            // Optional: rate-limit Google login attempts per email (max 10 per 5 minutes)
+            if ($provider === 'google') {
+                $attempts = cache($cacheKey) ?? 0;
+                if ($attempts >= 10) {
+                    return $this->response->setJSON([
+                        'status'  => 'error',
+                        'message' => 'Too many login attempts. Please try again later.',
+                        'token'   => csrf_hash()
+                    ])->setStatusCode(429);
+                }
+                cache()->save($cacheKey, $attempts + 1, 300); // TTL: 300 seconds (5 minutes)
+            }
+
+            // 4. Connect to database
             $userModel = new UserModel();
             $user = $userModel->where('email', $email)->first();
 
