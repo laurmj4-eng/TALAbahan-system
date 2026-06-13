@@ -9,6 +9,10 @@ services:
     plan: starter
     healthCheckPath: /health
     autoDeploy: true
+    disks:
+      - name: uploads
+        mountPath: /var/data
+        sizeGB: 1
     envVars:
       - key: CI_ENVIRONMENT
         value: production

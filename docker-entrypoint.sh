@@ -66,6 +66,31 @@ echo "Generated .env (CI_ENVIRONMENT=production enforced)"
 
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Persistent uploads via Render Disk (mounted at /var/data)
+# ---------------------------------------------------------------------------
+PERSISTENT_DIR="/var/data/uploads/products"
+PUBLIC_UPLOADS="/var/www/html/public/uploads"
+
+if [ -d "/var/data" ]; then
+    echo "Render disk detected — setting up persistent uploads..."
+
+    mkdir -p "${PERSISTENT_DIR}"
+
+    # Remove the build-time directory and replace with symlink to persistent disk
+    rm -rf "${PUBLIC_UPLOADS}"
+    ln -sfn /var/data/uploads "${PUBLIC_UPLOADS}"
+
+    chown -R www-data:www-data /var/data/uploads
+    chmod -R 775 /var/data/uploads
+
+    echo "Symlink created: ${PUBLIC_UPLOADS} -> /var/data/uploads"
+else
+    echo "No Render disk found — uploads will not persist across deploys."
+fi
+
+# ---------------------------------------------------------------------------
+
 if grep -q '^Listen ' /etc/apache2/ports.conf; then
     sed -i "s/^Listen .*/Listen ${PORT}/" /etc/apache2/ports.conf
 else
