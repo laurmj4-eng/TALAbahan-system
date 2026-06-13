@@ -67,10 +67,6 @@ WORKDIR /var/www/html
 
 COPY --from=builder --chown=www-data:www-data /app /var/www/html
 
-# Force production environment — override whatever is in the committed .env
-RUN sed -i 's/^CI_ENVIRONMENT=.*/CI_ENVIRONMENT=production/' /var/www/html/.env \
-    && grep -q 'CI_ENVIRONMENT' /var/www/html/.env || echo 'CI_ENVIRONMENT=production' >> /var/www/html/.env
-
 RUN mkdir -p public/uploads/products uploads writable/session writable/cache writable/logs \
     && chmod -R 775 writable uploads public/uploads \
     && chown -R www-data:www-data writable uploads public/uploads
