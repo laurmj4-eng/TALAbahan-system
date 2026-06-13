@@ -68,25 +68,30 @@ echo "Generated .env (CI_ENVIRONMENT=production enforced)"
 
 # ---------------------------------------------------------------------------
 # Persistent uploads via Render Disk (mounted at /var/data)
+# IMPORTANT: We check $RENDER env var (injected by Render.com) NOT directory
+# existence, because /var/data always exists in Linux containers even without
+# a mounted disk, causing a false positive that broke persistence.
 # ---------------------------------------------------------------------------
 PERSISTENT_DIR="/var/data/uploads/products"
 PUBLIC_UPLOADS="/var/www/html/public/uploads"
 
-if [ -d "/var/data" ]; then
-    echo "Render disk detected — setting up persistent uploads..."
+if [ "${RENDER}" = "true" ] && [ -d "/var/data" ]; then
+    echo "Render disk confirmed (RENDER=true + /var/data exists) — setting up persistent uploads..."
 
     mkdir -p "${PERSISTENT_DIR}"
+    chmod -R 775 /var/data/uploads
+    chown -R www-data:www-data /var/data/uploads
 
     # Remove the build-time directory and replace with symlink to persistent disk
     rm -rf "${PUBLIC_UPLOADS}"
     ln -sfn /var/data/uploads "${PUBLIC_UPLOADS}"
 
-    chown -R www-data:www-data /var/data/uploads
-    chmod -R 775 /var/data/uploads
-
     echo "Symlink created: ${PUBLIC_UPLOADS} -> /var/data/uploads"
 else
-    echo "No Render disk found — uploads will not persist across deploys."
+    echo "No Render persistent disk detected — uploads will use local container storage (not persistent)."
+    mkdir -p "${PUBLIC_UPLOADS}/products"
+    chmod -R 775 "${PUBLIC_UPLOADS}"
+    chown -R www-data:www-data "${PUBLIC_UPLOADS}"
 fi
 
 # ---------------------------------------------------------------------------

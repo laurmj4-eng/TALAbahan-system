@@ -16,6 +16,8 @@ services:
     envVars:
       - key: CI_ENVIRONMENT
         value: production
+      - key: RENDER
+        value: "true"
       - key: PORT
         value: "8080"
       - key: app.forceGlobalSecureRequests
