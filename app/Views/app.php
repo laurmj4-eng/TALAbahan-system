@@ -4,33 +4,49 @@
  */
 if (!function_exists('vite_asset')) {
     function vite_asset($path) {
-        $baseUrl = base_url();
-        
         // Development mode: serve from Vite dev server
         if (ENVIRONMENT === 'development') {
             return "http://localhost:5173/{$path}";
         }
-        
-        // Production mode: read from manifest
+
+        // Production mode: FCPATH already points to public/, so manifest is at public/build/manifest.json
         $manifestPath = FCPATH . 'build/manifest.json';
-        if (! file_exists($manifestPath)) {
-            $manifestPath = FCPATH . 'public/build/manifest.json';
-        }
 
         if (!file_exists($manifestPath)) {
-            log_message('error', '[Vite] Manifest file not found: ' . $manifestPath);
-            // Fallback to static path
+            log_message('error', '[Vite] Manifest file not found at: ' . $manifestPath);
             return base_url("build/{$path}");
         }
-        
+
         $manifest = json_decode(file_get_contents($manifestPath), true);
-        
+
         if (!isset($manifest[$path])) {
             log_message('warning', '[Vite] Asset not found in manifest: ' . $path);
             return base_url("build/{$path}");
         }
-        
+
         return base_url('build/' . $manifest[$path]['file']);
+    }
+}
+
+if (!function_exists('vite_css')) {
+    function vite_css($path) {
+        if (ENVIRONMENT === 'development') {
+            return null; // CSS is injected by Vite HMR in dev
+        }
+
+        $manifestPath = FCPATH . 'build/manifest.json';
+        if (!file_exists($manifestPath)) {
+            return null;
+        }
+
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+
+        if (!isset($manifest[$path]['css'])) {
+            return null;
+        }
+
+        // Return array of CSS file URLs
+        return array_map(fn($css) => base_url('build/' . $css), $manifest[$path]['css']);
     }
 }
 ?>
@@ -69,9 +85,12 @@ if (!function_exists('vite_asset')) {
         <script type="module" src="http://localhost:5173/@vite/client"></script>
         <script type="module" src="http://localhost:5173/resources/js/main.js"></script>
     <?php else: ?>
-        <!-- Production: Load versioned assets from manifest -->
-        <link rel="stylesheet" href="<?= vite_asset('resources/js/main.js') ?>">
-        <script type="module" src="<?= vite_asset('resources/js/main.js') ?>"></script>
+        <!-- Production: Load versioned CSS and JS from Vite manifest -->
+        <?php $cssList = vite_css('resources/js/main.js'); ?>
+        <?php if ($cssList): foreach ($cssList as $cssUrl): ?>
+        <link rel="stylesheet" href="<?= esc($cssUrl) ?>">
+        <?php endforeach; endif; ?>
+        <script type="module" src="<?= esc(vite_asset('resources/js/main.js')) ?>"></script>
     <?php endif; ?>
 </head>
 <body class="bg-slate-950 text-white">
