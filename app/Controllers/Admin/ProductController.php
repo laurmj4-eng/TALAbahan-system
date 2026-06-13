@@ -54,7 +54,7 @@ class ProductController extends BaseController
         
         $img = $this->request->getFile('image');
         $imageName = null;
-        $uploadDir = FCPATH . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products';
+        $uploadDir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'products';
         if (! is_dir($uploadDir)) {
             @mkdir($uploadDir, 0755, true);
         }
@@ -128,7 +128,7 @@ class ProductController extends BaseController
 
         $productModel = new ProductModel();
         $db = db_connect();
-        $uploadDir = FCPATH . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products';
+        $uploadDir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'products';
         if (! is_dir($uploadDir)) {
             @mkdir($uploadDir, 0755, true);
         }
