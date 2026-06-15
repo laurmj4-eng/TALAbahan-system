@@ -32,17 +32,17 @@ if (!function_exists('vite_asset')) {
             $manifestPath = FCPATH . 'public/build/manifest.json';
             if (!file_exists($manifestPath)) {
                 log_message('error', '[Vite] Manifest not found at: ' . $manifestPath);
-                return base_url("public/build/{$path}");
+                return base_url("build/{$path}");
             }
             $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
         }
 
         if (!isset($manifest[$path])) {
             log_message('warning', '[Vite] Asset not in manifest: ' . $path);
-            return base_url("public/build/{$path}");
+            return base_url("build/{$path}");
         }
 
-        return base_url('public/build/' . $manifest[$path]['file']);
+        return base_url('build/' . $manifest[$path]['file']);
     }
 }
 
@@ -68,7 +68,7 @@ if (!function_exists('vite_css')) {
             return null;
         }
 
-        return array_map(fn($css) => base_url('public/build/' . $css), $manifest[$path]['css']);
+        return array_map(fn($css) => base_url('build/' . $css), $manifest[$path]['css']);
     }
 }
 ?>
@@ -78,6 +78,7 @@ if (!function_exists('vite_css')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TALAbahan System</title>
+    <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     
     <!-- Leaflet Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
