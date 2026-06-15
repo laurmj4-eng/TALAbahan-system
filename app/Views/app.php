@@ -29,7 +29,7 @@ if (!function_exists('vite_asset')) {
 
         static $manifest = null;
         if ($manifest === null) {
-            $manifestPath = FCPATH . 'public/build/manifest.json';
+            $manifestPath = FCPATH . 'build/manifest.json';
             if (!file_exists($manifestPath)) {
                 log_message('error', '[Vite] Manifest not found at: ' . $manifestPath);
                 return base_url("build/{$path}");
@@ -57,7 +57,7 @@ if (!function_exists('vite_css')) {
 
         static $manifest = null;
         if ($manifest === null) {
-            $manifestPath = FCPATH . 'public/build/manifest.json';
+            $manifestPath = FCPATH . 'build/manifest.json';
             if (!file_exists($manifestPath)) {
                 return null;
             }

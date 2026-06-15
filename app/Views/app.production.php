@@ -9,7 +9,7 @@ if (!function_exists('vite_asset')) {
             return "http://localhost:5173/{$path}";
         }
 
-        $manifestPath = FCPATH . 'public/build/manifest.json';
+        $manifestPath = FCPATH . 'build/manifest.json';
 
         if (!file_exists($manifestPath)) {
             log_message('error', '[Vite] Manifest file not found at: ' . $manifestPath);
@@ -33,7 +33,7 @@ if (!function_exists('vite_css')) {
             return null;
         }
 
-        $manifestPath = FCPATH . 'public/build/manifest.json';
+        $manifestPath = FCPATH . 'build/manifest.json';
         if (!file_exists($manifestPath)) {
             return null;
         }

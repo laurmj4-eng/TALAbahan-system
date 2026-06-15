@@ -58,7 +58,7 @@ class Inertia
         if (ENVIRONMENT === 'production') {
             $manifest = FCPATH . 'build/manifest.json';
             if (! is_file($manifest)) {
-                $manifest = FCPATH . 'public/build/manifest.json';
+                $manifest = FCPATH . 'build/manifest.json';
             }
 
             return env('INERTIA_VERSION', is_file($manifest) ? hash('crc32', (string) filemtime($manifest)) : '1');
