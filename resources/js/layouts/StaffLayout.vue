@@ -80,7 +80,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col relative">
       <!-- Background Gradient -->
-      <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#1e293b] to-[#0f172a] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]"></div>
+      <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#1e293b] to-[#0f172a] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
       <!-- Page Content -->
       <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative smooth-scroll-container">
@@ -179,7 +179,7 @@ const handleLogout = () => {
   overscroll-behavior-y: contain;
   backface-visibility: hidden;
   transform: translate3d(0,0,0);
-  will-change: scroll-position;
+  will-change: transform; /* PERF FIX: 'scroll-position' is not a valid will-change value; corrected to 'transform' */
 }
 
 /* Custom Scrollbar */

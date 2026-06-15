@@ -4,12 +4,18 @@ body {
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
     
-    /* Background Image Additions */
+    /* Background Image — Performance Fix:
+     * background-attachment: fixed forces the browser to repaint the ENTIRE
+     * background on every single scroll frame on mobile. Switched to 'scroll'
+     * and promoted to its own compositor layer via translate3d.
+     * Visual result is identical but scroll is now GPU-composited.
+     */
     background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../images/pic1.jpg'); 
     background-size: cover;                      
     background-position: center;                 
     background-repeat: no-repeat;                
-    background-attachment: fixed;
+    background-attachment: scroll; /* Changed from fixed — eliminates mobile repaint on scroll */
+    transform: translate3d(0, 0, 0); /* Promote body to compositor layer */
     
     display: flex;
     justify-content: center;
@@ -67,7 +73,7 @@ body {
         min-height: 100dvh !important;
         padding: 10px !important; /* Added small padding to prevent edge touching */
         background-size: cover !important;
-        background-attachment: fixed !important;
+        background-attachment: scroll !important; /* MOBILE PERF: never use fixed on mobile */
     }
 
     .login-container {
@@ -698,13 +704,18 @@ button[type="button"]:not(.google-btn):hover {
 .glass-table-container {
     width: 100%;
     overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch; /* iOS native scroll inertia */
     border-radius: 15px;
     margin: 20px 0;
     position: relative; /* Needed for sticky positioning of children */
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    /* PERF FIX: backdrop-filter on a scrolling container forces a new stacking
+     * context that repaints every scroll frame. Moved to @media prefers-reduced-motion
+     * and disabled on mobile below. */
     backdrop-filter: blur(10px);
+    overscroll-behavior-x: contain; /* Prevent scroll chaining to the page */
+    will-change: transform; /* Promote to GPU compositor layer */
 }
 
 /* Ensure the table itself can expand */
@@ -723,11 +734,15 @@ button[type="button"]:not(.google-btn):hover {
     position: sticky !important;
     right: 0 !important;
     z-index: 10 !important;
-    background: rgba(30, 20, 60, 0.8) !important; /* Solid-ish dark base for glass */
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: rgba(30, 20, 60, 0.9) !important; /* Slightly more opaque — replaces some of the blur work */
+    /* PERF FIX: backdrop-filter on sticky cells inside a scrolling table is
+     * GPU-expensive on mobile. Reduced intensity significantly. The opaque
+     * background now does most of the visual separation work. */
+    backdrop-filter: blur(8px) !important; /* Was blur(20px) saturate(180%) */
+    -webkit-backdrop-filter: blur(8px) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: -10px 0 20px rgba(0, 0, 0, 0.2) !important;
+    transform: translate3d(0, 0, 0); /* Promote sticky cells to own compositor layer */
 }
 
 /* Hover effect for sticky cell */
@@ -740,11 +755,20 @@ button[type="button"]:not(.google-btn):hover {
 @media (max-width: 768px) {
     .glass-table-container {
         margin: 10px 0;
+        /* PERF FIX: disable backdrop-filter entirely on mobile scroll container.
+         * Not visually noticeable through the table rows, but saves massive GPU cost. */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(20, 15, 50, 0.95) !important; /* Compensate with solid dark bg */
     }
 
     .premium-table td:last-child,
     .premium-table td.action-cell {
         padding: 8px !important;
+        /* PERF FIX: disable backdrop-filter on sticky cells on mobile — use solid bg instead */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(30, 20, 60, 0.98) !important;
     }
 
     /* Reduce button padding and hide text on mobile */

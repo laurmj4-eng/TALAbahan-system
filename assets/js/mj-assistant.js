@@ -4,6 +4,19 @@ if (!activeSessionUID) {
     localStorage.setItem('mj_user_uid', activeSessionUID);
 }
 
+// --- PERF FIX: RAF-debounced scroll for chat messages ---
+// The streaming loop calls scrollTo on every token, which reads scrollHeight
+// (forced layout) dozens of times per second. RAF batches these into one per frame.
+let _chatScrollRafId = null;
+function scheduleScrollToBottom(el) {
+    if (_chatScrollRafId) cancelAnimationFrame(_chatScrollRafId);
+    _chatScrollRafId = requestAnimationFrame(() => {
+        _chatScrollRafId = null;
+        if (el) el.scrollTop = el.scrollHeight;
+    });
+}
+// --------------------------------------------------------
+
 const chatButton = document.getElementById('chat-button');
 const chatContainer = document.getElementById('chat-container');
 const closeChat = document.getElementById('close-chat');
@@ -169,8 +182,8 @@ function appendMessage(sender, text, id = null, time = null, isTyping = false) {
     }
 
     chatMessages.appendChild(wrapper);
-    // Smooth scroll to bottom
-    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+    // Smooth scroll to bottom via RAF debounce for non-streaming calls
+    scheduleScrollToBottom(chatMessages);
     return messageDiv; 
 }
 
@@ -244,7 +257,7 @@ async function getBotResponse(userText) {
                             fullBotReply += parsed.text;
                             botMessageDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullBotReply));
                             botMessageDiv.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
-                            chatMessages.scrollTo({ top: chatMessages.scrollHeight });
+                            scheduleScrollToBottom(chatMessages); // PERF FIX: RAF-debounced
                         }
                     } catch (e) { } 
                 }

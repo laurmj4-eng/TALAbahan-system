@@ -11,7 +11,7 @@ class ProductModel extends Model
     protected $allowedFields    = [
         'name', 'cost_price', 'selling_price', 
         'initial_stock', 'current_stock', 'wastage_qty', 'unit', 'image',
-        'is_available'
+        'is_available', 'real_sold_count', 'real_rating'
     ];
 
     protected $useTimestamps = true;
@@ -148,5 +148,45 @@ class ProductModel extends Model
             ->getRow();
 
         return (float) ($result->total_value ?? 0);
+    }
+
+    /**
+     * Recalculate and update the real_sold_count and real_rating for a product.
+     * This acts as our background aggregation mechanism to avoid N+1 queries.
+     */
+    public function updateAggregates(int $productId): void
+    {
+        $db = db_connect();
+
+        // 1. Calculate real_sold_count from order_items joined with completed orders
+        $soldResult = $db->table('order_items oi')
+            ->selectSum('oi.quantity', 'total_sold')
+            ->join('orders o', 'o.id = oi.order_id')
+            ->where('oi.product_id', $productId)
+            ->whereIn('o.status', [OrderModel::STATUS_COMPLETED, OrderModel::STATUS_SHIPPED])
+            ->get()
+            ->getRowArray();
+        
+        $totalSold = (int) ($soldResult['total_sold'] ?? 0);
+
+        // 2. Calculate real_rating from order_reviews
+        $ratingResult = $db->table('order_reviews r')
+            ->selectAvg('r.rating', 'avg_rating')
+            ->join('order_items oi', 'oi.order_id = r.order_id')
+            ->where('oi.product_id', $productId)
+            ->get()
+            ->getRowArray();
+        
+        $avgRating = $ratingResult['avg_rating'] !== null ? round((float) $ratingResult['avg_rating'], 1) : null;
+
+        // 3. Update the product
+        $this->update($productId, [
+            'real_sold_count' => $totalSold,
+            'real_rating'     => $avgRating
+        ]);
+
+        // 4. Invalidate Dashboard Cache to immediately reflect changes
+        $cache = \Config\Services::cache();
+        $cache->delete('customer_dashboard_products');
     }
 }

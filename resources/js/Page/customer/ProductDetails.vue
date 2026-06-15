@@ -4,7 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import { ArrowLeft, ShoppingCart, Info, Star } from 'lucide-vue-next';
+import { ArrowLeft, ShoppingCart, Info, Star, Loader2 } from 'lucide-vue-next';
 
 // Register GSAP Plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -194,9 +194,15 @@ const goBack = () => {
     window.history.length > 1 ? router.back() : router.visit('/customer/dashboard');
 };
 
+const isProcessing = ref(false);
+
 const buyNow = () => {
+    isProcessing.value = true;
     // Implement add to cart / buy now logic
     console.log(`Buying ${props.product.name}`);
+    setTimeout(() => {
+        isProcessing.value = false;
+    }, 400); // simulated instant feedback
 };
 </script>
 
@@ -315,9 +321,10 @@ const buyNow = () => {
                         </div>
                     </div>
 
-                    <button @click="buyNow" class="relative group overflow-hidden rounded-xl bg-white text-black px-8 py-3 md:py-4 font-bold uppercase tracking-wider text-sm transition-transform active:scale-95 flex items-center gap-3">
-                        <span class="relative z-10 group-hover:text-white transition-colors delay-75">Order Now</span>
-                        <ShoppingCart class="w-4 h-4 relative z-10 group-hover:text-white transition-colors delay-75" />
+                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-xl bg-white text-black px-8 py-3 md:py-4 font-bold uppercase tracking-wider text-sm transition-transform active:scale-95 flex items-center gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span class="relative z-10 group-hover:text-white transition-colors delay-75">{{ isProcessing ? 'Processing...' : 'Order Now' }}</span>
+                        <Loader2 v-if="isProcessing" class="w-4 h-4 relative z-10 animate-spin group-hover:text-white transition-colors delay-75" />
+                        <ShoppingCart v-else class="w-4 h-4 relative z-10 group-hover:text-white transition-colors delay-75" />
                         
                         <!-- Hover wipe effect -->
                         <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>

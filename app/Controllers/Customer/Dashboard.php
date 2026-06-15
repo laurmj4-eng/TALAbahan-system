@@ -30,29 +30,23 @@ class Dashboard extends BaseController
         $orderCounts = $this->getCustomerOrderCounts($customerName);
         $activeOrdersCount = (int) ($orderCounts['to_pay'] + $orderCounts['to_ship'] + $orderCounts['to_receive']);
 
-        // 3. Fetch products and calculate real-time social proof
-        $products = $productModel->findAll();
-        
-        foreach ($products as &$p) {
-            // Typecast status/visibility to integer for strict JS comparison
-            $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
+        // 3. Fetch products from cache or DB
+        $cache = \Config\Services::cache();
+        $products = $cache->get('customer_dashboard_products');
 
-            // Get actual sold count from order_items
-            $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
+        if ($products === null) {
+            $products = $productModel->findAll();
             
-            // Get real-time average rating
-            // 1. Get all order IDs that contain this product
-            $orderIds = array_column($orderItemModel->where('product_id', $p['id'])->select('order_id')->findAll(), 'order_id');
-            
-            if (!empty($orderIds)) {
-                // 2. Get average rating from order_reviews for these orders
-                $ratingResult = $reviewModel->selectAvg('rating')
-                    ->whereIn('order_id', $orderIds)
-                    ->first();
-                $p['real_rating'] = $ratingResult['rating'] ? round((float)$ratingResult['rating'], 1) : null;
-            } else {
-                $p['real_rating'] = null;
+            foreach ($products as &$p) {
+                // Typecast status/visibility to integer for strict JS comparison
+                $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
+                
+                // Read from our new background aggregated columns
+                $p['real_sold_count'] = (int) ($p['real_sold_count'] ?? 0);
+                $p['real_rating'] = $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
             }
+
+            $cache->save('customer_dashboard_products', $products, 60);
         }
 
         // 4. Prepare data for the view
@@ -73,28 +67,23 @@ class Dashboard extends BaseController
 
     public function getData()
     {
-        $productModel = new ProductModel();
-        $orderItemModel = new OrderItemModel();
-        $reviewModel = new OrderReviewModel();
+        $cache = \Config\Services::cache();
+        $products = $cache->get('customer_dashboard_products');
 
-        $products = $productModel->findAll();
-        
-        foreach ($products as &$p) {
-            // Typecast status/visibility to integer for strict JS comparison
-            $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
-
-            $p['real_sold_count'] = $orderItemModel->getTotalQtySoldByProduct((int)$p['id']);
+        if ($products === null) {
+            $productModel = new \App\Models\ProductModel();
+            $products = $productModel->findAll();
             
-            $orderIds = array_column($orderItemModel->where('product_id', $p['id'])->select('order_id')->findAll(), 'order_id');
-            
-            if (!empty($orderIds)) {
-                $ratingResult = $reviewModel->selectAvg('rating')
-                    ->whereIn('order_id', $orderIds)
-                    ->first();
-                $p['real_rating'] = $ratingResult['rating'] ? round((float)$ratingResult['rating'], 1) : null;
-            } else {
-                $p['real_rating'] = null;
+            foreach ($products as &$p) {
+                // Typecast status/visibility to integer for strict JS comparison
+                $p['is_available'] = isset($p['is_available']) ? (int)$p['is_available'] : 0;
+                
+                // Read from our new background aggregated columns
+                $p['real_sold_count'] = (int) ($p['real_sold_count'] ?? 0);
+                $p['real_rating'] = $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
             }
+
+            $cache->save('customer_dashboard_products', $products, 60);
         }
 
         return $this->response->setJSON([

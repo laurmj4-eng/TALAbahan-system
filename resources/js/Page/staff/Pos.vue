@@ -9,8 +9,8 @@
           <GlassCard 
             v-for="product in products" 
             :key="product.id" 
-            @click="addToCart(product)"
-            customClass="p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all group flex flex-col h-full"
+            @pointerdown="addToCart(product)"
+            :customClass="`p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all group flex flex-col h-full ${addingToCart[product.id] ? 'ring-2 ring-emerald-500 scale-[0.98] opacity-90' : ''}`"
           >
             <!-- Product Image -->
             <div class="h-32 md:h-40 overflow-hidden relative bg-white/5">
@@ -90,9 +90,9 @@
                 </div>
               </div>
               <div class="flex items-center bg-white/5 rounded-xl p-1 gap-1">
-                <button @click="changeQty(item, -1)" class="w-7 h-7 flex items-center justify-center hover:bg-rose-500/20 rounded-lg text-white transition-all active:scale-90">-</button>
+                <button @pointerdown.prevent="changeQty(item, -1)" class="w-7 h-7 flex items-center justify-center hover:bg-rose-500/20 rounded-lg text-white transition-all active:scale-90 touch-manipulation">-</button>
                 <span class="font-black text-white text-xs w-6 text-center">{{ item.qty }}</span>
-                <button @click="changeQty(item, 1)" class="w-7 h-7 flex items-center justify-center hover:bg-emerald-500/20 rounded-lg text-white transition-all active:scale-90">+</button>
+                <button @pointerdown.prevent="changeQty(item, 1)" class="w-7 h-7 flex items-center justify-center hover:bg-emerald-500/20 rounded-lg text-white transition-all active:scale-90 touch-manipulation">+</button>
               </div>
             </div>
           </div>
@@ -129,10 +129,11 @@
             </div>
 
             <button 
-              @click="processCheckout"
+              @pointerdown.prevent="processCheckout"
               :disabled="cart.length === 0 || isProcessing"
-              class="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              class="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95 touch-manipulation flex justify-center items-center gap-2"
             >
+              <span v-if="isProcessing" class="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
               {{ isProcessing ? 'PROCESSING...' : 'PROCESS PAYMENT' }}
             </button>
           </div>
@@ -177,6 +178,7 @@ const customerAlias = ref('');
 const voucherCode = ref('');
 const voucherStatus = ref(null);
 const isProcessing = ref(false);
+const addingToCart = ref({});
 
 const subtotal = computed(() => cart.value.reduce((sum, item) => sum + ((item.selling_price || item.price) * item.qty), 0));
 const discount = ref(0);
@@ -196,12 +198,17 @@ const getImageUrl = (imagePath) => {
 };
 
 const addToCart = (product) => {
+  addingToCart.value[product.id] = true;
   const existing = cart.value.find(item => item.id === product.id);
   if (existing) {
     existing.qty++;
   } else {
     cart.value.push({ ...product, qty: 1 });
   }
+  
+  setTimeout(() => {
+    addingToCart.value[product.id] = false;
+  }, 150); // Flash animation duration
 };
 
 const changeQty = (item, delta) => {

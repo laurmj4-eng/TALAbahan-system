@@ -3,7 +3,10 @@
     <div class="space-y-12 animate-fade-in">
       
       <!-- Enhanced Hero Banner -->
-      <section class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-10 md:p-20 group shadow-2xl backdrop-blur-md">
+      <!-- PERF FIX: backdrop-blur-md removed from mobile — a full-section blur on scroll entry
+           forces the browser to composite the entire hero section on every paint.
+           Kept on md+ via Tailwind responsive prefix. -->
+      <section class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-10 md:p-20 group shadow-2xl md:backdrop-blur-md">
         <!-- Fish Watermark (Right Aligned, Low Opacity) -->
         <div class="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] rotate-12 group-hover:rotate-6 group-hover:scale-110 transition-all duration-1000 pointer-events-none">
           <Fish class="w-[20rem] h-[20rem] text-cyan-400" />
@@ -50,6 +53,9 @@
               @error="handleImageError"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               :alt="product.name"
+              loading="lazy"
+              width="400"
+              height="500"
             />
             <!-- Image Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-[#020617]/90 via-transparent to-transparent opacity-60"></div>
@@ -100,20 +106,26 @@
             <div class="flex flex-col gap-1.5 sm:gap-2 mt-auto">
               <button 
                 v-if="parseInt(product.is_available) === 1"
-                @click="buyNow(product)"
-                class="w-full bg-cyan-400 text-slate-950 hover:bg-cyan-300 font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-cyan-400/10 group/buy"
+                @pointerdown.prevent="buyNow(product)"
+                :disabled="buyingNow[product.id]"
+                class="w-full font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-cyan-400/10 group/buy touch-manipulation"
+                :class="buyingNow[product.id] ? 'bg-cyan-500 opacity-70 cursor-not-allowed text-white' : 'bg-cyan-400 text-slate-950 hover:bg-cyan-300'"
               >
-                <Zap class="w-3 h-3 sm:w-3.5 h-3.5 fill-current transition-transform duration-300 group-hover/buy:scale-110" />
-                <span>Buy Now</span>
+                <Loader2 v-if="buyingNow[product.id]" class="w-3 h-3 sm:w-3.5 h-3.5 animate-spin" />
+                <Zap v-else class="w-3 h-3 sm:w-3.5 h-3.5 fill-current transition-transform duration-300 group-hover/buy:scale-110" />
+                <span>{{ buyingNow[product.id] ? 'Buying...' : 'Buy Now' }}</span>
               </button>
 
               <button 
                 v-if="parseInt(product.is_available) === 1"
-                @click="addToCart(product)"
-                class="w-full bg-white/5 border border-white/10 text-white/60 font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs hover:bg-white hover:text-slate-950 hover:border-white transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 group/cart"
+                @pointerdown.prevent="addToCart(product)"
+                :disabled="addingToCart[product.id]"
+                class="w-full border font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 group/cart touch-manipulation"
+                :class="addingToCart[product.id] ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white hover:text-slate-950 hover:border-white'"
               >
-                <Plus class="w-3 h-3 sm:w-3.5 h-3.5 transition-transform duration-300 group-hover/cart:rotate-90" />
-                <span>Add to Cart</span>
+                <CheckCircle v-if="addingToCart[product.id]" class="w-3 h-3 sm:w-3.5 h-3.5 text-emerald-400" />
+                <Plus v-else class="w-3 h-3 sm:w-3.5 h-3.5 transition-transform duration-300 group-hover/cart:rotate-90" />
+                <span>{{ addingToCart[product.id] ? 'Added!' : 'Add to Cart' }}</span>
               </button>
 
               <div v-if="parseInt(product.is_available) !== 1" class="w-full bg-rose-500/10 border border-rose-500/20 text-rose-400 font-black py-3 rounded-xl text-[0.65rem] uppercase tracking-widest text-center flex items-center justify-center gap-2">
@@ -546,6 +558,9 @@ const username = ref(props.username || localStorage.getItem('username') || 'Boca
 const cartCount = ref(parseInt(localStorage.getItem('cartCount') || '0'));
 const fallbackImage = 'https://images.unsplash.com/photo-1551248429-40975aa4de74?q=80&w=800&auto=format&fit=crop';
 
+const addingToCart = ref({});
+const buyingNow = ref({});
+
 // Checkout State
 const showCheckoutModal = ref(false);
 const showGcashMock = ref(false);
@@ -675,6 +690,7 @@ const closeCheckoutModal = () => {
 };
 
 const addToCart = (product) => {
+  addingToCart.value[product.id] = true;
   const index = cartItems.value.findIndex(item => item.id === product.id);
   if (index > -1) {
     cartItems.value[index].quantity += 1;
@@ -690,9 +706,14 @@ const addToCart = (product) => {
   }
   saveCart();
   updateCartCount(cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
+  
+  setTimeout(() => {
+    addingToCart.value[product.id] = false;
+  }, 400); // Give user enough time to see the "Added!" feedback
 };
 
 const buyNow = (product) => {
+  buyingNow.value[product.id] = true;
   cartItems.value = [{
     id: product.id,
     name: product.name,
@@ -703,8 +724,12 @@ const buyNow = (product) => {
   }];
   saveCart();
   updateCartCount(1);
-  showCheckoutModal.value = true;
-  currentStep.value = 1;
+  
+  setTimeout(() => {
+    buyingNow.value[product.id] = false;
+    showCheckoutModal.value = true;
+    currentStep.value = 1;
+  }, 200); // Tiny delay to register the visual feedback before modal opens
 };
 
 const updateQty = (id, delta) => {

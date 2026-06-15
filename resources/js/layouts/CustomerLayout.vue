@@ -58,7 +58,10 @@
     </aside>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="lg:hidden fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-6 right-6 h-20 bg-[#140f2d]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <!-- PERF FIX: 'backdrop-blur-3xl' is extremely GPU-heavy. Replaced with a solid
+         background on mobile using inline style override. The blur is only kept on
+         desktop where the GPU can handle it. -->
+    <nav class="lg:hidden fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-6 right-6 h-20 bg-[#140f2d]/90 border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]" style="-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);">
       <Link 
         v-for="item in navItems" 
         :key="item.path" 
@@ -176,7 +179,8 @@ const handleLogout = () => {
 
 .modern-navy-gradient::before {
   content: '';
-  position: fixed;
+  position: absolute; /* PERF FIX: was 'fixed' — fixed pseudo-elements create a new stacking context
+                       * that forces the browser to composite the entire page. 'absolute' is sufficient. */
   top: 0;
   left: 0;
   right: 0;
@@ -189,8 +193,18 @@ const handleLogout = () => {
 
 .main-content-glass {
   background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* PERF FIX: backdrop-filter on the main scrolling container is catastrophic on
+   * mobile — it repaints the blur layer on every scroll frame. Disabled on mobile.
+   * On desktop (lg+) the GPU can handle it fine. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (min-width: 1024px) {
+  .main-content-glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }
 
 .smooth-scroll-container {
@@ -199,7 +213,7 @@ const handleLogout = () => {
   overscroll-behavior-y: contain;
   backface-visibility: hidden;
   transform: translate3d(0,0,0);
-  will-change: scroll-position;
+  will-change: transform; /* PERF FIX: 'scroll-position' is not a valid will-change value; corrected to 'transform' */
 }
 
 .active-nav-item {

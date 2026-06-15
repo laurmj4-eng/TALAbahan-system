@@ -63,6 +63,33 @@ class OrderModel extends Model
     ];
 
     protected $beforeInsert = ['applyDefaultStatus'];
+    protected $afterUpdate  = ['triggerProductAggregates'];
+
+    protected function triggerProductAggregates(array $data)
+    {
+        if (isset($data['data']['status'])) {
+            $this->updateAggregatesForOrders((array) $data['id']);
+        }
+        return $data;
+    }
+
+    public function updateAggregatesForOrders(array $orderIds)
+    {
+        if (empty($orderIds)) return;
+        
+        $db = db_connect();
+        $productIds = $db->table('order_items')
+            ->select('product_id')
+            ->whereIn('order_id', $orderIds)
+            ->distinct()
+            ->get()
+            ->getResultArray();
+            
+        $productModel = new ProductModel();
+        foreach ($productIds as $row) {
+            $productModel->updateAggregates((int) $row['product_id']);
+        }
+    }
 
     /**
      * Fetch all orders with the count of items in each order.
@@ -400,6 +427,9 @@ class OrderModel extends Model
                     throw new Exception("Failed to update stock for {$line['product_name']}.");
                 }
             }
+
+            // Trigger background aggregation since order is instantly completed
+            $this->updateAggregatesForOrders([$orderId]);
 
             $salesModel->recordFromOrder($transactionCode, $itemsSummary, $finalAmount);
         } catch (Exception $e) {

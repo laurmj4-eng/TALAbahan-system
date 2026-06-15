@@ -163,17 +163,31 @@ const inputField = ref(null);
 
 const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+// --- PERF FIX: RAF-debounced scroll ---
+// scrollToBottom() is called on every streamed token. Without debouncing this
+// triggers dozens of synchronous layout reads per second (forced reflow).
+// This RAF version coalesces all scroll requests into at most one per animation frame.
+let _scrollRafId = null;
+const scheduleScrollToBottom = () => {
+  if (_scrollRafId) cancelAnimationFrame(_scrollRafId);
+  _scrollRafId = requestAnimationFrame(() => {
+    _scrollRafId = null;
+    if (messageContainer.value) {
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+    }
+  });
+};
+// Full await-version for non-streaming cases (opening chat, adding a message)
+const scrollToBottom = async () => {
+  await nextTick();
+  scheduleScrollToBottom();
+};
+// ----------------------------------------
+
 const getLogoUrl = () => {
   // Try window.CHAT_API_BASE_URL or window.BASE_URL, fallback to absolute path
   const base = window.CHAT_API_BASE_URL || window.BASE_URL || '';
   return base.replace(/\/$/, '') + '/images/logo.png';
-};
-
-const scrollToBottom = async () => {
-  await nextTick();
-  if (messageContainer.value) {
-    messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-  }
 };
 
 const toggleChat = () => {
@@ -303,7 +317,7 @@ const sendMessage = async () => {
             if (data.text) {
               fullContent += data.text;
               messages.value[botMsgIndex].content = fullContent;
-              scrollToBottom();
+              scheduleScrollToBottom(); // PERF FIX: RAF-debounced, not raw scrollTop
             }
           } catch (e) {
             console.warn('Failed to parse stream chunk:', trimmedLine);

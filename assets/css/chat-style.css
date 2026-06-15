@@ -159,6 +159,11 @@
     gap: 16px !important;
     scroll-behavior: smooth !important;
     background: #fafafa !important;
+    /* PERF FIX: Promote to GPU layer and prevent scroll from chaining up to page */
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important; /* iOS native inertia scrolling */
+    will-change: transform; /* Promote messages panel to own compositor layer */
+    contain: layout; /* Prevent internal reflows from dirtying the outer layout */
 }
 
 /* -------------------------------------------
