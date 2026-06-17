@@ -4,26 +4,28 @@
  */
 if (!function_exists('vite_asset')) {
     function vite_asset($path) {
-        // Development mode: serve from Vite dev server
         if (ENVIRONMENT === 'development') {
             return "http://localhost:5173/{$path}";
         }
 
-        $manifestPath = FCPATH . 'build/manifest.json';
+        $manifestPath = FCPATH . 'public/build/manifest.json';
+        if (!file_exists($manifestPath)) {
+            $manifestPath = FCPATH . 'build/manifest.json';
+        }
 
         if (!file_exists($manifestPath)) {
             log_message('error', '[Vite] Manifest file not found at: ' . $manifestPath);
-            return base_url("build/{$path}");
+            return base_url("public/build/{$path}");
         }
 
         $manifest = json_decode(file_get_contents($manifestPath), true);
 
         if (!isset($manifest[$path])) {
             log_message('warning', '[Vite] Asset not found in manifest: ' . $path);
-            return base_url("build/{$path}");
+            return base_url("public/build/{$path}");
         }
 
-        return base_url('build/' . $manifest[$path]['file']);
+        return base_url('public/build/' . $manifest[$path]['file']);
     }
 }
 
@@ -33,7 +35,10 @@ if (!function_exists('vite_css')) {
             return null;
         }
 
-        $manifestPath = FCPATH . 'build/manifest.json';
+        $manifestPath = FCPATH . 'public/build/manifest.json';
+        if (!file_exists($manifestPath)) {
+            $manifestPath = FCPATH . 'build/manifest.json';
+        }
         if (!file_exists($manifestPath)) {
             return null;
         }
@@ -44,7 +49,7 @@ if (!function_exists('vite_css')) {
             return null;
         }
 
-        return array_map(fn($css) => base_url('build/' . $css), $manifest[$path]['css']);
+        return array_map(fn($css) => base_url('public/build/' . $css), $manifest[$path]['css']);
     }
 }
 ?>
