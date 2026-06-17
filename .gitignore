@@ -19,7 +19,7 @@ yarn-error.log
 # Build / debug artifacts
 /dist/
 /public/dist/
-/public/build/
+
 /public/hot
 test.php
 test_orders.php
