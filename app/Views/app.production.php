@@ -15,17 +15,17 @@ if (!function_exists('vite_asset')) {
 
         if (!file_exists($manifestPath)) {
             log_message('error', '[Vite] Manifest file not found at: ' . $manifestPath);
-            return base_url("public/build/{$path}");
+            return base_url("build/{$path}");
         }
 
         $manifest = json_decode(file_get_contents($manifestPath), true);
 
         if (!isset($manifest[$path])) {
             log_message('warning', '[Vite] Asset not found in manifest: ' . $path);
-            return base_url("public/build/{$path}");
+            return base_url("build/{$path}");
         }
 
-        return base_url('public/build/' . $manifest[$path]['file']);
+        return base_url('build/' . $manifest[$path]['file']);
     }
 }
 
@@ -49,7 +49,7 @@ if (!function_exists('vite_css')) {
             return null;
         }
 
-        return array_map(fn($css) => base_url('public/build/' . $css), $manifest[$path]['css']);
+        return array_map(fn($css) => base_url('build/' . $css), $manifest[$path]['css']);
     }
 }
 ?>
