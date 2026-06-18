@@ -61,10 +61,7 @@ if (!function_exists('vite_css')) {
     <title>TALAbahan System</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     
-    <!-- Leaflet Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+    <!-- Leaflet: loaded dynamically by pages that need maps (not globally) -->
     <!-- reCAPTCHA v2: loaded by Vue composable (recaptchaLoader.js) -->
     <script>
         window.BASE_URL = "<?= base_url() ?>";

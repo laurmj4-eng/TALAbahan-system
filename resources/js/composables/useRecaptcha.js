@@ -110,17 +110,15 @@ export function useRecaptcha(containerRef, options = {}) {
     widgetId.value = null;
   };
 
-  onMounted(async () => {
-    await nextTick();
-    if (containerRef.value) {
-      await renderWidget();
-    }
-  });
+  // Don't eagerly load the reCAPTCHA script on mount.
+  // The watch on containerRef (below) will trigger renderWidget()
+  // only when the container DOM element actually exists (i.e., the
+  // parent shows the recaptcha section after user interaction).
 
   watch(
     () => containerRef.value,
     async (el) => {
-      if (el && widgetId.value === null && scriptReady.value) {
+      if (el && widgetId.value === null) {
         await nextTick();
         await renderWidget();
       }

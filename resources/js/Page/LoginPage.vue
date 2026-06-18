@@ -8,7 +8,7 @@
   >
     <div class="login-content-container">
       <div class="w-full max-w-[400px] px-4 md:px-0">
-        <div class=" bg-white/25 border border-white/10 rounded-3xl shadow-2xl p-6 md:p-8 text-center duration-500 overflow-visible">
+        <div class="auth-card">
 
           <!-- Logo -->
           <div class="mb-4 md:mb-6">
@@ -175,7 +175,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
   min-height: 100dvh;
   width: 100%;
   display: flex;
@@ -187,12 +187,6 @@
   padding: 2rem 0;
 }
 
-@media (max-width: 768px) {
-  .login-page-wrapper {
-    background-attachment: scroll;
-  }
-}
-
 .login-content-container {
   width: 100%;
   display: flex;
@@ -201,6 +195,23 @@
   padding: 1rem;
   margin: auto;
   flex-direction: column;
+}
+
+/* ── Auth Card ─────────────────────────────────────────────── */
+.auth-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+  padding: 1.5rem 1.75rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .auth-card {
+    padding: 2rem;
+  }
 }
 
 /* ── reCAPTCHA Section ─────────────────────────────────────── */
@@ -275,8 +286,17 @@ import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Firebase SDK — lazy-loaded on demand to avoid render-blocking network fetches
+let _firebaseModules = null;
+async function getFirebaseModules() {
+  if (_firebaseModules) return _firebaseModules;
+  const [appMod, authMod] = await Promise.all([
+    import(/* webpackIgnore: true */ "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"),
+    import(/* webpackIgnore: true */ "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"),
+  ]);
+  _firebaseModules = { ...appMod, ...authMod };
+  return _firebaseModules;
+}
 
 const windowObj = window;
 const loginInputClass =
@@ -319,29 +339,43 @@ const handleInputFocus = (field) => {
 let auth = null;
 let provider = null;
 
-onMounted(() => {
+/** Lazily initialize Firebase Auth (only when needed) */
+async function ensureFirebaseAuth() {
+  if (auth) return true;
+  if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) return false;
+  try {
+    const fb = await getFirebaseModules();
+    const app = fb.initializeApp(window.FIREBASE_CONFIG);
+    auth = fb.getAuth(app);
+    provider = new fb.GoogleAuthProvider();
+    return true;
+  } catch (err) {
+    console.error("Firebase init error:", err);
+    return false;
+  }
+}
+
+onMounted(async () => {
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
   if (trustedAdminEmail && email.value && email.value.toLowerCase() === trustedAdminEmail.toLowerCase()) {
     showRecaptcha.value = false;
   }
 
-  if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
-    try {
-      const app = initializeApp(window.FIREBASE_CONFIG);
-      auth = getAuth(app);
-      provider = new GoogleAuthProvider();
-
-      getRedirectResult(auth).then((result) => {
+  // Check for Google redirect result (lazy-load Firebase only if redirect params are in URL)
+  if (window.FIREBASE_CONFIG?.apiKey && window.location.href.includes('apiKey')) {
+    const ok = await ensureFirebaseAuth();
+    if (ok) {
+      const fb = await getFirebaseModules();
+      try {
+        const result = await fb.getRedirectResult(auth);
         if (result) {
           googleLoading.value = true;
           verifyWithBackend(result.user.email, result.user.displayName, 'google');
         }
-      }).catch((err) => {
+      } catch (err) {
         console.error("Firebase redirect error:", err);
         error.value = "Google redirect failed. Please try again.";
-      });
-    } catch (err) {
-      console.error("Firebase init error:", err);
+      }
     }
   }
 });
@@ -365,75 +399,72 @@ watch(showRecaptcha, async (newVal) => {
   }
 });
 
-const handleLogin = () => {
-  // Let the browser paint any active states (button click, ripple)
-  requestAnimationFrame(() => {
-    setTimeout(async () => {
-      const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
+const handleLogin = async () => {
+  const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
 
-      if (showRecaptcha.value && !recaptchaResponse) {
-        error.value = 'Please complete the reCAPTCHA verification.';
-        return;
-      }
-
-      loading.value = true;
-      error.value = '';
-
-      // Defer the heavy HTTP prep to the next frame to prevent Vue reactivity from blocking the UI thread
-      requestAnimationFrame(async () => {
-        try {
-          const formData = new FormData();
-          formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-          formData.append('email', email.value);
-          formData.append('password', password.value);
-          formData.append('provider', 'email');
-          formData.append('is_trusted_device', !showRecaptcha.value);
-          if (showRecaptcha.value) {
-            formData.append('g-recaptcha-response', recaptchaResponse);
-          }
-
-          const response = await axios.post('/api/auth/verify', formData);
-
-          if (response.data.status === 'success') {
-            handleSuccessfulLogin(response.data);
-          }
-        } catch (err) {
-          error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
-
-          if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
-            showRecaptcha.value = true;
-            localStorage.removeItem('trustedAdminEmail');
-          }
-
-          if (showRecaptcha.value) resetRecaptcha();
-
-          if (err.response?.data?.token) {
-            window.CSRF_HASH = err.response.data.token;
-          }
-        } finally {
-          loading.value = false;
-        }
-      });
-    }, 0);
-  });
-};
-
-const handleGoogleLogin = async () => {
-  if (!auth || !provider) {
-    error.value = 'Google Sign-In is not configured correctly.';
+  if (showRecaptcha.value && !recaptchaResponse) {
+    error.value = 'Please complete the reCAPTCHA verification.';
     return;
   }
 
-  googleLoading.value = true;
+  loading.value = true;
   error.value = '';
 
   try {
-    const result = await signInWithPopup(auth, provider);
+    const formData = new FormData();
+    formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+    formData.append('email', email.value);
+    formData.append('password', password.value);
+    formData.append('provider', 'email');
+    formData.append('is_trusted_device', !showRecaptcha.value);
+    if (showRecaptcha.value) {
+      formData.append('g-recaptcha-response', recaptchaResponse);
+    }
+
+    const response = await axios.post('/api/auth/verify', formData);
+
+    if (response.data.status === 'success') {
+      handleSuccessfulLogin(response.data);
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
+
+    if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
+      showRecaptcha.value = true;
+      localStorage.removeItem('trustedAdminEmail');
+    }
+
+    if (showRecaptcha.value) resetRecaptcha();
+
+    if (err.response?.data?.token) {
+      window.CSRF_HASH = err.response.data.token;
+    }
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleGoogleLogin = async () => {
+  googleLoading.value = true;
+  error.value = '';
+
+  // Lazy-init Firebase on first Google Sign-In click
+  const ok = await ensureFirebaseAuth();
+  if (!ok) {
+    error.value = 'Google Sign-In is not configured correctly.';
+    googleLoading.value = false;
+    return;
+  }
+
+  try {
+    const fb = await getFirebaseModules();
+    const result = await fb.signInWithPopup(auth, provider);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
       try {
-        await signInWithRedirect(auth, provider);
+        const fb = await getFirebaseModules();
+        await fb.signInWithRedirect(auth, provider);
       } catch (redirectErr) {
         error.value = 'Google login failed: ' + redirectErr.message;
         googleLoading.value = false;

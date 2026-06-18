@@ -195,7 +195,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
   min-height: 100dvh;
   width: 100%;
   display: flex;
@@ -205,12 +205,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 2rem 0;
-}
-
-@media (max-width: 768px) {
-  .login-page-wrapper {
-    background-attachment: scroll;
-  }
 }
 
 .login-content-container {
@@ -226,15 +220,12 @@
 /* ── Auth Card (GPU-accelerated glassmorphism) ─────────────── */
 .auth-card {
   width: 100%;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.5rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
   padding: 1.5rem 1.75rem;
   text-align: center;
-  /* Removed transform properties to prevent clipping of absolute children like reCAPTCHA puzzle */
 }
 
 @media (min-width: 768px) {
