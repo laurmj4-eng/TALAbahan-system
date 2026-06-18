@@ -68,8 +68,9 @@
         </div>
       </div>
 
-      <GlassCard customClass="overflow-hidden">
-        <div class="overflow-x-auto">
+      <GlassCard customClass="overflow-hidden responsive-table-to-cards">
+        <!-- Desktop Table -->
+        <div class="overflow-x-auto hidden md:block">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-white/5 border-b border-white/10">
@@ -123,6 +124,55 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden space-y-4 p-4">
+          <div v-if="filteredSales.length === 0" class="py-24 text-center text-white/20 italic">
+            {{ isLoading ? 'Loading financial data...' : 'No transactions found in ledger.' }}
+          </div>
+          <div
+            v-for="record in filteredSales"
+            :key="'card-' + record.id"
+            class="bg-white/[0.03] rounded-3xl p-4 border border-white/10 transition-all"
+          >
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1 min-w-0">
+                <strong class="text-violet-400 tracking-widest text-sm block truncate">{{ record.transaction_code }}</strong>
+                <strong class="text-emerald-400 text-lg mt-1 block">₱{{ formatNumber(record.total_amount) }}</strong>
+              </div>
+              <button
+                @click="toggleCard(record.id)"
+                class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-all text-lg"
+              >
+                ⋯
+              </button>
+            </div>
+            <div
+              v-if="expandedCards.has(record.id)"
+              class="mt-4 pt-4 border-t border-white/10 space-y-3"
+            >
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Date & Time</span>
+                <p class="text-sm text-white/60 mt-0.5">{{ formatDate(record.created_at) }}</p>
+              </div>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Customer</span>
+                <p class="text-sm text-white font-medium mt-0.5">{{ getCustomerDisplay(record) }}</p>
+                <span v-if="record.user_id" class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Registered User</span>
+                <span v-else-if="record.customer_alias" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Walk-in / {{ record.customer_name }}</span>
+                <span v-else class="text-[10px] text-white/30 font-bold uppercase tracking-wider">Walk-in</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Items Purchased</span>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-xs text-white/70 flex items-start gap-2">
+                    <span class="text-indigo-400 flex-shrink-0">•</span> <span class="break-words">{{ item.trim() }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </GlassCard>
     </div>
   </AdminLayout>
@@ -134,6 +184,7 @@ import axios from 'axios';
 import { Search, Download, FileText, FileDown, FileCode, TrendingUp } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const props = defineProps({
   username: String,
@@ -145,6 +196,15 @@ const searchQuery = ref('');
 const startDate = ref('');
 const endDate = ref('');
 const isLoading = ref(false);
+const expandedCards = ref(new Set());
+
+const toggleCard = (id) => {
+  if (expandedCards.value.has(id)) {
+    expandedCards.value.delete(id);
+  } else {
+    expandedCards.value.add(id);
+  }
+};
 
 watch(() => props.sales, (newSales) => {
   localSales.value = [...newSales];
@@ -178,23 +238,25 @@ const formatDate = (dateStr) => {
   });
 };
 
-const fetchSales = async () => {
+const fetchSales = () => {
   isLoading.value = true;
-  try {
-    const response = await axios.get('/api/admin/getHistory', {
-      params: {
-        start_date: startDate.value,
-        end_date: endDate.value
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const response = await axios.get('/api/admin/getHistory', {
+        params: {
+          start_date: startDate.value,
+          end_date: endDate.value
+        }
+      });
+      if (Array.isArray(response.data)) {
+        localSales.value = response.data;
       }
-    });
-    if (Array.isArray(response.data)) {
-      localSales.value = response.data;
+    } catch (error) {
+      console.error('Failed to fetch sales history:', error);
+    } finally {
+      isLoading.value = false;
     }
-  } catch (error) {
-    console.error('Failed to fetch sales history:', error);
-  } finally {
-    isLoading.value = false;
-  }
+  });
 };
 
 const filteredSales = computed(() => {
@@ -210,3 +272,19 @@ const exportData = (type) => {
   window.location.href = `/api/admin/getHistory?export=${type}&start_date=${startDate.value}&end_date=${endDate.value}`;
 };
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .responsive-table-to-cards {
+    position: relative;
+  }
+
+  .responsive-table-to-cards td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+</style>
