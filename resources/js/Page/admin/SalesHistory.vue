@@ -238,6 +238,18 @@ const formatDate = (dateStr) => {
   });
 };
 
+const getStatusClass = (status) => {
+  const classes = {
+    'completed': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+    'paid': 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+    'pending': 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+    'processing': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+    'cancelled': 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+    'refunded': 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+  };
+  return classes[status?.toLowerCase()] || 'bg-white/10 text-white/60 border border-white/10';
+};
+
 const fetchSales = () => {
   isLoading.value = true;
   runHeavyTaskWithoutBlockingUI(async () => {
