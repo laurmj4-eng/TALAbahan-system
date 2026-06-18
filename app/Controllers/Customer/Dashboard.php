@@ -43,7 +43,7 @@ class Dashboard extends BaseController
                 
                 // Read from our new background aggregated columns
                 $p['real_sold_count'] = (int) ($p['real_sold_count'] ?? 0);
-                $p['real_rating'] = $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
+                $p['real_rating'] = isset($p['real_rating']) && $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
             }
 
             $cache->save('customer_dashboard_products', $products, 60);
@@ -80,7 +80,7 @@ class Dashboard extends BaseController
                 
                 // Read from our new background aggregated columns
                 $p['real_sold_count'] = (int) ($p['real_sold_count'] ?? 0);
-                $p['real_rating'] = $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
+                $p['real_rating'] = isset($p['real_rating']) && $p['real_rating'] !== null ? round((float)$p['real_rating'], 1) : null;
             }
 
             $cache->save('customer_dashboard_products', $products, 60);

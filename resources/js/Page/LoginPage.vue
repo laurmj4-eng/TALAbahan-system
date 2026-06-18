@@ -178,6 +178,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 0;
 }
 
 @media (max-width: 768px) {
@@ -203,28 +207,28 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0.25rem 0;
-  overflow: visible;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0;
+  position: relative;
+  z-index: 50;
 }
 
 .recaptcha-inner {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
   transition: all 0.2s ease;
+  min-height: 78px;
 }
 
 .recaptcha-widget-host {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 78px;
-  width: 100%;
-  overflow: visible;
 }
 
 :deep(.recaptcha-widget-host iframe) {
@@ -232,27 +236,9 @@
   max-width: 100%;
 }
 
-@media (min-width: 769px) {
-  .recaptcha-section {
-    padding: 0.5rem 0;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .recaptcha-section {
-    padding: 0.375rem 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .recaptcha-section {
-    padding: 0.25rem 0;
-  }
-
-  .recaptcha-inner {
-    width: 100%;
-    box-sizing: border-box;
-  }
+/* Ensure the puzzle iframe has room and isn't clipped by stacking contexts */
+:deep(iframe[title*="recaptcha challenge"]) {
+  z-index: 9999 !important;
 }
 
 @media (max-width: 480px) {

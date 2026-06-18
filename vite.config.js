@@ -1,9 +1,34 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import fs from 'fs';
+
+/**
+ * Tiny plugin that writes a `public/hot` marker while the dev server is
+ * running.  The PHP view checks for this file to decide whether to load
+ * assets from the Vite dev server (localhost:5173) or from the production
+ * build manifest.
+ */
+function hotFilePlugin() {
+  const hotPath = path.resolve(__dirname, 'public/hot');
+  return {
+    name: 'vite-plugin-hot-file',
+    configureServer() {
+      fs.writeFileSync(hotPath, 'http://localhost:5173', 'utf-8');
+
+      // Clean up on process exit
+      const cleanup = () => {
+        try { fs.unlinkSync(hotPath); } catch {}
+      };
+      process.on('exit', cleanup);
+      process.on('SIGINT', () => { cleanup(); process.exit(); });
+      process.on('SIGTERM', () => { cleanup(); process.exit(); });
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), hotFilePlugin()],
   publicDir: false,
   resolve: {
     alias: {

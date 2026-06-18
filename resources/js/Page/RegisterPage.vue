@@ -197,13 +197,14 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
   min-height: 100dvh;
-  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 0;
 }
 
 @media (max-width: 768px) {
@@ -233,11 +234,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
   padding: 1.5rem 1.75rem;
   text-align: center;
-  overflow: visible;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  view-transition-name: auth-card;
-  will-change: transform;
+  /* Removed transform properties to prevent clipping of absolute children like reCAPTCHA puzzle */
 }
 
 @media (min-width: 768px) {
@@ -347,23 +344,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: visible;
+  justify-content: center;
+  position: relative;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  min-height: 78px;
 }
 
 .recaptcha-widget-host {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 78px;
-  width: 100%;
-  overflow: visible;
 }
 
-@media (max-width: 400px) {
-  .recaptcha-section {
-    transform: scale(0.8);
-    transform-origin: center top;
-  }
+:deep(iframe[title*="recaptcha challenge"]) {
+  z-index: 9999 !important;
 }
 
 /* ── Responsive Logo ───────────────────────────────────────── */

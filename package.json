@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"vite\" \"node server.js\" \"php -d extension=intl -S 0.0.0.0:8080 system/rewrite.php\"",
+    "dev": "concurrently \"vite\" \"node server.js\" \"php -d extension=intl -S 0.0.0.0:8080 public/router.php\"",
     "build": "vite build"
   },
   "dependencies": {
@@ -30,7 +30,7 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "vite": "^5.0.0"
+    "concurrently": "^9.2.3",
+    "vite": "^5.4.21"
   }
 }
