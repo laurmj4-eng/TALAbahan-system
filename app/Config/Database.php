@@ -116,7 +116,7 @@ class Database extends Config
             
             // Keep error reporting active if we are debugging in development mode
             if (ENVIRONMENT === 'development') {
-                $this->default['DBDebug'] = true;
+                $this->default['DBDebug'] = isset($_ENV['CI_DEBUG']) ? filter_var($_ENV['CI_DEBUG'], FILTER_VALIDATE_BOOL) : false;
             }
 
             return;
@@ -136,7 +136,7 @@ class Database extends Config
         $this->default['username'] = self::LOCAL_USERNAME;
         $this->default['password'] = self::LOCAL_PASSWORD;
         $this->default['port']     = 3306;
-        $this->default['DBDebug']  = true;
+        $this->default['DBDebug']  = isset($_ENV['CI_DEBUG']) ? filter_var($_ENV['CI_DEBUG'], FILTER_VALIDATE_BOOL) : false;
     }
 
     /**

@@ -11,6 +11,37 @@ if (window.BASE_URL) {
 }
 axios.defaults.withCredentials = true;
 
+// Global Axios interceptor for CSRF tokens
+axios.interceptors.request.use(config => {
+  const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  const csrfName = document.querySelector('meta[name="csrf-name"]')?.content || 'csrf_test_name';
+  
+  // Ensure AJAX header is sent
+  config.headers['X-Requested-With'] = 'XMLHttpRequest';
+  
+  if (csrfToken && (config.method === 'post' || config.method === 'put' || config.method === 'delete')) {
+    config.headers[csrfHeader] = csrfToken;
+    
+    // If using URLSearchParams, also inject CSRF into the body for redundancy
+    if (config.data instanceof URLSearchParams) {
+      config.data.set(csrfName, csrfToken);
+    }
+  }
+  return config;
+});
+
+// Global Axios response interceptor to update CSRF tokens
+axios.interceptors.response.use(response => {
+  const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+  const newToken = response.headers?.[csrfHeader.toLowerCase()] || response.data?.token;
+  if (newToken) {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) meta.content = newToken;
+  }
+  return response;
+});
+
 // Standardize the initialization process
 function initInertia() {
   const el = document.getElementById('app');
@@ -35,19 +66,19 @@ function initInertia() {
   createInertiaApp({
     page: initialPage, // CRITICAL: Use 'page' property, not 'initialPage'
     resolve: (name) => {
-      const pages = import.meta.glob('./Page/**/*.vue', { eager: true });
+      const pages = import.meta.glob('./Page/**/*.vue');
       const path = `./Page/${name}.vue`;
-      const pageComponent = pages[path];
+      const pageImport = pages[path];
       
-      if (!pageComponent) {
+      if (!pageImport) {
         console.error(`[Inertia] Component not found: ${path}`);
         // Try fallback search
         const match = Object.keys(pages).find(key => key.toLowerCase().endsWith(`${name.toLowerCase()}.vue`));
-        if (match) return pages[match].default || pages[match];
+        if (match) return pages[match]();
         throw new Error(`Component not found: ${name}`);
       }
       
-      return pageComponent.default || pageComponent;
+      return pageImport();
     },
     setup({ el, App, props, plugin }) {
       createApp({ render: () => h(App, props) })

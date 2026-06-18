@@ -94,49 +94,38 @@ class Dashboard extends BaseController
 
     public function getCustomerOrderCounts(string $customerName): array
     {
-        $orderModel = new OrderModel();
-
-        $all = (int) $orderModel
-            ->where('customer_name', $customerName)
-            ->countAllResults();
-
-        $toPayQuery = (new OrderModel())
-            ->where('customer_name', $customerName)
-            ->where('status', OrderModel::STATUS_PENDING);
-        
         $db = db_connect();
-        if ($db->fieldExists('payment_status', 'orders')) {
-            $toPayQuery->whereIn('payment_status', ['unpaid', 'failed', 'pending_confirmation']);
+        
+        // Cache field exists check
+        $cache = \Config\Services::cache();
+        $hasPaymentStatus = $cache->get('has_payment_status');
+        if ($hasPaymentStatus === null) {
+            $hasPaymentStatus = $db->fieldExists('payment_status', 'orders');
+            $cache->save('has_payment_status', $hasPaymentStatus, 86400);
         }
-        $toPay = (int) $toPayQuery->countAllResults();
-
-        $toShip = (int) (new OrderModel())
+        
+        $select = "
+            COUNT(*) as all_count,
+            SUM(CASE WHEN status = '" . OrderModel::STATUS_PENDING . "'" . ($hasPaymentStatus ? " AND payment_status IN ('unpaid', 'failed', 'pending_confirmation')" : "") . " THEN 1 ELSE 0 END) as to_pay,
+            SUM(CASE WHEN status = '" . OrderModel::STATUS_PROCESSING . "' THEN 1 ELSE 0 END) as to_ship,
+            SUM(CASE WHEN status = '" . OrderModel::STATUS_SHIPPED . "' THEN 1 ELSE 0 END) as to_receive,
+            SUM(CASE WHEN status = '" . OrderModel::STATUS_COMPLETED . "' THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN status = '" . OrderModel::STATUS_CANCELLED . "' THEN 1 ELSE 0 END) as cancelled
+        ";
+        
+        $row = $db->table('orders')
+            ->select($select)
             ->where('customer_name', $customerName)
-            ->where('status', OrderModel::STATUS_PROCESSING)
-            ->countAllResults();
-
-        $toReceive = (int) (new OrderModel())
-            ->where('customer_name', $customerName)
-            ->where('status', OrderModel::STATUS_SHIPPED)
-            ->countAllResults();
-
-        $completed = (int) (new OrderModel())
-            ->where('customer_name', $customerName)
-            ->where('status', OrderModel::STATUS_COMPLETED)
-            ->countAllResults();
-
-        $cancelled = (int) (new OrderModel())
-            ->where('customer_name', $customerName)
-            ->where('status', OrderModel::STATUS_CANCELLED)
-            ->countAllResults();
-
+            ->get()
+            ->getRowArray();
+            
         return [
-            'all' => $all,
-            'to_pay' => $toPay,
-            'to_ship' => $toShip,
-            'to_receive' => $toReceive,
-            'completed' => $completed,
-            'cancelled' => $cancelled,
+            'all' => (int) ($row['all_count'] ?? 0),
+            'to_pay' => (int) ($row['to_pay'] ?? 0),
+            'to_ship' => (int) ($row['to_ship'] ?? 0),
+            'to_receive' => (int) ($row['to_receive'] ?? 0),
+            'completed' => (int) ($row['completed'] ?? 0),
+            'cancelled' => (int) ($row['cancelled'] ?? 0),
         ];
     }
 

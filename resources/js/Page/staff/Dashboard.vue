@@ -1,7 +1,7 @@
 <template>
   <StaffLayout :username="username">
     <div class="space-y-8">
-      <div class="header-section">
+      <div class="header-section" v-once>
         <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">Staff Portal 🏛️</h1>
         <p class="text-white/60 font-medium">Welcome back, {{ username }}! Here's an overview of the business today.</p>
       </div>
@@ -18,7 +18,7 @@
       </div>
 
       <!-- Quick Navigation -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" v-once>
         <Link href="/staff/pos" class="group block h-full">
           <GlassCard customClass="p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-4">
             <div class="w-20 h-20 rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">

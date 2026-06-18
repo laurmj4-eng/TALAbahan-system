@@ -76,13 +76,20 @@ class ActivityLogger implements FilterInterface
             return 'Localhost';
         }
 
+        $cacheKey = 'ip_location_' . md5($ip);
+        if ($cachedLocation = cache($cacheKey)) {
+            return $cachedLocation;
+        }
+
         try {
             $context = stream_context_create(['http' => ['timeout' => 2]]); // 2 second timeout
             $response = @file_get_contents("http://ip-api.com/json/{$ip}", false, $context);
             if ($response) {
                 $data = json_decode($response, true);
                 if (isset($data['status']) && $data['status'] === 'success') {
-                    return $data['city'] . ', ' . $data['country'];
+                    $location = $data['city'] . ', ' . $data['country'];
+                    cache()->save($cacheKey, $location, 86400); // 24 hours
+                    return $location;
                 }
             }
         } catch (\Exception $e) {

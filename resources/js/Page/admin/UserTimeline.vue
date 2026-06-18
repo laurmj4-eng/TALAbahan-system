@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
-          <Link href="/admin/activity" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 backdrop-blur-md border border-violet-500/20 rounded-xl text-white/80 font-semibold text-sm hover:bg-violet-500/20 hover:border-violet-500/40 hover:-translate-x-1 transition-all group mb-4">
+          <Link href="/admin/activity" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10  border border-violet-500/20 rounded-xl text-white/80 font-semibold text-sm hover:bg-violet-500/20 hover:border-violet-500/40 hover:-translate-x-1 transition-all group mb-4">
             <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Monitor</span>
           </Link>
@@ -12,7 +12,7 @@
           <p class="text-white/60">Detailed activity history for this identity node.</p>
         </div>
 
-        <div class="w-full md:w-auto p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md text-right">
+        <div class="w-full md:w-auto p-5 rounded-2xl bg-white/[0.03] border border-white/10  text-right">
           <div class="text-[0.8rem] text-white/40 uppercase font-black tracking-widest mb-1">Current Status</div>
           <div :class="isOnline ? 'text-emerald-400' : 'text-rose-500'" class="font-black text-lg">
             {{ isOnline ? 'ONLINE' : 'OFFLINE' }}
@@ -38,7 +38,7 @@
                 <div class="w-1.5 h-1.5 bg-violet-600 rounded-full"></div>
               </div>
 
-              <div class="ml-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md transition-all duration-300 group-hover:border-violet-500/40 group-hover:translate-x-1">
+              <div class="ml-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02]  transition-all duration-300 group-hover:border-violet-500/40 group-hover:translate-x-1">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/[0.05]">
                   <span class="text-sky-400 font-black text-sm">{{ formatTime(log.created_at) }}</span>
                   <span class="text-white font-bold">{{ log.event }}</span>

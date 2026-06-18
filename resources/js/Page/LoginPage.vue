@@ -8,13 +8,16 @@
   >
     <div class="login-content-container">
       <div class="w-full max-w-[400px] px-4 md:px-0">
-        <div class="backdrop-blur-md bg-white/25 border border-white/10 rounded-3xl shadow-2xl p-6 md:p-8 text-center duration-500 overflow-visible">
+        <div class=" bg-white/25 border border-white/10 rounded-3xl shadow-2xl p-6 md:p-8 text-center duration-500 overflow-visible">
 
           <!-- Logo -->
           <div class="mb-4 md:mb-6">
             <img
               :src="windowObj.BASE_URL + 'images/pic3.jpg'"
               alt="TALAbahan Logo"
+              width="96"
+              height="96"
+              style="aspect-ratio: 1 / 1;"
               class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
             />
           </div>
@@ -22,7 +25,7 @@
           <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
           <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
 
-          <form @submit.prevent="handleLogin" class="space-y-3 md:space-y-4 text-left">
+          <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-3 md:space-y-4 text-left">
 
             <!-- Email Field -->
             <div class="relative">
@@ -42,7 +45,7 @@
                   placeholder="you@example.com"
                   autocomplete="email"
                   required
-                  @focus="emailFocused = true"
+                  @focus="handleInputFocus('email')"
                   @blur="emailFocused = false"
                 />
               </div>
@@ -66,7 +69,7 @@
                   placeholder="Enter your password"
                   autocomplete="current-password"
                   required
-                  @focus="passwordFocused = true"
+                  @focus="handleInputFocus('password')"
                   @blur="passwordFocused = false"
                 />
                 <button
@@ -271,7 +274,6 @@ import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
-import { runHeavyTaskWithoutBlockingUI } from '../composables/usePerformance';
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -285,7 +287,8 @@ const password = ref('');
 const loading = ref(false);
 const googleLoading = ref(false);
 const error = ref('');
-const showRecaptcha = ref(true);
+const showRecaptcha = ref(false);
+const hasInteracted = ref(false);
 const recaptchaContainerRef = ref(null);
 const showPassword = ref(false);
 const emailFocused = ref(false);
@@ -299,6 +302,19 @@ const {
 } = useRecaptcha(recaptchaContainerRef, {
   theme: 'dark',
 });
+
+const handleInputFocus = (field) => {
+  if (field === 'email') emailFocused.value = true;
+  if (field === 'password') passwordFocused.value = true;
+  
+  if (!hasInteracted.value) {
+    hasInteracted.value = true;
+    const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
+    if (!trustedAdminEmail || email.value.toLowerCase() !== trustedAdminEmail.toLowerCase()) {
+      showRecaptcha.value = true;
+    }
+  }
+};
 
 let auth = null;
 let provider = null;
@@ -331,6 +347,7 @@ onMounted(() => {
 });
 
 watch(email, (newEmail) => {
+  if (!hasInteracted.value) return;
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
   if (trustedAdminEmail && newEmail.toLowerCase() === trustedAdminEmail.toLowerCase()) {
     showRecaptcha.value = false;
@@ -349,49 +366,55 @@ watch(showRecaptcha, async (newVal) => {
 });
 
 const handleLogin = () => {
-  runHeavyTaskWithoutBlockingUI(async () => {
-    const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
+  // Let the browser paint any active states (button click, ripple)
+  requestAnimationFrame(() => {
+    setTimeout(async () => {
+      const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
 
-    if (showRecaptcha.value && !recaptchaResponse) {
-      error.value = 'Please complete the reCAPTCHA verification.';
-      return;
-    }
-
-    loading.value = true;
-    error.value = '';
-
-    try {
-      const formData = new FormData();
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-      formData.append('email', email.value);
-      formData.append('password', password.value);
-      formData.append('provider', 'email');
-      formData.append('is_trusted_device', !showRecaptcha.value);
-      if (showRecaptcha.value) {
-        formData.append('g-recaptcha-response', recaptchaResponse);
+      if (showRecaptcha.value && !recaptchaResponse) {
+        error.value = 'Please complete the reCAPTCHA verification.';
+        return;
       }
 
-      const response = await axios.post('/api/auth/verify', formData);
+      loading.value = true;
+      error.value = '';
 
-      if (response.data.status === 'success') {
-        handleSuccessfulLogin(response.data);
-      }
-    } catch (err) {
-      error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      // Defer the heavy HTTP prep to the next frame to prevent Vue reactivity from blocking the UI thread
+      requestAnimationFrame(async () => {
+        try {
+          const formData = new FormData();
+          formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+          formData.append('email', email.value);
+          formData.append('password', password.value);
+          formData.append('provider', 'email');
+          formData.append('is_trusted_device', !showRecaptcha.value);
+          if (showRecaptcha.value) {
+            formData.append('g-recaptcha-response', recaptchaResponse);
+          }
 
-      if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
-        showRecaptcha.value = true;
-        localStorage.removeItem('trustedAdminEmail');
-      }
+          const response = await axios.post('/api/auth/verify', formData);
 
-      if (showRecaptcha.value) resetRecaptcha();
+          if (response.data.status === 'success') {
+            handleSuccessfulLogin(response.data);
+          }
+        } catch (err) {
+          error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
 
-      if (err.response?.data?.token) {
-        window.CSRF_HASH = err.response.data.token;
-      }
-    } finally {
-      loading.value = false;
-    }
+          if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
+            showRecaptcha.value = true;
+            localStorage.removeItem('trustedAdminEmail');
+          }
+
+          if (showRecaptcha.value) resetRecaptcha();
+
+          if (err.response?.data?.token) {
+            window.CSRF_HASH = err.response.data.token;
+          }
+        } finally {
+          loading.value = false;
+        }
+      });
+    }, 0);
   });
 };
 

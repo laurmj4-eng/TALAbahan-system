@@ -113,7 +113,7 @@
     </div>
 
     <!-- Modals -->
-    <div v-if="isAddModalOpen || editingLocation" class="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div v-if="isAddModalOpen || editingLocation" class="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/80 ">
       <GlassCard customClass="w-full max-w-md p-6 sm:p-8 relative max-h-[95vh] overflow-y-auto">
         <button @click="closeModals" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
           <X class="w-5 h-5 sm:w-6 sm:h-6 text-white" />

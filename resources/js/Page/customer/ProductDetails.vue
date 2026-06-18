@@ -218,7 +218,7 @@ const buyNow = () => {
                     <Link 
                         v-if="isBackButtonVisible"
                         href="/customer/dashboard" 
-                        class="fixed top-4 left-4 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-2 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04] backdrop-blur-md px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
+                        class="fixed top-4 left-4 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-2 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04]  px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
                     >
                         <span class="inline-block transition-transform duration-300 group-hover:-translate-x-1">
                             <ArrowLeft class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -265,7 +265,7 @@ const buyNow = () => {
                     </div>
                     <div class="w-full md:w-1/2 split-image relative">
                         <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 rounded-xl sm:rounded-2xl blur-2xl"></div>
-                        <div class="relative aspect-square md:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.04] backdrop-blur-md p-1.5 sm:p-2">
+                        <div class="relative aspect-square md:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.04]  p-1.5 sm:p-2">
                              <div class="w-full h-full rounded-lg sm:rounded-xl bg-cover bg-center mix-blend-overlay" :style="`background-image: url('${getImageUrl(product.image)}');`"></div>
                         </div>
                     </div>
@@ -309,7 +309,7 @@ const buyNow = () => {
 
             <!-- Sticky Order Bar -->
             <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-3 sm:p-4 md:p-6 translate-y-full opacity-0 pointer-events-none">
-                <div class="max-w-4xl mx-auto bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
+                <div class="max-w-4xl mx-auto bg-white/[0.04]  border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
                     <!-- Glow effect inside bar -->
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
                     

@@ -9,6 +9,7 @@
           <GlassCard 
             v-for="product in products" 
             :key="product.id" 
+            v-memo="[product.id, addingToCart[product.id]]"
             @pointerdown="addToCart(product)"
             :customClass="`p-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all group flex flex-col h-full ${addingToCart[product.id] ? 'ring-2 ring-emerald-500 scale-[0.98] opacity-90' : ''}`"
           >
@@ -18,6 +19,10 @@
                 v-if="product.image" 
                 :src="getImageUrl(product.image)" 
                 :alt="product.name"
+                loading="lazy"
+                decoding="async"
+                width="200"
+                height="200"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div v-else class="w-full h-full flex items-center justify-center text-4xl opacity-50">
@@ -44,7 +49,7 @@
         </div>
 
         <!-- Cart Sidebar -->
-        <GlassCard customClass="w-full lg:w-96 p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl backdrop-blur-2xl">
+        <GlassCard customClass="w-full lg:w-96 p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl ">
           <div class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4 flex items-center gap-2">
             <ShoppingCart class="w-5 h-5 text-indigo-400" />
             <span>Current Order</span>

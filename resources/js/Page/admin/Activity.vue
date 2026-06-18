@@ -12,7 +12,7 @@
         <GlassCard customClass="hidden md:flex overflow-hidden border-white/[0.08] !p-0 flex-1 flex flex-col min-h-0">
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-300px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
-              <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
+              <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
                 <tr class="bg-white/5 border-b border-white/10">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">TIME</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">USER</th>
@@ -80,7 +80,7 @@
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
         <div class="md:hidden space-y-4 pb-20">
-          <div v-for="log in logs" :key="log.id" class="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-4">
+          <div v-for="log in logs" :key="log.id" class="p-5 rounded-2xl bg-white/[0.03] border border-white/10  space-y-4">
             <div class="flex justify-between items-start">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">

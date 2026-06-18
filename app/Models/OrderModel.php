@@ -149,7 +149,14 @@ class OrderModel extends Model
         $today = date('Y-m-d');
         
         // Check if cost_price column exists to avoid crash if migration hasn't run on production yet
-        if (!$db->fieldExists('cost_price', 'order_items')) {
+        $cache = \Config\Services::cache();
+        $hasCostPrice = $cache->get('has_cost_price');
+        if ($hasCostPrice === null) {
+            $hasCostPrice = $db->fieldExists('cost_price', 'order_items');
+            $cache->save('has_cost_price', $hasCostPrice, 86400);
+        }
+
+        if (!$hasCostPrice) {
             return 0.0;
         }
 

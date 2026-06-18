@@ -3,10 +3,10 @@
     <div class="space-y-12 animate-fade-in">
       
       <!-- Enhanced Hero Banner -->
-      <!-- PERF FIX: backdrop-blur-md removed from mobile — a full-section blur on scroll entry
+      <!-- PERF FIX:  removed from mobile — a full-section blur on scroll entry
            forces the browser to composite the entire hero section on every paint.
            Kept on md+ via Tailwind responsive prefix. -->
-      <section class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-10 md:p-20 group shadow-2xl md:backdrop-blur-md">
+      <section v-once class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-10 md:p-20 group shadow-2xl md:">
         <!-- Fish Watermark (Right Aligned, Low Opacity) -->
         <div class="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] rotate-12 group-hover:rotate-6 group-hover:scale-110 transition-all duration-1000 pointer-events-none">
           <Fish class="w-[20rem] h-[20rem] text-cyan-400" />
@@ -27,7 +27,7 @@
       </section>
 
       <!-- Section Header -->
-      <header class="flex items-center justify-between px-2">
+      <header v-once class="flex items-center justify-between px-2">
         <div class="flex items-center gap-4">
           <div class="w-14 h-14 bg-cyan-600/10 rounded-[1.5rem] flex items-center justify-center border border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
             <Gem class="text-cyan-400 w-7 h-7" />
@@ -43,7 +43,8 @@
         <template v-for="product in products" :key="product.id">
           <article 
             v-if="parseInt(product.is_available) === 1"
-            class="group relative flex flex-col bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
+            v-memo="[product.id, buyingNow[product.id], addingToCart[product.id]]"
+            class="group relative flex flex-col bg-white/[0.04]  border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
             :class="{ 'opacity-50 grayscale pointer-events-none': parseInt(product.is_available) !== 1 }"
           >
           <!-- Product Image Container -->
@@ -54,6 +55,7 @@
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               :alt="product.name"
               loading="lazy"
+              decoding="async"
               width="400"
               height="500"
             />
@@ -62,11 +64,11 @@
             
             <!-- Sold Out Badge -->
             <div v-if="parseInt(product.is_available) !== 1" class="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
-              <span class="px-2 py-1 sm:px-4 sm:py-2 border sm:border-2 border-white/30 rounded-lg sm:rounded-xl font-black text-white tracking-widest uppercase text-[0.5rem] sm:text-sm bg-black/40 backdrop-blur-md">Sold Out</span>
+              <span class="px-2 py-1 sm:px-4 sm:py-2 border sm:border-2 border-white/30 rounded-lg sm:rounded-xl font-black text-white tracking-widest uppercase text-[0.5rem] sm:text-sm bg-black/40 ">Sold Out</span>
             </div>
 
             <!-- Floating Badge -->
-            <div class="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-1 sm:px-3 sm:py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-1 sm:gap-2">
+            <div class="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-1 sm:px-3 sm:py-1.5 bg-black/40  border border-white/10 rounded-full flex items-center gap-1 sm:gap-2">
               <Star class="w-2.5 h-2.5 sm:w-3 h-3 text-amber-400 fill-amber-400" />
               <span class="text-[0.55rem] sm:text-[0.65rem] font-black">{{ product.real_rating || '5.0' }}</span>
             </div>
@@ -138,7 +140,7 @@
       </template>
 
         <!-- Empty State -->
-        <div v-if="products.length === 0" class="col-span-full py-40 text-center animate-fade-in">
+        <div v-if="products.length === 0" class="col-span-full py-40 text-center animate-fade-in" v-once>
           <div class="inline-flex items-center justify-center w-24 h-24 bg-white/[0.02] rounded-full mb-8 border border-white/5">
             <Fish class="w-12 h-12 text-white/10" />
           </div>
@@ -150,7 +152,7 @@
 
     <!-- Checkout Modal -->
     <Teleport to="body">
-      <div v-if="showCheckoutModal" class="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-0 sm:p-4 pointer-events-auto">
+      <div v-if="showCheckoutModal" class="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60  animate-fade-in p-0 sm:p-4 pointer-events-auto">
       <div class="relative w-full max-w-2xl bg-[#0c0f22] sm:bg-[#161b33] border-t sm:border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh] transition-all duration-500">
         <!-- Modal Header -->
         <div class="p-4 sm:p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#0c0f22] sm:bg-[#161b33] z-10">
@@ -320,12 +322,12 @@
               <!-- Interactive Map Container -->
               <div class="relative w-full h-48 sm:h-64 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 group">
                 <div id="checkout-map" class="w-full h-full z-0"></div>
-                <div v-if="!isMapInitialized" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm z-10 pointer-events-none transition-opacity duration-500">
+                <div v-if="!isMapInitialized" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40  z-10 pointer-events-none transition-opacity duration-500">
                   <MapPin class="w-8 h-8 sm:w-10 sm:h-10 text-white/20 mb-2" />
                   <p class="text-[0.65rem] sm:text-xs font-black text-white/40 uppercase tracking-widest">Map awaiting location...</p>
                 </div>
                 <!-- GPS Coordinates Overlay -->
-                <div v-if="coords" class="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 pointer-events-none">
+                <div v-if="coords" class="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60  rounded-lg border border-white/10 pointer-events-none">
                   <p class="text-[0.5rem] font-black text-cyan-400/80 tracking-widest">{{ coords.lat.toFixed(4) }}, {{ coords.lng.toFixed(4) }}</p>
                 </div>
               </div>
@@ -440,7 +442,7 @@
         </div>
 
         <!-- Modal Footer (Actions) -->
-        <div class="p-4 sm:p-8 border-t border-white/5 bg-transparent backdrop-blur-xl sticky bottom-0 z-10 flex gap-3 sm:gap-4">
+        <div class="p-4 sm:p-8 border-t border-white/5 bg-transparent  sticky bottom-0 z-10 flex gap-3 sm:gap-4">
           <button 
             v-if="currentStep === 1"
             @click="closeCheckoutModal"
@@ -471,7 +473,7 @@
     </Teleport>
 
     <!-- GCash Mock UI -->
-    <div v-if="showGcashMock" class="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/90 backdrop-blur-xl p-6 animate-fade-in">
+    <div v-if="showGcashMock" class="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/90  p-6 animate-fade-in">
       <div class="w-full max-w-md bg-blue-600 rounded-[3rem] p-10 text-center space-y-10 shadow-[0_0_100px_rgba(37,99,235,0.2)] border border-white/10 relative overflow-hidden group">
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-white/10 blur-3xl rounded-full pointer-events-none"></div>
         
@@ -1066,41 +1068,12 @@ const pollInterval = ref(null);
 onMounted(() => {
   fetchProducts();
   
-  // Real-time update: Poll every 3 seconds to keep products/units updated
-  pollInterval.value = setInterval(fetchProducts, 3000);
+  // Real-time update: Poll every 30 seconds to keep products/units updated
+  pollInterval.value = setInterval(fetchProducts, 30000);
   
   window.addEventListener('open-customer-cart', openCart);
 
-  // Global Axios interceptor for CSRF tokens
-  axios.interceptors.request.use(config => {
-    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    const csrfName = document.querySelector('meta[name="csrf-name"]')?.content || 'csrf_test_name';
-    
-    // Ensure AJAX header is sent
-    config.headers['X-Requested-With'] = 'XMLHttpRequest';
-    
-    if (csrfToken && (config.method === 'post' || config.method === 'put' || config.method === 'delete')) {
-      config.headers[csrfHeader] = csrfToken;
-      
-      // If using URLSearchParams, also inject CSRF into the body for redundancy
-      if (config.data instanceof URLSearchParams) {
-        config.data.set(csrfName, csrfToken);
-      }
-    }
-    return config;
-  });
 
-  // Global Axios response interceptor to update CSRF tokens
-  axios.interceptors.response.use(response => {
-    const csrfHeader = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-    const newToken = response.headers[csrfHeader.toLowerCase()] || response.data?.token;
-    if (newToken) {
-      const meta = document.querySelector('meta[name="csrf-token"]');
-      if (meta) meta.content = newToken;
-    }
-    return response;
-  });
 
   // Load saved cart if any
   const savedCart = JSON.parse(localStorage.getItem('cartItems') || '[]');

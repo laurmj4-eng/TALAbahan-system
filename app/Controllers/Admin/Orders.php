@@ -25,17 +25,12 @@ class Orders extends BaseController
     {
         $model = new OrderModel();
         
-        // Add pagination: 10 orders per page
+        // Add pagination and select item count to avoid N+1 queries
+        $model->select('orders.*, (SELECT COUNT(id) FROM order_items WHERE order_items.order_id = orders.id) as item_count');
         $data = [
             'orders' => $model->orderBy('created_at', 'DESC')->paginate(10),
             'pager'  => $model->pager,
         ];
-
-        // We need to inject the item count for each order
-        foreach ($data['orders'] as &$o) {
-            $db = db_connect();
-            $o['item_count'] = $db->table('order_items')->where('order_id', $o['id'])->countAllResults();
-        }
 
         $data['username'] = session()->get('username');
 

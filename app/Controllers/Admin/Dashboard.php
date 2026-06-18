@@ -88,7 +88,7 @@ class Dashboard extends BaseController
         // Ledger History
         try {
             $salesModel = new SalesModel();
-            $data['ledger_history'] = $salesModel->orderBy('created_at', 'DESC')->findAll();
+            $data['ledger_history'] = $salesModel->orderBy('created_at', 'DESC')->findAll(50);
         } catch (\Exception $e) {
             log_message('error', 'Dashboard Ledger Fetch Error: ' . $e->getMessage());
             $data['ledger_history'] = [];

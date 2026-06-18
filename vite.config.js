@@ -53,6 +53,9 @@ export default defineConfig({
         entryFileNames: `assets/[name].[hash].js`,
         chunkFileNames: `assets/[name].[hash].js`,
         assetFileNames: `assets/[name].[hash][extname]`,
+        manualChunks: {
+          vendor: ['vue', '@inertiajs/vue3', 'axios', 'chart.js', 'lucide-vue-next']
+        }
       },
     },
     sourcemap: process.env.CI_ENVIRONMENT !== 'production' ? 'inline' : false,

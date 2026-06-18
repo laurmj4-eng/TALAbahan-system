@@ -28,10 +28,8 @@ class Cache extends BaseConfig
     {
         parent::__construct();
 
-        // On InfinityFree, we disable file-based caching to avoid permission issues
-        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'mjtalabahan.page.gd') {
-            $this->handler = 'dummy';
-        }
+        // Removed dummy handler override for production to enable caching
+        // Ensure WRITEPATH/cache is writable in production
     }
 
     /**

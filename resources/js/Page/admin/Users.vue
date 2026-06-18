@@ -124,7 +124,7 @@
     </div>
 
     <!-- Edit Modal -->
-    <div v-if="editingUser" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div v-if="editingUser" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 ">
       <GlassCard customClass="w-full sm:max-w-md p-6 sm:p-8 relative rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
         <button @click="editingUser = null" class="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90 touch-manipulation">
           <X class="w-5 h-5 sm:w-6 sm:h-6 text-white" />

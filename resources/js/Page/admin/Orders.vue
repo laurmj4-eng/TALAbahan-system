@@ -18,7 +18,7 @@
         <GlassCard customClass="hidden md:flex overflow-hidden border-white/[0.08] !p-0 flex-1 flex flex-col min-h-0">
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
-              <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
+              <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
                 <tr class="bg-white/[0.03] border-b border-white/10">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Order Info</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Customer</th>
@@ -114,7 +114,7 @@
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
         <div class="md:hidden space-y-4 pb-20">
-          <div v-for="order in orders" :key="order.id" class="p-5 rounded-2xl bg-white/[0.05] border border-white/15 backdrop-blur-md space-y-5">
+          <div v-for="order in orders" :key="order.id" class="p-5 rounded-2xl bg-white/[0.05] border border-white/15  space-y-5">
             <div class="flex justify-between items-start gap-3">
               <div class="flex-1 min-w-0">
                 <div class="font-mono bg-black text-white px-3 py-2 rounded-lg border border-white/25 text-xs font-bold inline-block mb-2 shadow-lg break-all">
@@ -214,7 +214,7 @@
     <!-- Custom Damage Options Modal -->
     <Teleport to="body">
       <div v-if="showDamageModal" class="!z-[999999] fixed inset-0 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDamageModal = false"></div>
+        <div class="absolute inset-0 bg-black/60 " @click="showDamageModal = false"></div>
         <div class="bg-[#11131e]/95 border border-white/10 p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
           <button
             @click="showDamageModal = false"

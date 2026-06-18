@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const mysql = require('mysql2/promise');
+const compression = require('compression');
 
 if (!process.env.OPENROUTER_API_KEY) {
     console.error("❌ ERROR: OPENROUTER_API_KEY missing in .env!");
@@ -29,6 +30,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(compression());
 
 let pool;
 let isDbAvailable = false;

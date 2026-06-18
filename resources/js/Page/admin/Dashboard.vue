@@ -12,7 +12,7 @@
           </p>
           <p class="text-[0.8rem] text-white/40">Server Time: <span class="font-mono">{{ serverTime }}</span></p>
         </div>
-        <button @click="printReport" class="flex items-center gap-3 px-6 py-3 bg-white/[0.05] backdrop-blur-[16px] border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group shadow-lg shadow-indigo-500/20">
+        <button @click="printReport" class="flex items-center gap-3 px-6 py-3 bg-white/[0.05]  border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group shadow-lg shadow-indigo-500/20">
           <Printer class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
           <span class="font-bold">Print Daily Report</span>
         </button>
@@ -21,7 +21,7 @@
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Today's Sales -->
-        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-100">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40  transition-all duration-400 hover:scale-[1.02] hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-100">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xl mb-5">
             <Coins />
@@ -37,7 +37,7 @@
         </div>
 
         <!-- Net Profit -->
-        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-violet-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-200">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40  transition-all duration-400 hover:scale-[1.02] hover:border-violet-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-200">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 text-xl mb-5">
             <PieChart />
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Profit Margin -->
-        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-amber-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-300">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40  transition-all duration-400 hover:scale-[1.02] hover:border-amber-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-300">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 text-xl mb-5">
             <Percent />
@@ -63,7 +63,7 @@
         </div>
 
         <!-- Today's Orders -->
-        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40 backdrop-blur-xl transition-all duration-400 hover:scale-[1.02] hover:border-blue-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-400">
+        <div class="group p-[30px] rounded-[24px] border border-white/10 bg-slate-900/40  transition-all duration-400 hover:scale-[1.02] hover:border-blue-500/40 hover:bg-slate-900/60 hover:shadow-indigo-500/20 overflow-hidden relative opacity-0 animate-fade-in-up delay-400">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 text-xl mb-5">
             <ShoppingCart />
@@ -77,7 +77,7 @@
       </div>
 
       <!-- Alerts -->
-      <div v-if="cards.stale_orders_count > 0" class="flex items-center justify-between p-6 bg-orange-500/10 backdrop-blur-xl border border-orange-500/20 rounded-2xl">
+      <div v-if="cards.stale_orders_count > 0" class="flex items-center justify-between p-6 bg-orange-500/10  border border-orange-500/20 rounded-2xl">
         <div class="flex items-center gap-5">
           <AlertTriangle class="w-8 h-8 text-orange-400" />
           <div>
@@ -110,7 +110,7 @@
           </GlassCard>
 
           <!-- Top Products -->
-          <div class="p-[30px] rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-[16px]">
+          <div class="p-[30px] rounded-[24px] bg-white/[0.03] border border-white/10 ">
             <div class="flex items-center gap-3 mb-8">
               <Trophy class="text-amber-500 w-5 h-5" />
               <h4 class="text-lg font-bold text-indigo-300">Top Products (30d)</h4>
@@ -132,13 +132,13 @@
       </div>
 
       <!-- Quick Actions -->
-      <div class="space-y-6">
+      <div class="space-y-6" v-once>
         <div class="flex items-center gap-3">
           <Zap class="text-violet-500 w-6 h-6" />
           <h3 class="text-xl font-bold text-white tracking-tight">Quick Management</h3>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          <Link v-for="action in quickActions" :key="action.name" :href="action.path" class="group p-6 rounded-[24px] bg-white/[0.02] border border-white/10 backdrop-blur-[16px] flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
+          <Link v-for="action in quickActions" :key="action.name" :href="action.path" class="group p-6 rounded-[24px] bg-white/[0.02] border border-white/10  flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
             <component :is="action.icon" :class="action.color" class="w-8 h-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300" />
             <span class="font-bold text-[1.1rem] tracking-tight group-hover:text-violet-400 transition-colors">{{ action.name }}</span>
           </Link>
@@ -228,11 +228,20 @@ const printReport = () => {
 };
 
 const initChart = (data) => {
-  if (chartInstance) chartInstance.destroy();
   if (!chartCanvas.value) return;
 
   const ctx = chartCanvas.value.getContext('2d');
   const isAllZero = data.sales.every(val => val === 0);
+
+  if (chartInstance) {
+    chartInstance.data.labels = data.labels;
+    chartInstance.data.datasets[0].data = data.sales;
+    chartInstance.data.datasets[0].borderColor = isAllZero ? 'rgba(255,255,255,0.1)' : '#10b981';
+    chartInstance.data.datasets[0].backgroundColor = isAllZero ? 'transparent' : 'rgba(16, 185, 129, 0.15)';
+    chartInstance.data.datasets[0].pointRadius = isAllZero ? 0 : 4;
+    chartInstance.update();
+    return;
+  }
 
   chartInstance = new Chart(ctx, {
     type: 'line',

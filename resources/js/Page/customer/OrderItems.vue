@@ -119,7 +119,7 @@
 
       <!-- Details Modal -->
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="closeModal"></div>
+        <div class="absolute inset-0 bg-slate-950/80 " @click="closeModal"></div>
         <GlassCard customClass="relative w-full max-w-2xl p-8 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]">
           <div class="flex justify-between items-center mb-8">
             <div>

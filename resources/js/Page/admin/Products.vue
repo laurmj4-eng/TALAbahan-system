@@ -17,11 +17,11 @@
 
       <!-- Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-md">
+        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 ">
           <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Live Items</div>
           <div class="text-3xl font-black text-emerald-400">{{ liveItemsCount }}</div>
         </div>
-        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 backdrop-blur-md">
+        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 ">
           <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Total Products</div>
           <div class="text-3xl font-black text-sky-400">{{ products.length }}</div>
         </div>
@@ -32,7 +32,7 @@
         <div class="overflow-x-auto overflow-y-auto max-h-[60vh] md:max-h-[calc(100vh-420px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <!-- Desktop Table (Hidden on Mobile) -->
           <table class="hidden md:table w-full text-left border-collapse">
-            <thead class="sticky top-0 z-10 bg-[#1a1a1a] backdrop-blur-md">
+            <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
               <tr class="bg-white/[0.02] border-b border-white/10">
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</th>
@@ -145,7 +145,7 @@
 
       <!-- Add/Edit Modal -->
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="closeModal"></div>
+        <div class="absolute inset-0 bg-slate-950/80 " @click="closeModal"></div>
         <GlassCard customClass="relative w-full max-w-lg p-8 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]">
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-2xl font-bold text-white">{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h2>
