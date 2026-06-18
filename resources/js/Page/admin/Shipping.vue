@@ -171,6 +171,7 @@ import axios from 'axios';
 import { Plus, Edit, Trash2, X } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const locations = ref([]);
 const isGlobalShipping = ref(false);
@@ -213,74 +214,80 @@ const openEditModal = (location) => {
   form.value.is_active = String(location.is_active);
 };
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   isSubmitting.value = true;
-  try {
-    const formData = new FormData();
-    for (const key in form.value) {
-      formData.append(key, form.value[key]);
-    }
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      for (const key in form.value) {
+        formData.append(key, form.value[key]);
+      }
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const endpoint = editingLocation.value ? '/admin/shipping/update' : '/admin/shipping/store';
-    const response = await axios.post(endpoint, formData);
-    
-    if (response.data.status === 'success') {
-      fetchLocations();
-      closeModals();
-    } else {
-      alert(response.data.message);
+      const endpoint = editingLocation.value ? '/admin/shipping/update' : '/admin/shipping/store';
+      const response = await axios.post(endpoint, formData);
+      
+      if (response.data.status === 'success') {
+        fetchLocations();
+        closeModals();
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Failed to save location:', error);
+      alert('Failed to save location');
+    } finally {
+      isSubmitting.value = false;
     }
-  } catch (error) {
-    console.error('Failed to save location:', error);
-    alert('Failed to save location');
-  } finally {
-    isSubmitting.value = false;
-  }
+  });
 };
 
-const deleteLocation = async (id) => {
+const deleteLocation = (id) => {
   if (!confirm('Are you sure you want to delete this shipping location?')) return;
   
-  try {
-    const formData = new FormData();
-    formData.append('id', id);
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', id);
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/admin/shipping/delete', formData);
-    if (response.data.status === 'success') {
-      fetchLocations();
-    } else {
-      alert(response.data.message);
+      const response = await axios.post('/admin/shipping/delete', formData);
+      if (response.data.status === 'success') {
+        fetchLocations();
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Failed to delete location:', error);
+      alert('Failed to delete location');
     }
-  } catch (error) {
-    console.error('Failed to delete location:', error);
-    alert('Failed to delete location');
-  }
+  });
 };
 
-const toggleGlobalShipping = async () => {
-  try {
-    const formData = new FormData();
-    formData.append('ship_to_all', isGlobalShipping.value ? '1' : '0');
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+const toggleGlobalShipping = () => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('ship_to_all', isGlobalShipping.value ? '1' : '0');
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/admin/shipping/updateGlobal', formData);
-    if (response.data.status !== 'success') {
-      alert(response.data.message);
+      const response = await axios.post('/admin/shipping/updateGlobal', formData);
+      if (response.data.status !== 'success') {
+        alert(response.data.message);
+        isGlobalShipping.value = !isGlobalShipping.value;
+      }
+    } catch (error) {
+      console.error('Failed to toggle global shipping:', error);
+      alert('Failed to toggle global shipping');
       isGlobalShipping.value = !isGlobalShipping.value;
     }
-  } catch (error) {
-    console.error('Failed to toggle global shipping:', error);
-    alert('Failed to toggle global shipping');
-    isGlobalShipping.value = !isGlobalShipping.value;
-  }
+  });
 };
 
 onMounted(() => {

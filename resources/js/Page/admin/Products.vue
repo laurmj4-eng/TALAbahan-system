@@ -210,6 +210,7 @@ import axios from 'axios';
 import { Plus, Edit2, Trash2, Ghost, X } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const products = ref([]);
 const showModal = ref(false);
@@ -289,80 +290,86 @@ const handleImageChange = (e) => {
   }
 };
 
-const saveProduct = async () => {
+const saveProduct = () => {
   submitting.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('id', form.value.id || '');
-    formData.append('name', form.value.name);
-    formData.append('cost_price', form.value.cost_price);
-    formData.append('selling_price', form.value.selling_price);
-    formData.append('unit', form.value.unit);
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', form.value.id || '');
+      formData.append('name', form.value.name);
+      formData.append('cost_price', form.value.cost_price);
+      formData.append('selling_price', form.value.selling_price);
+      formData.append('unit', form.value.unit);
 
-    
-    if (selectedFile.value) {
-      formData.append('image', selectedFile.value);
-    }
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+      
+      if (selectedFile.value) {
+        formData.append('image', selectedFile.value);
+      }
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const url = isEditing.value ? '/api/admin/products/update' : '/api/admin/products/store';
-    const response = await axios.post(url, formData);
+      const url = isEditing.value ? '/api/admin/products/update' : '/api/admin/products/store';
+      const response = await axios.post(url, formData);
 
-    if (response.data.status === 'success') {
-      await fetchProducts();
-      closeModal();
+      if (response.data.status === 'success') {
+        await fetchProducts();
+        closeModal();
+      }
+    } catch (error) {
+      console.error('Save failed:', error);
+      alert(error.response?.data?.message || 'Failed to save product');
+    } finally {
+      submitting.value = false;
     }
-  } catch (error) {
-    console.error('Save failed:', error);
-    alert(error.response?.data?.message || 'Failed to save product');
-  } finally {
-    submitting.value = false;
-  }
+  });
 };
 
-const toggleStatus = async (product) => {
-  try {
-    const newStatus = parseInt(product.is_available) === 1 ? 0 : 1;
-    
-    // Some routes might be /api/admin/... or /admin/...
-    // Based on routes.php, it's /api/admin/products/toggleStatus/(:num)
-    // We'll use the API route and handle potential CSRF 403 by including the token
-    const response = await axios.post(`/api/admin/products/toggleStatus/${product.id}`, {
-      [window.CSRF_TOKEN_NAME]: window.CSRF_HASH
-    });
-    
-    if (response.data.status === 'success') {
-      product.is_available = newStatus;
-      if (response.data.token) window.CSRF_HASH = response.data.token;
+const toggleStatus = (product) => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const newStatus = parseInt(product.is_available) === 1 ? 0 : 1;
+      
+      // Some routes might be /api/admin/... or /admin/...
+      // Based on routes.php, it's /api/admin/products/toggleStatus/(:num)
+      // We'll use the API route and handle potential CSRF 403 by including the token
+      const response = await axios.post(`/api/admin/products/toggleStatus/${product.id}`, {
+        [window.CSRF_TOKEN_NAME]: window.CSRF_HASH
+      });
+      
+      if (response.data.status === 'success') {
+        product.is_available = newStatus;
+        if (response.data.token) window.CSRF_HASH = response.data.token;
+      }
+    } catch (error) {
+      console.error('Toggle status failed:', error);
+      // If we still get a 403, it might be the token is stale, update it if returned
+      if (error.response?.data?.token) {
+        window.CSRF_HASH = error.response.data.token;
+      }
     }
-  } catch (error) {
-    console.error('Toggle status failed:', error);
-    // If we still get a 403, it might be the token is stale, update it if returned
-    if (error.response?.data?.token) {
-      window.CSRF_HASH = error.response.data.token;
-    }
-  }
+  });
 };
 
-const deleteProduct = async (id) => {
+const deleteProduct = (id) => {
   if (!confirm('Destroy this record permanently?')) return;
-  try {
-    const formData = new FormData();
-    formData.append('id', id);
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', id);
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
+      const response = await axios.post('/api/admin/products/delete', formData);
+      if (response.data.status === 'success') {
+        fetchProducts();
+        if (response.data.token) window.CSRF_HASH = response.data.token;
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
     }
-    const response = await axios.post('/api/admin/products/delete', formData);
-    if (response.data.status === 'success') {
-      fetchProducts();
-      if (response.data.token) window.CSRF_HASH = response.data.token;
-    }
-  } catch (error) {
-    console.error('Delete failed:', error);
-  }
+  });
 };
 
 onMounted(fetchProducts);

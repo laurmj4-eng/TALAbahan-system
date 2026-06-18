@@ -206,6 +206,7 @@ import axios from 'axios';
 import { Plus, X } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const vouchers = ref([]);
 const isAddModalOpen = ref(false);
@@ -241,55 +242,59 @@ const fetchVouchers = async () => {
   }
 };
 
-const saveVoucher = async () => {
+const saveVoucher = () => {
   isSubmitting.value = true;
-  try {
-    const formData = new FormData();
-    for (const key in form.value) {
-      formData.append(key, form.value[key]);
-    }
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      for (const key in form.value) {
+        formData.append(key, form.value[key]);
+      }
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/admin/vouchers/store', formData);
-    if (response.data.status === 'success') {
-      fetchVouchers();
-      isAddModalOpen.value = false;
-      form.value = {
-        code: '', name: '', scope: 'platform', discount_type: 'fixed',
-        discount_value: '', max_discount: '', min_order_amount: '0',
-        payment_method_limit: ''
-      };
-    } else {
-      alert(response.data.message);
+      const response = await axios.post('/admin/vouchers/store', formData);
+      if (response.data.status === 'success') {
+        fetchVouchers();
+        isAddModalOpen.value = false;
+        form.value = {
+          code: '', name: '', scope: 'platform', discount_type: 'fixed',
+          discount_value: '', max_discount: '', min_order_amount: '0',
+          payment_method_limit: ''
+        };
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Failed to save voucher:', error);
+      alert('Failed to save voucher');
+    } finally {
+      isSubmitting.value = false;
     }
-  } catch (error) {
-    console.error('Failed to save voucher:', error);
-    alert('Failed to save voucher');
-  } finally {
-    isSubmitting.value = false;
-  }
+  });
 };
 
-const toggleVoucher = async (voucher) => {
-  try {
-    const formData = new FormData();
-    formData.append('id', voucher.id);
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+const toggleVoucher = (voucher) => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', voucher.id);
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/admin/vouchers/toggle', formData);
-    if (response.data.status === 'success') {
-      voucher.is_active = parseInt(voucher.is_active) === 1 ? 0 : 1;
-    } else {
-      alert(response.data.message);
+      const response = await axios.post('/admin/vouchers/toggle', formData);
+      if (response.data.status === 'success') {
+        voucher.is_active = parseInt(voucher.is_active) === 1 ? 0 : 1;
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Failed to toggle voucher:', error);
+      alert('Failed to toggle voucher');
     }
-  } catch (error) {
-    console.error('Failed to toggle voucher:', error);
-    alert('Failed to toggle voucher');
-  }
+  });
 };
 
 onMounted(() => {

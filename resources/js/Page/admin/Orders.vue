@@ -260,6 +260,7 @@ import {
 } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const orders = ref([]);
 const statuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
@@ -317,27 +318,29 @@ const fetchOrders = async () => {
   }
 };
 
-const updateStatus = async (order, newStatus) => {
+const updateStatus = (order, newStatus) => {
   if (!confirm(`Transition order to ${newStatus}?`)) return;
 
-  try {
-    const formData = new FormData();
-    formData.append('id', order.id);
-    formData.append('status', newStatus);
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', order.id);
+      formData.append('status', newStatus);
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/api/admin/orders/updateStatus', formData);
-    if (response.data.status === 'success') {
-      order.status = newStatus;
-    } else {
-      alert(response.data.message);
+      const response = await axios.post('/api/admin/orders/updateStatus', formData);
+      if (response.data.status === 'success') {
+        order.status = newStatus;
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Update status failed:', error);
     }
-  } catch (error) {
-    console.error('Update status failed:', error);
-  }
+  });
 };
 
 const editTracking = (order) => {
@@ -346,20 +349,22 @@ const editTracking = (order) => {
   const courier = prompt('Enter courier name:', order.courier_name || '');
   if (courier === null) return;
 
-  const formData = new FormData();
-  formData.append('id', order.id);
-  formData.append('tracking_number', tracking);
-  formData.append('courier_name', courier);
-  if (window.CSRF_TOKEN_NAME) formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+  runHeavyTaskWithoutBlockingUI(() => {
+    const formData = new FormData();
+    formData.append('id', order.id);
+    formData.append('tracking_number', tracking);
+    formData.append('courier_name', courier);
+    if (window.CSRF_TOKEN_NAME) formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
 
-  axios.post('/api/admin/orders/updateTracking', formData)
-    .then(res => {
-      if (res.data.status === 'success') {
-        order.tracking_number = tracking;
-        order.courier_name = courier;
-      }
-    })
-    .catch(err => console.error(err));
+    axios.post('/api/admin/orders/updateTracking', formData)
+      .then(res => {
+        if (res.data.status === 'success') {
+          order.tracking_number = tracking;
+          order.courier_name = courier;
+        }
+      })
+      .catch(err => console.error(err));
+  });
 };
 
 const viewOrderDetails = (order) => {
@@ -373,68 +378,72 @@ const cancelDamagedInTransit = (order) => {
   showDamageModal.value = true;
 };
 
-const handleCancelNoRedelivery = async () => {
+const handleCancelNoRedelivery = () => {
   if (!selectedOrder.value) return;
   
-  try {
-    const formData = new FormData();
-    formData.append('id', selectedOrder.value.id);
-    formData.append('issue_redelivery', '0');
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', selectedOrder.value.id);
+      formData.append('issue_redelivery', '0');
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
-    if (response.data.status === 'success') {
-      alert(response.data.message);
-      await fetchOrders();
-    } else {
-      alert(response.data.message || 'Failed to cancel order');
+      const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
+      if (response.data.status === 'success') {
+        alert(response.data.message);
+        await fetchOrders();
+      } else {
+        alert(response.data.message || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Cancel damaged order failed:', error);
+      let errorMsg = 'Failed to cancel order. Please try again.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      }
+      alert(errorMsg);
+    } finally {
+      showDamageModal.value = false;
+      selectedOrder.value = null;
     }
-  } catch (error) {
-    console.error('Cancel damaged order failed:', error);
-    let errorMsg = 'Failed to cancel order. Please try again.';
-    if (error.response && error.response.data && error.response.data.message) {
-      errorMsg = error.response.data.message;
-    }
-    alert(errorMsg);
-  } finally {
-    showDamageModal.value = false;
-    selectedOrder.value = null;
-  }
+  });
 };
 
-const handleConfirmRedelivery = async () => {
+const handleConfirmRedelivery = () => {
   if (!selectedOrder.value) return;
   
-  try {
-    const formData = new FormData();
-    formData.append('id', selectedOrder.value.id);
-    formData.append('issue_redelivery', '1');
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', selectedOrder.value.id);
+      formData.append('issue_redelivery', '1');
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
-    if (response.data.status === 'success') {
-      alert(response.data.message);
-      await fetchOrders();
-    } else {
-      alert(response.data.message || 'Failed to cancel order');
+      const response = await axios.post('/api/admin/orders/cancelDamagedInTransit', formData);
+      if (response.data.status === 'success') {
+        alert(response.data.message);
+        await fetchOrders();
+      } else {
+        alert(response.data.message || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Cancel damaged order failed:', error);
+      let errorMsg = 'Failed to cancel order. Please try again.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMsg = error.response.data.message;
+      }
+      alert(errorMsg);
+    } finally {
+      showDamageModal.value = false;
+      selectedOrder.value = null;
     }
-  } catch (error) {
-    console.error('Cancel damaged order failed:', error);
-    let errorMsg = 'Failed to cancel order. Please try again.';
-    if (error.response && error.response.data && error.response.data.message) {
-      errorMsg = error.response.data.message;
-    }
-    alert(errorMsg);
-  } finally {
-    showDamageModal.value = false;
-    selectedOrder.value = null;
-  }
+  });
 };
 
 onMounted(fetchOrders);

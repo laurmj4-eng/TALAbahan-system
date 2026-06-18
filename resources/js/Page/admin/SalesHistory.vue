@@ -21,6 +21,7 @@
         </GlassCard>
       </div>
 
+      <!-- Search & Filter Bar -->
       <div class="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
           <div class="relative w-full md:w-64">
@@ -28,6 +29,7 @@
             <input 
               v-model="searchQuery"
               type="text" 
+              id="transaction-search"
               placeholder="Search by transaction code, customer..." 
               class="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50"
             >
@@ -45,7 +47,7 @@
               type="date" 
               class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
             >
-            <button @click="fetchSales" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">
+            <button @click="fetchSales" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 touch-manipulation">
               Filter
             </button>
           </div>
@@ -55,27 +57,56 @@
               <Download class="w-4 h-4" /> Export Data
             </button>
             <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-              <button @click="exportData('csv')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+              <button @click="exportData('csv')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors active:scale-[0.98] touch-manipulation">
                 <FileText class="w-4 h-4 text-emerald-400" /> Export CSV
               </button>
-              <button @click="exportData('pdf')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+              <button @click="exportData('pdf')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors active:scale-[0.98] touch-manipulation">
                 <FileDown class="w-4 h-4 text-rose-400" /> Export PDF
               </button>
-              <button @click="exportData('word')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+              <button @click="exportData('word')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors active:scale-[0.98] touch-manipulation">
                 <FileCode class="w-4 h-4 text-blue-400" /> Export Word
               </button>
             </div>
           </div>
         </div>
 
-        <div class="flex md:hidden gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button
-            v-for="opt in statusOptions"
-            :key="opt.value"
-            @click="statusFilter = opt.value"
-            :class="['status-filter-btn', { active: statusFilter === opt.value }]"
+        <!-- Status Filter + Sort (Mobile) -->
+        <div class="flex flex-col gap-3 md:hidden">
+          <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <button
+              v-for="opt in statusOptions"
+              :key="opt.value"
+              @click="statusFilter = opt.value"
+              :class="['status-filter-btn', { active: statusFilter === opt.value }]"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+          <select 
+            v-model="sortBy" 
+            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
           >
-            {{ opt.label }}
+            <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Desktop Date Filter -->
+        <div class="hidden md:flex items-center gap-2">
+          <input 
+            v-model="startDate"
+            type="date" 
+            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+          >
+          <span class="text-white/40">to</span>
+          <input 
+            v-model="endDate"
+            type="date" 
+            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+          >
+          <button @click="fetchSales" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">
+            Filter
           </button>
         </div>
       </div>
@@ -94,7 +125,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
-              <tr v-for="record in filteredSales" :key="record.id" class="hover:bg-white/5 transition-colors group">
+              <tr v-for="record in paginatedSales" :key="record.id" class="hover:bg-white/5 transition-colors group">
                 <td class="px-6 py-4">
                   <strong class="text-violet-400 tracking-widest">{{ record.transaction_code }}</strong>
                 </td>
@@ -143,33 +174,39 @@
             {{ isLoading ? 'Loading financial data...' : 'No transactions found in ledger.' }}
           </div>
           <div
-            v-for="record in filteredSales"
+            v-for="record in paginatedSales"
             :key="'card-' + record.id"
-            class="bg-white/[0.03] rounded-3xl p-4 border border-white/10 transition-all"
+            @click="toggleCard(record.id)"
+            class="mobile-card bg-white/[0.03] rounded-3xl p-4 border border-white/10 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            :class="{ 'is-expanded': expandedCards.has(record.id) }"
           >
+            <!-- Card Header: Status + Code + Revenue -->
             <div class="flex justify-between items-start gap-3">
               <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-black uppercase tracking-widest text-white/40">STATUS</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    :class="getStatusClass(record.status || 'completed')">
+                    {{ record.status || 'Completed' }}
+                  </span>
+                </div>
                 <strong class="text-violet-400 tracking-widest text-sm block truncate">{{ record.transaction_code }}</strong>
-                <strong class="text-emerald-400 text-lg mt-1 block">₱{{ formatNumber(record.total_amount) }}</strong>
               </div>
-              <button
-                @click="toggleCard(record.id)"
-                class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-all text-lg"
-              >
-                ⋯
-              </button>
+              <div class="text-right flex-shrink-0">
+                <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">REVENUE</p>
+                <strong class="text-emerald-400 text-lg block">₱{{ formatNumber(record.total_amount) }}</strong>
+              </div>
             </div>
-            <div
-              v-if="expandedCards.has(record.id)"
-              class="mt-4 pt-4 border-t border-white/10 space-y-3"
-            >
+
+            <!-- Expanded Content -->
+            <div v-if="expandedCards.has(record.id)" class="mt-4 pt-4 border-t border-white/10 space-y-3">
               <div>
                 <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Date & Time</span>
                 <p class="text-sm text-white/60 mt-0.5">{{ formatDate(record.created_at) }}</p>
               </div>
-              <div>
+              <div class="bg-indigo-500/10 rounded-xl p-3">
                 <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Customer</span>
-                <p class="text-sm text-white font-medium mt-0.5">{{ getCustomerDisplay(record) }}</p>
+                <p class="text-sm text-indigo-300 font-semibold mt-0.5">{{ getCustomerDisplay(record) }}</p>
                 <span v-if="record.user_id" class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Registered User</span>
                 <span v-else-if="record.customer_alias" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Walk-in / {{ record.customer_name }}</span>
                 <span v-else class="text-[10px] text-white/30 font-bold uppercase tracking-wider">Walk-in</span>
@@ -182,10 +219,47 @@
                   </li>
                 </ul>
               </div>
+              <!-- Actions -->
+              <div class="flex gap-2 pt-3 border-t border-white/10">
+                <button class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors">
+                  Edit
+                </button>
+                <button class="flex-1 px-3 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-xs font-bold transition-colors border border-rose-500/30">
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Expansion Indicator -->
+            <div class="absolute right-3 top-3 text-white/30 text-lg leading-none transition-colors" :class="{ 'text-indigo-400': expandedCards.has(record.id) }">
+              ⋯
             </div>
           </div>
         </div>
       </GlassCard>
+
+      <!-- Pagination Controls -->
+      <div v-if="totalPages > 1" id="pagination-controls" class="flex items-center justify-center gap-4 mt-6">
+        <button 
+          @click="prevPage" 
+          :disabled="currentPage === 1"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/10 active:scale-95 touch-manipulation"
+        >
+          ← Previous
+        </button>
+        
+        <span class="text-white/60 text-sm">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        
+        <button 
+          @click="nextPage" 
+          :disabled="currentPage === totalPages"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/10 active:scale-95 touch-manipulation"
+        >
+          Next →
+        </button>
+      </div>
     </div>
   </AdminLayout>
 </template>
@@ -209,6 +283,9 @@ const startDate = ref('');
 const endDate = ref('');
 const isLoading = ref(false);
 const statusFilter = ref('all');
+const sortBy = ref('newest');
+const currentPage = ref(1);
+const itemsPerPage = 10;
 
 const statusOptions = [
   { value: 'all', label: 'All' },
@@ -218,6 +295,15 @@ const statusOptions = [
   { value: 'processing', label: 'Processing' },
   { value: 'cancelled', label: 'Cancelled' }
 ];
+
+const sortOptions = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'highest', label: 'Highest Revenue' },
+  { value: 'lowest', label: 'Lowest Revenue' },
+  { value: 'alpha', label: 'A-Z' }
+];
+
 const expandedCards = ref(new Set());
 
 const toggleCard = (id) => {
@@ -311,7 +397,49 @@ const filteredSales = computed(() => {
     );
   }
   
+  result = [...result].sort((a, b) => {
+    switch (sortBy.value) {
+      case 'newest':
+        return new Date(b.created_at) - new Date(a.created_at);
+      case 'oldest':
+        return new Date(a.created_at) - new Date(b.created_at);
+      case 'highest':
+        return parseFloat(b.total_amount) - parseFloat(a.total_amount);
+      case 'lowest':
+        return parseFloat(a.total_amount) - parseFloat(b.total_amount);
+      case 'alpha':
+        return (a.transaction_code || '').localeCompare(b.transaction_code || '');
+      default:
+        return 0;
+    }
+  });
+  
   return result;
+});
+
+const paginatedSales = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredSales.value.slice(start, end);
+});
+
+const totalPages = computed(() => Math.ceil(filteredSales.value.length / itemsPerPage));
+
+const goToPage = (page) => {
+  currentPage.value = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) goToPage(currentPage.value - 1);
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) goToPage(currentPage.value + 1);
+};
+
+watch([searchQuery, statusFilter, sortBy], () => {
+  currentPage.value = 1;
 });
 
 const exportData = (type) => {
@@ -334,6 +462,10 @@ const exportData = (type) => {
   }
 }
 
+.mobile-card {
+  position: relative;
+}
+
 .status-filter-btn {
   padding: 0.5rem 1rem;
   border-radius: 9999px;
@@ -344,6 +476,7 @@ const exportData = (type) => {
   color: rgba(255, 255, 255, 0.6);
   white-space: nowrap;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .status-filter-btn.active {
