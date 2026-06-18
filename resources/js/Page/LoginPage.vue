@@ -1,72 +1,134 @@
 <template>
-  <div 
+  <div
     class="login-page-wrapper"
-    :style="{ 
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('${windowObj.BASE_URL}images/pic1.jpg')`,
+    :style="{
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('${windowObj.BASE_URL}images/pic1.jpg')`,
       backgroundColor: '#0f172a'
     }"
   >
     <div class="login-content-container">
-    <div class="w-full max-w-[400px] px-2 md:px-0 sm:max-w-[450px]">
-      <div class="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[2.5rem] shadow-2xl p-4 md:p-8 text-center duration-500 overflow-visible">
-        
-        <!-- Logo -->
-        <div class="mb-4 md:mb-6">
-          <img :src="windowObj.BASE_URL + 'images/pic3.jpg'" alt="TALAbahan Logo" class="w-24 md:w-28 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300">
-        </div>
+      <div class="w-full max-w-[400px] px-4 md:px-0">
+        <div class="backdrop-blur-md bg-white/25 border border-white/10 rounded-3xl shadow-2xl p-6 md:p-8 text-center duration-500 overflow-visible">
 
-        <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
-        <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
-
-        <form @submit.prevent="handleLogin" class="space-y-2 md:space-y-4">
-          <div class="relative">
-            <input
-              v-model="email"
-              type="email"
-              id="email"
-              class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 md:px-5 md:py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all text-sm md:text-base"
-              placeholder="Email Address"
-              required
+          <!-- Logo -->
+          <div class="mb-4 md:mb-6">
+            <img
+              :src="windowObj.BASE_URL + 'images/pic3.jpg'"
+              alt="TALAbahan Logo"
+              class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
             />
           </div>
 
-          <div class="relative">
-            <input
-              v-model="password"
-              type="password"
-              id="password"
-              class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 md:px-5 md:py-4 text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-all text-sm md:text-base"
-              placeholder="Password"
-              required
-            />
-          </div>
+          <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
+          <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
 
-          <!-- reCAPTCHA Widget -->
-          <div v-if="showRecaptcha" class="recaptcha-section">
-            <div class="recaptcha-inner">
-              <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
+          <form @submit.prevent="handleLogin" class="space-y-3 md:space-y-4 text-left">
+
+            <!-- Email Field -->
+            <div class="relative">
+              <label for="email" class="block text-[12px] font-semibold text-white/90 mb-1.5 tracking-wide">Email Address</label>
+              <div class="relative flex items-center">
+                <span
+                  class="absolute left-3.5 text-white/50 transition-all duration-200"
+                  :class="{ 'text-blue-400 scale-[1.15] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]': emailFocused }"
+                >
+                  <Mail :size="18" :stroke-width="2.5" />
+                </span>
+                <input
+                  v-model="email"
+                  type="email"
+                  id="email"
+                  :class="loginInputClass"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  required
+                  @focus="emailFocused = true"
+                  @blur="emailFocused = false"
+                />
+              </div>
             </div>
-            <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
-              {{ recaptchaError }}
-            </p>
-          </div>
 
-          <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-3 md:px-4 rounded-xl text-xs font-bold mb-2 md:mb-4 text-center">
-            {{ error }}
-          </div>
+            <!-- Password Field -->
+            <div class="relative">
+              <label for="password" class="block text-[12px] font-semibold text-white/90 mb-1.5 tracking-wide">Password</label>
+              <div class="relative flex items-center">
+                <span
+                  class="absolute left-3.5 text-white/50 transition-all duration-200"
+                  :class="{ 'text-blue-400 scale-[1.15] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]': passwordFocused }"
+                >
+                  <Lock :size="18" :stroke-width="2.5" />
+                </span>
+                <input
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  id="password"
+                  :class="loginInputClass"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                  @focus="passwordFocused = true"
+                  @blur="passwordFocused = false"
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute right-3.5 text-white/40 hover:text-white/70 transition-colors"
+                >
+                  <EyeOff v-if="showPassword" :size="18" :stroke-width="2" />
+                  <Eye v-else :size="18" :stroke-width="2" />
+                </button>
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-white text-slate-950 font-black py-3 md:py-4 rounded-2xl hover:bg-white/90 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-white/5 text-sm md:text-base"
-          >
-            {{ loading ? 'Authenticating...' : 'Sign In' }}
-          </button>
+            <!-- Forgot Password -->
+            <div class="text-center pt-1">
+              <a
+                href="/forgot-password"
+                class="text-white font-bold hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
+                style="font-size: 13px;"
+              >
+                Forgot Password?
+              </a>
+            </div>
 
-          <!-- Divider -->
-          <div class="flex items-center my-4 md:my-6">
+            <!-- reCAPTCHA Widget -->
+            <div v-if="showRecaptcha" class="recaptcha-section">
+              <div class="recaptcha-inner">
+                <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
+              </div>
+              <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
+                {{ recaptchaError }}
+              </p>
+            </div>
+
+            <!-- Error Alert -->
+            <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-3 md:px-4 rounded-xl text-xs font-bold mb-2 md:mb-4 text-center">
+              {{ error }}
+            </div>
+
+            <!-- Sign In Button -->
+            <button
+              type="submit"
+              :disabled="loading"
+              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-3.5 md:py-4 rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-sm md:text-base flex items-center justify-center gap-2"
+            >
+              <svg
+                v-if="loading"
+                class="w-5 h-5 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ loading ? 'Signing In...' : 'Sign In' }}</span>
+            </button>
+          </form>
+
+          <!-- OR Separator -->
+          <div class="flex items-center my-5 md:my-6">
             <div class="flex-grow border-t border-white/10"></div>
-            <span class="px-4 text-white/30 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">OR</span>
+            <span class="px-4 text-white/70 text-[10px] font-black uppercase" style="letter-spacing: 0.25em;">OR</span>
             <div class="flex-grow border-t border-white/10"></div>
           </div>
 
@@ -85,13 +147,22 @@
             </svg>
             <span>{{ googleLoading ? 'Connecting...' : 'Sign in with Google' }}</span>
           </button>
-        </form>
 
-        <div class="mt-10 text-center">
-          <p class="text-white/40 text-sm font-medium">Don't have an account? <Link href="/register" class="text-white font-bold hover:underline decoration-white/30 underline-offset-4">Register here</Link></p>
+          <!-- Register Footer -->
+          <div class="mt-8 text-center">
+            <p class="text-white font-bold text-sm">
+              Don't have an account?
+              <Link
+                href="/register"
+                class="text-blue-400 underline underline-offset-4 decoration-blue-400 hover:text-blue-300 transition-colors ml-1"
+              >
+                Register
+              </Link>
+            </p>
+          </div>
+
         </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
@@ -137,7 +208,6 @@
 }
 
 .recaptcha-inner {
-  /* Minimal, clean - just center the widget */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -148,7 +218,6 @@
   transition: all 0.2s ease;
 }
 
-/* Host for Google reCAPTCHA iframe */
 .recaptcha-widget-host {
   display: flex;
   justify-content: center;
@@ -163,21 +232,18 @@
   max-width: 100%;
 }
 
-/* ── Desktop (≥ 769 px) ───────────────────────────── */
 @media (min-width: 769px) {
   .recaptcha-section {
     padding: 0.5rem 0;
   }
 }
 
-/* ── Tablet (641 – 768 px) ─────────────────────────────────── */
 @media (min-width: 641px) and (max-width: 768px) {
   .recaptcha-section {
     padding: 0.375rem 0;
   }
 }
 
-/* ── Mobile (≤ 640 px) ─────────────────────────────────────── */
 @media (max-width: 640px) {
   .recaptcha-section {
     padding: 0.25rem 0;
@@ -189,7 +255,6 @@
   }
 }
 
-/* ── Logo responsive sizing ────────────────────────────────── */
 @media (max-width: 480px) {
   img {
     width: 5rem !important;
@@ -197,14 +262,12 @@
   }
 }
 
-/* ── Title responsive sizing ───────────────────────────────── */
 @media (max-width: 480px) {
   h2 {
     font-size: 1.5rem !important;
   }
 }
 
-/* ── Heading / paragraph spacing for mobile ────────────────── */
 @media (max-width: 640px) {
   h2 {
     margin-bottom: 0.25rem !important;
@@ -220,12 +283,17 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
+import { runHeavyTaskWithoutBlockingUI } from '../composables/usePerformance';
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const windowObj = window;
+const loginInputClass =
+  'w-full rounded-2xl pl-11 pr-4 py-3 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.45),0_0_20px_rgba(59,130,246,0.25),inset_0_1px_3px_rgba(0,0,0,0.25)]';
+
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
@@ -233,6 +301,9 @@ const googleLoading = ref(false);
 const error = ref('');
 const showRecaptcha = ref(true);
 const recaptchaContainerRef = ref(null);
+const showPassword = ref(false);
+const emailFocused = ref(false);
+const passwordFocused = ref(false);
 
 const {
   recaptchaError,
@@ -240,27 +311,24 @@ const {
   reset: resetRecaptcha,
   rerender: rerenderRecaptcha,
 } = useRecaptcha(recaptchaContainerRef, {
-  theme: 'light',
+  theme: 'dark',
 });
 
 let auth = null;
 let provider = null;
 
 onMounted(() => {
-  // If a previous admin login hid captcha for this device, show it unless email matches
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
   if (trustedAdminEmail && email.value && email.value.toLowerCase() === trustedAdminEmail.toLowerCase()) {
     showRecaptcha.value = false;
   }
 
-  // Initialize Firebase
   if (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) {
     try {
       const app = initializeApp(window.FIREBASE_CONFIG);
       auth = getAuth(app);
       provider = new GoogleAuthProvider();
 
-      // Handle redirect result for mobile
       getRedirectResult(auth).then((result) => {
         if (result) {
           googleLoading.value = true;
@@ -276,7 +344,6 @@ onMounted(() => {
   }
 });
 
-// Watch for email changes to show/hide reCAPTCHA
 watch(email, (newEmail) => {
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
   if (trustedAdminEmail && newEmail.toLowerCase() === trustedAdminEmail.toLowerCase()) {
@@ -295,51 +362,51 @@ watch(showRecaptcha, async (newVal) => {
   }
 });
 
-const handleLogin = async () => {
-  const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
-  
-  if (showRecaptcha.value && !recaptchaResponse) {
-    error.value = 'Please complete the reCAPTCHA verification.';
-    return;
-  }
+const handleLogin = () => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
 
-  loading.value = true;
-  error.value = '';
-  
-  try {
-    const formData = new FormData();
-    formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    formData.append('email', email.value);
-    formData.append('password', password.value);
-    formData.append('provider', 'email');
-    formData.append('is_trusted_device', !showRecaptcha.value);
-    if (showRecaptcha.value) {
-      formData.append('g-recaptcha-response', recaptchaResponse);
+    if (showRecaptcha.value && !recaptchaResponse) {
+      error.value = 'Please complete the reCAPTCHA verification.';
+      return;
     }
 
-    const response = await axios.post('/api/auth/verify', formData);
+    loading.value = true;
+    error.value = '';
 
-    if (response.data.status === 'success') {
-      handleSuccessfulLogin(response.data);
-    }
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
-    
-    // If we tried to skip reCAPTCHA but backend required it, show it again
-    if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
-      showRecaptcha.value = true;
-      localStorage.removeItem('trustedAdminEmail');
-    }
+    try {
+      const formData = new FormData();
+      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      formData.append('email', email.value);
+      formData.append('password', password.value);
+      formData.append('provider', 'email');
+      formData.append('is_trusted_device', !showRecaptcha.value);
+      if (showRecaptcha.value) {
+        formData.append('g-recaptcha-response', recaptchaResponse);
+      }
 
-    if (showRecaptcha.value) resetRecaptcha();
-    
-    // Update CSRF hash if backend returned a new one
-    if (err.response?.data?.token) {
-      window.CSRF_HASH = err.response.data.token;
+      const response = await axios.post('/api/auth/verify', formData);
+
+      if (response.data.status === 'success') {
+        handleSuccessfulLogin(response.data);
+      }
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
+
+      if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
+        showRecaptcha.value = true;
+        localStorage.removeItem('trustedAdminEmail');
+      }
+
+      if (showRecaptcha.value) resetRecaptcha();
+
+      if (err.response?.data?.token) {
+        window.CSRF_HASH = err.response.data.token;
+      }
+    } finally {
+      loading.value = false;
     }
-  } finally {
-    loading.value = false;
-  }
+  });
 };
 
 const handleGoogleLogin = async () => {
@@ -351,18 +418,10 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
-  // Use Popup by default as it's more reliable for SPA state
-  // Only fallback to redirect if popup is blocked or specifically requested
   try {
-    console.log("[Auth] Attempting Google Sign-In with Popup...");
     const result = await signInWithPopup(auth, provider);
-    console.log("[Auth] Popup success, user:", result.user.email);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
-    console.error("[Auth] Google Sign-In Error:", err);
-    console.warn("Popup blocked or failed, trying redirect...", err);
-    
-    // If popup is blocked, we can try redirect for mobile
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
       try {
         await signInWithRedirect(auth, provider);
@@ -378,7 +437,6 @@ const handleGoogleLogin = async () => {
 };
 
 const verifyWithBackend = async (userEmail, name, providerType) => {
-  console.log(`[Auth] Verifying ${providerType} login with backend for:`, userEmail);
   if (providerType === 'google') googleLoading.value = true;
   else loading.value = true;
 
@@ -390,20 +448,14 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
     formData.append('provider', providerType);
     formData.append('remember', 'true');
 
-    console.log("[Auth] Sending verification request to /api/auth/verify...");
     const response = await axios.post('/api/auth/verify', formData);
-    console.log("[Auth] Backend response:", response.data);
 
     if (response.data.status === 'success') {
-      console.log("[Auth] Verification success, handling redirect...");
       handleSuccessfulLogin(response.data);
     } else {
-      console.error("[Auth] Verification failed with message:", response.data.message);
       error.value = response.data.message || 'Verification failed.';
     }
   } catch (err) {
-    console.error("[Auth] Axios Error:", err);
-    console.error("[Auth] Error details:", err.response?.data);
     error.value = err.response?.data?.message || 'Verification failed.';
     if (err.response?.data?.token) {
       window.CSRF_HASH = err.response.data.token;
@@ -415,32 +467,25 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
 };
 
 const handleSuccessfulLogin = (data) => {
-  console.log("[Auth] Storing session data in localStorage...");
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
   localStorage.setItem('username', data.username || '');
 
-  // If the user is an admin, trust this device for future logins
   if (data.role === 'admin') {
     localStorage.setItem('trustedAdminEmail', email.value.toLowerCase());
   }
-  
+
   const redirectPath = data.redirect || (data.data && data.data.redirect);
-  console.log("[Auth] Redirect path from backend:", redirectPath);
-  
+
   if (redirectPath) {
     const finalUrl = (window.BASE_URL || '/') + redirectPath.replace(/^\//, '');
-    console.log("[Auth] Navigating to:", finalUrl);
-    
-    // Use window.location.href for a full page reload to ensure session is picked up
     window.location.href = finalUrl;
   } else {
     const role = data.role || 'customer';
-    console.log("[Auth] No redirect path, using default for role:", role);
     let defaultPath = '/customer/dashboard';
     if (role === 'admin') defaultPath = '/admin/dashboard';
     else if (role === 'staff') defaultPath = '/staff/dashboard';
-    
+
     window.location.href = (window.BASE_URL || '/') + defaultPath.replace(/^\//, '');
   }
 };

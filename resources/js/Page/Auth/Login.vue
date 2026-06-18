@@ -143,6 +143,8 @@
 </template>
 
 <script>
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
+
 export default {
   name: 'Login',
   data() {
@@ -205,50 +207,52 @@ export default {
       return emailValid && passwordValid;
     },
 
-    async handleSubmit() {
-      this.errorMessage = '';
-      this.successMessage = '';
+    handleSubmit() {
+      runHeavyTaskWithoutBlockingUI(async () => {
+        this.errorMessage = '';
+        this.successMessage = '';
 
-      if (!this.validateForm()) {
-        return;
-      }
-
-      this.isLoading = true;
-
-      try {
-        // Replace with your actual API endpoint
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-          },
-          body: JSON.stringify({
-            email: this.form.email.trim(),
-            password: this.form.password,
-            rememberMe: this.form.rememberMe,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          this.errorMessage = data.message || 'Login failed. Please try again.';
+        if (!this.validateForm()) {
           return;
         }
 
-        this.successMessage = 'Login successful! Redirecting...';
+        this.isLoading = true;
 
-        // Redirect after short delay
-        setTimeout(() => {
-          window.location.href = data.redirect || '/dashboard';
-        }, 1000);
-      } catch (error) {
-        console.error('Login error:', error);
-        this.errorMessage = 'An error occurred. Please try again later.';
-      } finally {
-        this.isLoading = false;
-      }
+        try {
+          // Replace with your actual API endpoint
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+            },
+            body: JSON.stringify({
+              email: this.form.email.trim(),
+              password: this.form.password,
+              rememberMe: this.form.rememberMe,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            this.errorMessage = data.message || 'Login failed. Please try again.';
+            return;
+          }
+
+          this.successMessage = 'Login successful! Redirecting...';
+
+          // Redirect after short delay
+          setTimeout(() => {
+            window.location.href = data.redirect || '/dashboard';
+          }, 1000);
+        } catch (error) {
+          console.error('Login error:', error);
+          this.errorMessage = 'An error occurred. Please try again later.';
+        } finally {
+          this.isLoading = false;
+        }
+      });
     },
   },
 };
