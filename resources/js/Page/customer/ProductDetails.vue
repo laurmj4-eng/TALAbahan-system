@@ -210,7 +210,7 @@ const buyNow = () => {
     <CustomerLayout>
         <Head :title="`${product.name} | Details`" />
         
-        <div class="min-h-screen bg-[#050505] text-white selection:bg-cyan-500/30 font-sans overflow-x-hidden">
+        <div class="min-h-screen text-white selection:bg-cyan-500/30 font-sans overflow-x-hidden" style="background-color: oklch(0.13 0.04 265);">
             
             <!-- Premium Floating Back Button (Teleported to body) -->
             <Teleport to="body">
@@ -218,18 +218,18 @@ const buyNow = () => {
                     <Link 
                         v-if="isBackButtonVisible"
                         href="/customer/dashboard" 
-                        class="fixed top-6 left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-3 text-slate-400 hover:text-cyan-400 bg-slate-950/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 hover:border-cyan-500/30 hover:bg-slate-900/60 transition-all duration-300 group shadow-lg hover:-translate-x-1"
+                        class="fixed top-4 left-4 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-2 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04] backdrop-blur-md px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
                     >
                         <span class="inline-block transition-transform duration-300 group-hover:-translate-x-1">
-                            <ArrowLeft class="w-4 h-4" />
+                            <ArrowLeft class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </span>
-                        <span class="text-xs tracking-widest uppercase font-bold">Back to Menu</span>
+                        <span class="text-[0.6rem] sm:text-xs tracking-widest uppercase font-bold">Back to Menu</span>
                     </Link>
                 </Transition>
             </Teleport>
 
             <!-- Parallax Header -->
-            <header ref="headerRef" class="relative w-full h-screen flex items-center justify-center overflow-hidden">
+            <header ref="headerRef" class="relative w-full h-[70vh] sm:h-[80vh] md:h-screen flex items-center justify-center overflow-hidden">
                 <!-- Background Image with Parallax -->
                 <div 
                     ref="headerImgRef"
@@ -238,14 +238,14 @@ const buyNow = () => {
                 ></div>
                 
                 <!-- Gradients for depth -->
-                <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/80 via-transparent to-[#050505]"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-[#020617]/80 via-transparent to-[#020617]"></div>
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_70%)]"></div>
 
                 <div class="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto">
-                    <span class="text-cyan-400 text-xs md:text-sm tracking-[0.3em] uppercase mb-6 font-bold drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
+                    <span class="text-cyan-400 text-[0.6rem] sm:text-xs md:text-sm tracking-[0.3em] uppercase mb-4 sm:mb-6 font-bold drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
                         Premium Selection
                     </span>
-                    <h1 ref="titleRef" class="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tighter leading-tight filter drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                    <h1 ref="titleRef" class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tighter leading-tight filter drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                         {{ product.name }}
                     </h1>
                 </div>
@@ -255,51 +255,51 @@ const buyNow = () => {
             <main class="relative z-20 pb-40">
                 
                 <!-- Description Section -->
-                <section :ref="setSplitSectionRef" class="max-w-7xl mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center gap-12 md:gap-24">
+                <section :ref="setSplitSectionRef" class="max-w-7xl mx-auto px-3 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col md:flex-row items-center gap-8 sm:gap-12 md:gap-24">
                     <div class="w-full md:w-1/2 split-text">
-                        <div class="w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-600 mb-8 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
-                        <h2 class="text-3xl md:text-5xl font-bold mb-6 text-white/90 leading-tight">Crafted for the <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Connoisseur</span></h2>
-                        <p class="text-lg text-white/60 leading-relaxed font-light">
+                        <div class="w-10 sm:w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-600 mb-6 sm:mb-8 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+                        <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 text-white/90 leading-tight">Crafted for the <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Connoisseur</span></h2>
+                        <p class="text-base sm:text-lg text-white/60 leading-relaxed font-light">
                             {{ product.description }}
                         </p>
                     </div>
                     <div class="w-full md:w-1/2 split-image relative">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 rounded-2xl blur-2xl"></div>
-                        <div class="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-slate-900/50 backdrop-blur-sm p-2">
-                             <div class="w-full h-full rounded-xl bg-cover bg-center mix-blend-overlay" :style="`background-image: url('${getImageUrl(product.image)}');`"></div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 rounded-xl sm:rounded-2xl blur-2xl"></div>
+                        <div class="relative aspect-square md:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.04] backdrop-blur-md p-1.5 sm:p-2">
+                             <div class="w-full h-full rounded-lg sm:rounded-xl bg-cover bg-center mix-blend-overlay" :style="`background-image: url('${getImageUrl(product.image)}');`"></div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Specs Section -->
-                <section :ref="setSplitSectionRef" class="max-w-7xl mx-auto px-6 py-24 md:py-32 flex flex-col-reverse md:flex-row items-center gap-12 md:gap-24">
-                    <div class="w-full md:w-1/2 split-image relative grid grid-cols-2 gap-4">
-                        <div class="aspect-square rounded-2xl bg-gradient-to-br from-slate-900 to-black border border-white/5 p-6 flex flex-col justify-center items-center text-center group hover:border-cyan-500/50 transition-colors shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-                            <Star class="w-8 h-8 text-cyan-400 mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                            <span class="text-xs text-white/40 uppercase tracking-widest mb-1">Preparation</span>
-                            <span class="text-sm font-semibold text-white/90">{{ product.prep_style }}</span>
+                <section :ref="setSplitSectionRef" class="max-w-7xl mx-auto px-3 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col-reverse md:flex-row items-center gap-8 sm:gap-12 md:gap-24">
+                    <div class="w-full md:w-1/2 split-image relative grid grid-cols-2 gap-3 sm:gap-4">
+                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-cyan-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+                            <Star class="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400 mb-3 sm:mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                            <span class="text-[0.6rem] sm:text-xs text-white/40 uppercase tracking-widest mb-1">Preparation</span>
+                            <span class="text-xs sm:text-sm font-semibold text-white/90">{{ product.prep_style }}</span>
                         </div>
-                        <div class="aspect-square rounded-2xl bg-gradient-to-br from-slate-900 to-black border border-white/5 p-6 flex flex-col justify-center items-center text-center group hover:border-purple-500/50 transition-colors shadow-[0_4px_30px_rgba(0,0,0,0.5)] mt-8">
-                            <Info class="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                            <span class="text-xs text-white/40 uppercase tracking-widest mb-1">Flavor Notes</span>
-                            <span class="text-sm font-semibold text-white/90">{{ product.flavor_notes }}</span>
+                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-purple-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)] mt-6 sm:mt-8">
+                            <Info class="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mb-3 sm:mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                            <span class="text-[0.6rem] sm:text-xs text-white/40 uppercase tracking-widest mb-1">Flavor Notes</span>
+                            <span class="text-xs sm:text-sm font-semibold text-white/90">{{ product.flavor_notes }}</span>
                         </div>
                     </div>
-                    <div class="w-full md:w-1/2 split-text md:pl-12">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-6 text-white/90">The Perfect Serving</h2>
-                        <ul class="space-y-6">
-                            <li class="flex items-start gap-4">
+                    <div class="w-full md:w-1/2 split-text md:pl-8 lg:pl-12">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-white/90">The Perfect Serving</h2>
+                        <ul class="space-y-4 sm:space-y-6">
+                            <li class="flex items-start gap-3 sm:gap-4">
                                 <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
                                 <div>
-                                    <h4 class="text-white/80 font-semibold mb-1">Portion Size</h4>
-                                    <p class="text-white/50 text-sm">{{ product.portion_size }}</p>
+                                    <h4 class="text-white/80 font-semibold mb-1 text-sm sm:text-base">Portion Size</h4>
+                                    <p class="text-white/50 text-xs sm:text-sm">{{ product.portion_size }}</p>
                                 </div>
                             </li>
-                            <li class="flex items-start gap-4">
+                            <li class="flex items-start gap-3 sm:gap-4">
                                 <div class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>
                                 <div>
-                                    <h4 class="text-white/80 font-semibold mb-1">Unit Type</h4>
-                                    <p class="text-white/50 text-sm">{{ product.unit }}</p>
+                                    <h4 class="text-white/80 font-semibold mb-1 text-sm sm:text-base">Unit Type</h4>
+                                    <p class="text-white/50 text-xs sm:text-sm">{{ product.unit }}</p>
                                 </div>
                             </li>
                         </ul>
@@ -308,26 +308,23 @@ const buyNow = () => {
             </main>
 
             <!-- Sticky Order Bar -->
-            <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-4 md:p-6 translate-y-full opacity-0 pointer-events-none">
-                <div class="max-w-4xl mx-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] pointer-events-auto relative overflow-hidden">
+            <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-3 sm:p-4 md:p-6 translate-y-full opacity-0 pointer-events-none">
+                <div class="max-w-4xl mx-auto bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
                     <!-- Glow effect inside bar -->
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
                     
                     <div class="flex flex-col">
-                        <span class="text-xs text-white/50 uppercase tracking-widest font-semibold">{{ product.unit }}</span>
+                        <span class="text-[0.55rem] sm:text-xs text-white/50 uppercase tracking-widest font-semibold">{{ product.unit }}</span>
                         <div class="flex items-baseline gap-1">
-                            <span class="text-cyan-400 font-black text-xl">₱</span>
-                            <span class="text-2xl md:text-3xl font-black text-white">{{ parseFloat(product.price).toFixed(2) }}</span>
+                            <span class="text-cyan-400 font-black text-lg sm:text-xl">₱</span>
+                            <span class="text-xl sm:text-2xl md:text-3xl font-black text-white">{{ parseFloat(product.price).toFixed(2) }}</span>
                         </div>
                     </div>
 
-                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-xl bg-white text-black px-8 py-3 md:py-4 font-bold uppercase tracking-wider text-sm transition-transform active:scale-95 flex items-center gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed">
-                        <span class="relative z-10 group-hover:text-white transition-colors delay-75">{{ isProcessing ? 'Processing...' : 'Order Now' }}</span>
-                        <Loader2 v-if="isProcessing" class="w-4 h-4 relative z-10 animate-spin group-hover:text-white transition-colors delay-75" />
-                        <ShoppingCart v-else class="w-4 h-4 relative z-10 group-hover:text-white transition-colors delay-75" />
-                        
-                        <!-- Hover wipe effect -->
-                        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-lg sm:rounded-xl bg-cyan-400 text-slate-950 px-6 sm:px-8 py-2.5 sm:py-3 md:py-4 font-black uppercase tracking-wider text-[0.6rem] sm:text-xs md:text-sm transition-all duration-300 active:scale-95 flex items-center gap-2 sm:gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/20 hover:bg-cyan-300">
+                        <span class="relative z-10">{{ isProcessing ? 'Processing...' : 'Order Now' }}</span>
+                        <Loader2 v-if="isProcessing" class="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 animate-spin" />
+                        <ShoppingCart v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     </button>
                 </div>
             </div>

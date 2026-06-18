@@ -39,9 +39,9 @@
               v-model="selectedModel" 
               class="bg-white/10 text-white border border-white/20 rounded px-2 py-0.5 text-[10px] outline-none hover:bg-white/20 transition-colors"
             >
-              <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
-              <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
-              <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <option value="gemini">Gemini 3.5 Flash</option>
+              <option value="claude">Claude 3.5 Sonnet</option>
+              <option value="gpt">GPT-4o</option>
             </select>
           </div>
         </div>
@@ -150,7 +150,7 @@ const props = defineProps({
 const isOpen = ref(false);
 const isTyping = ref(false);
 const userInput = ref('');
-const selectedModel = ref('google/gemini-2.0-flash-001');
+const selectedModel = ref('gemini');
 
 const historyKey = computed(() => `mj_chat_history_${props.role}`);
 const messages = ref([]);

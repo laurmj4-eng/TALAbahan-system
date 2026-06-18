@@ -231,6 +231,7 @@ import {
 } from 'lucide-vue-next';
 import GlassCard from '../../components/GlassCard.vue';
 import StaffLayout from '../../layouts/StaffLayout.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const props = defineProps({
   username: String,
@@ -290,60 +291,63 @@ const fetchOrders = async () => {
   }
 };
 
-const updateStatus = async (order, newStatus) => {
+const updateStatus = (order, newStatus) => {
   if (!confirm(`Transition order to ${newStatus}?`)) return;
 
-  try {
-    const formData = new FormData();
-    formData.append('id', order.id);
-    formData.append('status', newStatus);
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', order.id);
+      formData.append('status', newStatus);
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      }
 
-    const response = await axios.post('/api/staff/updateOrderStatus', formData);
-    if (response.data.status === 'success') {
-      order.status = newStatus;
-    } else {
-      alert(response.data.message);
+      const response = await axios.post('/api/staff/updateOrderStatus', formData);
+      if (response.data.status === 'success') {
+        order.status = newStatus;
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Update status failed:', error);
     }
-  } catch (error) {
-    console.error('Update status failed:', error);
-  }
+  });
 };
 
-const editTracking = async (order) => {
+const editTracking = (order) => {
   const tracking = prompt('Enter tracking number:', order.tracking_number || '');
   if (tracking === null) return;
   
   const courier = prompt('Enter courier name:', order.courier_name || '');
   if (courier === null) return;
 
-  try {
-    const formData = new FormData();
-    formData.append('id', order.id);
-    formData.append('tracking_number', tracking);
-    formData.append('courier_name', courier);
-    
-    if (window.CSRF_TOKEN_NAME) {
-      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    }
-
-    const response = await axios.post('/api/staff/updateTracking', formData);
-    if (response.data.status === 'success') {
-      order.tracking_number = tracking;
-      order.courier_name = courier;
-      // If status changed to Shipped automatically by the backend
-      if (order.status === 'Processing' && (tracking || courier)) {
-        order.status = 'Shipped';
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', order.id);
+      formData.append('tracking_number', tracking);
+      formData.append('courier_name', courier);
+      
+      if (window.CSRF_TOKEN_NAME) {
+        formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
       }
-    } else {
-      alert(response.data.message);
+
+      const response = await axios.post('/api/staff/updateTracking', formData);
+      if (response.data.status === 'success') {
+        order.tracking_number = tracking;
+        order.courier_name = courier;
+        if (order.status === 'Processing' && (tracking || courier)) {
+          order.status = 'Shipped';
+        }
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Tracking update failed:', error);
     }
-  } catch (error) {
-    console.error('Tracking update failed:', error);
-  }
+  });
 };
 
 const viewDetails = async (order) => {

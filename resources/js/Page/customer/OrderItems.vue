@@ -197,6 +197,7 @@ import axios from 'axios';
 import { Calendar, Wallet, Eye, X, PackageOpen, CreditCard, Truck, Ban } from 'lucide-vue-next';
 import CustomerLayout from '../../layouts/CustomerLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const activeTab = ref('all');
 const orders = ref([]);
@@ -287,55 +288,57 @@ const closeModal = () => {
   selectedOrder.value = null;
 };
 
-const cancelOrder = async (orderId) => {
+const cancelOrder = (orderId) => {
   if (!confirm('Are you sure you want to cancel this order?')) return;
   
-  // Debug logging
   const actualId = parseInt(orderId, 10);
   console.log('Attempting to cancel order ID:', orderId, 'Parsed:', actualId, 'Type:', typeof orderId);
   
-  // Validate order ID
   if (!actualId || actualId === 0 || isNaN(actualId)) {
     alert('Error: Invalid order ID. Order ID must be a valid number. Please refresh the page and try again.');
     console.error('Cancel request aborted: orderId is invalid', { original: orderId, parsed: actualId });
     return;
   }
   
-  try {
-    const response = await axios.post('/api/customer/cancel-order', { 
-      id: actualId,
-      [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
-    });
-    if (response.data.status === 'success') {
-      alert('Order cancelled successfully!');
-      await fetchOrders();
-      closeModal();
-      if (response.data.token) window.CSRF_HASH = response.data.token;
-    } else {
-      alert(`Cancellation failed: ${response.data.message || 'Unknown error'}`);
-      console.error('Cancel error response:', response.data);
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const response = await axios.post('/api/customer/cancel-order', { 
+        id: actualId,
+        [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
+      });
+      if (response.data.status === 'success') {
+        alert('Order cancelled successfully!');
+        await fetchOrders();
+        closeModal();
+        if (response.data.token) window.CSRF_HASH = response.data.token;
+      } else {
+        alert(`Cancellation failed: ${response.data.message || 'Unknown error'}`);
+        console.error('Cancel error response:', response.data);
+      }
+    } catch (error) {
+      console.error('Cancel failed:', error);
+      alert(`Error: ${error.response?.data?.message || error.message || 'Connection error'}`);
     }
-  } catch (error) {
-    console.error('Cancel failed:', error);
-    alert(`Error: ${error.response?.data?.message || error.message || 'Connection error'}`);
-  }
+  });
 };
 
-const payNow = async (id) => {
-  try {
-    const response = await axios.post('/api/customer/pay-now', { 
-      id,
-      [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
-    });
-    if (response.data.status === 'success') {
-      alert('Payment successful!');
-      await fetchOrders();
-      closeModal();
-      if (response.data.token) window.CSRF_HASH = response.data.token;
+const payNow = (id) => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const response = await axios.post('/api/customer/pay-now', { 
+        id,
+        [window.CSRF_TOKEN_NAME]: window.CSRF_HASH 
+      });
+      if (response.data.status === 'success') {
+        alert('Payment successful!');
+        await fetchOrders();
+        closeModal();
+        if (response.data.token) window.CSRF_HASH = response.data.token;
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Payment failed');
     }
-  } catch (error) {
-    alert(error.response?.data?.message || 'Payment failed');
-  }
+  });
 };
 
 const trackOrder = async (id) => {

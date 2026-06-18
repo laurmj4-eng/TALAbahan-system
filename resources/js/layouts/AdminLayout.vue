@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen lg:h-screen bg-[#0f172a] lg:overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
+  <div class="flex h-screen bg-[#0f172a] overflow-hidden w-full font-['Plus_Jakarta_Sans',sans-serif]">
     <!-- Mobile Top Bar -->
     <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-black/40 backdrop-blur-xl border-b border-white/10 z-[50] flex items-center px-4 gap-4">
       <button @click="isSidebarOpen = !isSidebarOpen" class="w-10 h-10 bg-violet-500/20 text-white rounded-lg flex items-center justify-center border border-violet-500/30 cursor-pointer active:scale-95 transition-all">
@@ -78,12 +78,12 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col relative">
+    <div class="flex-1 flex flex-col min-h-0 relative">
       <!-- Background Gradient (Matching header.php) -->
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
       <!-- Page Content -->
-      <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative smooth-scroll-container">
+      <main class="flex-1 overflow-y-auto pt-24 lg:pt-10 p-3 md:p-6 lg:p-10 relative smooth-scroll-container overflow-x-hidden">
         <div class="space-y-4">
           <slot></slot>
         </div>

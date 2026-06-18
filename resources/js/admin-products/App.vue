@@ -222,6 +222,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import ProductCard from './components/ProductCard.vue';
 import ProductToggle from './components/ProductToggle.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../composables/usePerformance';
 
 const products = ref([]);
 const loading = ref(true);
@@ -305,65 +306,68 @@ const handleImageChange = (e) => {
   }
 };
 
-const handleToggleStatus = async (product) => {
-  try {
-    const formData = new FormData();
-    formData.append('csrf_test_name', csrfToken.value);
+const handleToggleStatus = (product) => {
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('csrf_test_name', csrfToken.value);
 
-    const response = await axios.post(`/admin/products/toggleStatus/${product.id}`, formData);
-    
-    if (response.data.status === 'success') {
-      product.is_available = response.data.is_available;
-    } else {
-      alert(response.data.message);
-    }
-  } catch (error) {
-    console.error('Error toggling status:', error);
-    alert('Failed to update availability status');
-  }
-};
-
-const handleSubmit = async () => {
-  submitting.value = true;
-  const formData = new FormData();
-  Object.keys(form.value).forEach(key => {
-    if (form.value[key] !== null) {
-      formData.append(key, form.value[key]);
+      const response = await axios.post(`/admin/products/toggleStatus/${product.id}`, formData);
+      
+      if (response.data.status === 'success') {
+        product.is_available = response.data.is_available;
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error toggling status:', error);
+      alert('Failed to update availability status');
     }
   });
-  
-
-
-  formData.append('csrf_test_name', csrfToken.value);
-
-  const url = isEditing.value ? '/admin/products/update' : '/admin/products/store';
-
-  try {
-    const response = await axios.post(url, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    
-    if (response.data.status === 'success') {
-      showModal.value = false;
-      await fetchProducts();
-    } else {
-      alert(response.data.message);
-    }
-  } catch (error) {
-    console.error('Error saving product:', error);
-    alert(error.response?.data?.message || 'An error occurred');
-  } finally {
-    submitting.value = false;
-  }
 };
 
-const confirmDelete = async (product) => {
-  if (confirm(`Are you sure you want to delete ${product.name}?`)) {
-    const formData = new FormData();
-    formData.append('id', product.id);
-    formData.append('csrf_test_name', csrfToken.value);
-
+const handleSubmit = () => {
+  submitting.value = true;
+  runHeavyTaskWithoutBlockingUI(async () => {
     try {
+      const formData = new FormData();
+      Object.keys(form.value).forEach(key => {
+        if (form.value[key] !== null) {
+          formData.append(key, form.value[key]);
+        }
+      });
+
+      formData.append('csrf_test_name', csrfToken.value);
+
+      const url = isEditing.value ? '/admin/products/update' : '/admin/products/store';
+      const response = await axios.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.status === 'success') {
+        showModal.value = false;
+        await fetchProducts();
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert(error.response?.data?.message || 'An error occurred');
+    } finally {
+      submitting.value = false;
+    }
+  });
+};
+
+const confirmDelete = (product) => {
+  if (!confirm(`Are you sure you want to delete ${product.name}?`)) return;
+
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const formData = new FormData();
+      formData.append('id', product.id);
+      formData.append('csrf_test_name', csrfToken.value);
+
       const response = await axios.post('/admin/products/delete', formData);
       if (response.data.status === 'success') {
         await fetchProducts();
@@ -374,7 +378,7 @@ const confirmDelete = async (product) => {
       console.error('Error deleting product:', error);
       alert('An error occurred while deleting the product');
     }
-  }
+  });
 };
 </script>
 

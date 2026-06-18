@@ -165,6 +165,7 @@ import axios from 'axios';
 import { ShoppingCart } from 'lucide-vue-next';
 import StaffLayout from '../../layouts/StaffLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { runHeavyTaskWithoutBlockingUI } from '../../composables/usePerformance';
 
 const props = defineProps({
   username: String,
@@ -230,46 +231,48 @@ const applyVoucher = async () => {
   voucherStatus.value = { type: 'success', message: `Code "${voucherCode.value}" applied` };
 };
 
-const processCheckout = async () => {
+const processCheckout = () => {
   if (cart.value.length === 0) return;
   isProcessing.value = true;
 
-  try {
-    const selectedUser = props.customers.find(u => u.username === customerName.value);
-    const userId = selectedUser ? selectedUser.id : null;
+  runHeavyTaskWithoutBlockingUI(async () => {
+    try {
+      const selectedUser = props.customers.find(u => u.username === customerName.value);
+      const userId = selectedUser ? selectedUser.id : null;
 
-    const formData = new FormData();
-    formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
-    formData.append('customer_name', customerName.value);
-    formData.append('customer_alias', customerAlias.value);
-    if (userId) formData.append('user_id', userId);
-    formData.append('voucher_code', voucherCode.value);
-    formData.append('items', JSON.stringify(cart.value));
+      const formData = new FormData();
+      formData.append(window.CSRF_TOKEN_NAME, window.CSRF_HASH);
+      formData.append('customer_name', customerName.value);
+      formData.append('customer_alias', customerAlias.value);
+      if (userId) formData.append('user_id', userId);
+      formData.append('voucher_code', voucherCode.value);
+      formData.append('items', JSON.stringify(cart.value));
 
-    const response = await axios.post('/staff/checkout', formData);
-    if (response.data.status === 'success') {
-      cart.value = [];
-      customerAlias.value = '';
-      voucherCode.value = '';
-      voucherStatus.value = null;
-      discount.value = 0;
-      alert(response.data.message || 'Checkout successful!');
-    } else {
-      alert(response.data.message || 'Checkout failed');
+      const response = await axios.post('/staff/checkout', formData);
+      if (response.data.status === 'success') {
+        cart.value = [];
+        customerAlias.value = '';
+        voucherCode.value = '';
+        voucherStatus.value = null;
+        discount.value = 0;
+        alert(response.data.message || 'Checkout successful!');
+      } else {
+        alert(response.data.message || 'Checkout failed');
+      }
+      
+      if (response.data.token) {
+        window.CSRF_HASH = response.data.token;
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      const msg = error.response?.data?.message || 'Checkout error';
+      alert(msg);
+      if (error.response?.data?.token) {
+        window.CSRF_HASH = error.response.data.token;
+      }
+    } finally {
+      isProcessing.value = false;
     }
-    
-    if (response.data.token) {
-      window.CSRF_HASH = response.data.token;
-    }
-  } catch (error) {
-    console.error('Checkout error:', error);
-    const msg = error.response?.data?.message || 'Checkout error';
-    alert(msg);
-    if (error.response?.data?.token) {
-      window.CSRF_HASH = error.response.data.token;
-    }
-  } finally {
-    isProcessing.value = false;
-  }
+  });
 };
 </script>
