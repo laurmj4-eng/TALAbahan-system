@@ -21,18 +21,19 @@
         </GlassCard>
       </div>
 
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/10">
-        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+      <div class="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
           <div class="relative w-full md:w-64">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input 
               v-model="searchQuery"
               type="text" 
-              placeholder="Search transactions..." 
+              placeholder="Search by transaction code, customer..." 
               class="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50"
             >
           </div>
-          <div class="flex items-center gap-2">
+
+          <div class="hidden md:flex items-center gap-2">
             <input 
               v-model="startDate"
               type="date" 
@@ -48,23 +49,34 @@
               Filter
             </button>
           </div>
+
+          <div class="relative group">
+            <button class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all">
+              <Download class="w-4 h-4" /> Export Data
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+              <button @click="exportData('csv')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                <FileText class="w-4 h-4 text-emerald-400" /> Export CSV
+              </button>
+              <button @click="exportData('pdf')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                <FileDown class="w-4 h-4 text-rose-400" /> Export PDF
+              </button>
+              <button @click="exportData('word')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                <FileCode class="w-4 h-4 text-blue-400" /> Export Word
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="relative group">
-          <button class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all">
-            <Download class="w-4 h-4" /> Export Data
+        <div class="flex md:hidden gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button
+            v-for="opt in statusOptions"
+            :key="opt.value"
+            @click="statusFilter = opt.value"
+            :class="['status-filter-btn', { active: statusFilter === opt.value }]"
+          >
+            {{ opt.label }}
           </button>
-          <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-            <button @click="exportData('csv')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-              <FileText class="w-4 h-4 text-emerald-400" /> Export CSV
-            </button>
-            <button @click="exportData('pdf')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-              <FileDown class="w-4 h-4 text-rose-400" /> Export PDF
-            </button>
-            <button @click="exportData('word')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-              <FileCode class="w-4 h-4 text-blue-400" /> Export Word
-            </button>
-          </div>
         </div>
       </div>
 
@@ -196,6 +208,16 @@ const searchQuery = ref('');
 const startDate = ref('');
 const endDate = ref('');
 const isLoading = ref(false);
+const statusFilter = ref('all');
+
+const statusOptions = [
+  { value: 'all', label: 'All' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'cancelled', label: 'Cancelled' }
+];
 const expandedCards = ref(new Set());
 
 const toggleCard = (id) => {
@@ -272,12 +294,24 @@ const fetchSales = () => {
 };
 
 const filteredSales = computed(() => {
-  if (!searchQuery.value) return localSales.value;
-  const q = searchQuery.value.toLowerCase();
-  return localSales.value.filter(s => 
-    s.transaction_code.toLowerCase().includes(q) || 
-    (s.items_summary && s.items_summary.toLowerCase().includes(q))
-  );
+  let result = localSales.value;
+  
+  if (statusFilter.value !== 'all') {
+    result = result.filter(s => 
+      (s.status || 'completed').toLowerCase() === statusFilter.value
+    );
+  }
+  
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    result = result.filter(s => 
+      s.transaction_code.toLowerCase().includes(q) || 
+      (s.items_summary && s.items_summary.toLowerCase().includes(q)) ||
+      (s.customer_name && s.customer_name.toLowerCase().includes(q))
+    );
+  }
+  
+  return result;
 });
 
 const exportData = (type) => {
@@ -299,4 +333,24 @@ const exportData = (type) => {
     color: rgba(255, 255, 255, 0.4);
   }
 }
+
+.status-filter-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.status-filter-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #818cf8;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
