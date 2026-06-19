@@ -29,7 +29,7 @@
 
             <!-- Email Field -->
             <div class="relative">
-              <label for="email" class="block text-[11px] md:text-[12px] font-semibold text-white/90 mb-1 tracking-wide">Email Address</label>
+              <label for="email" class="block text-[10px] md:text-[11px] font-semibold text-white/90 mb-1 tracking-wide">Email Address</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -53,7 +53,7 @@
 
             <!-- Password Field -->
             <div class="relative">
-              <label for="password" class="block text-[11px] md:text-[12px] font-semibold text-white/90 mb-1 tracking-wide">Password</label>
+              <label for="password" class="block text-[10px] md:text-[11px] font-semibold text-white/90 mb-1 tracking-wide">Password</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -311,7 +311,7 @@ async function getFirebaseModules() {
 
 const windowObj = window;
 const loginInputClass =
-  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
+  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border border-white/15 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
 
 const email = ref('');
 const password = ref('');
