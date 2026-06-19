@@ -7,7 +7,7 @@
     }"
   >
     <div class="login-content-container">
-      <div class="w-full max-w-[400px] px-3 md:px-0">
+      <div class="w-full max-w-[320px] px-3 md:px-0">
         <div class="auth-card" ref="cardRef" :style="{ transform: cardScale < 1 ? `scale(${cardScale})` : undefined, transformOrigin: 'top center' }">
 
           <!-- Logo -->
@@ -113,7 +113,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-2.5 md:py-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-xs md:text-base flex items-center justify-center gap-2"
+              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-2 md:py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_2px_12px_rgba(59,130,246,0.3)] hover:shadow-[0_2px_16px_rgba(59,130,246,0.4)] text-xs md:text-base flex items-center justify-center gap-2"
             >
               <svg
                 v-if="loading"
@@ -140,7 +140,7 @@
             @click="handleGoogleLogin"
             type="button"
             :disabled="loading || googleLoading"
-            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-2.5 md:py-4 rounded-xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-xs md:text-base"
+            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-2 md:py-3 rounded-xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-xs md:text-base"
           >
             <svg v-if="!googleLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -176,8 +176,8 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: scroll;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -201,7 +201,7 @@
 /* ── Auth Card ─────────────────────────────────────────────── */
 .auth-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 320px;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.25rem;
@@ -311,7 +311,7 @@ async function getFirebaseModules() {
 
 const windowObj = window;
 const loginInputClass =
-  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.45),0_0_20px_rgba(59,130,246,0.25),inset_0_1px_3px_rgba(0,0,0,0.25)]';
+  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
 
 const email = ref('');
 const password = ref('');
