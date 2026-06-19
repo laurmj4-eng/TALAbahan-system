@@ -16,6 +16,9 @@ class UserModel extends Model
         'password', 
         'role', 
         'prompt_count', 
+        'gemini_count',
+        'gemma_count',
+        'gpt_count',
         'last_reset',
         'last_active'
     ];

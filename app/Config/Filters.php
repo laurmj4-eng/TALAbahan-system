@@ -73,20 +73,16 @@ class Filters extends BaseFilters
                 'api/admin/products/delete',
                 'api/admin/products/store',
                 'api/admin/products/update',
-                'admin/products/toggleStatus/*',
-                'admin/shipping/store',
-                'admin/shipping/update',
-                'admin/shipping/delete',
-                'admin/shipping/updateGlobal',
-                'customer/precheckout',
-                'customer/placeOrder',
-                'customer/validate-location'
-            ]], // Auth endpoints are public; chatbot/product routes handle CSRF internally
+            ]], // Auth endpoints are public; chatbot streams the response; api/admin/products
+                // are AJAX-only under apiAuth (admin role) and do not return a fresh token.
+                // NOTE: the non-API admin/products/* and admin/shipping/* routes each attach
+                // their own ['filter' => 'csrf'] in Routes.php, so they stay protected without
+                // needing a global exemption.
             // 'invalidchars',
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders', // X-Frame-Options, nosniff, Referrer-Policy, etc.
             'activityLogger' => ['except' => ['health']],
         ],
     ];

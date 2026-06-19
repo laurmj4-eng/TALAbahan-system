@@ -1,12 +1,18 @@
 {
-  "name": "ai-chatbot",
+  "name": "talabahan-system",
   "version": "2.0.0",
-  "description": "System UI & Tracking API Guard Flow Mapping Limits Data Ref Linked Systems XAMPP App Flow Setup Linked Ext API Node JS Secure Gen Chat Data Method Handler API Guard Limits Check System Linked Methods Check Target Valid Methods Configuration System Methods Valid Data Linked Ref Configuration Settings Gen Target Reference Settings Map Limit Flow Settings Obj Methods Map API Configuration Format Linked Auth Form Limits Method Mapping Object",
+  "description": "TALAbahan Seafood System — CodeIgniter 4 backend with Vue 3 + Inertia frontend, POS, orders, inventory, and AI chatbot.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "concurrently \"vite\" \"node server.js\" \"php -d extension=intl -S 0.0.0.0:8080 public/router.php\"",
-    "build": "vite build"
+    "build": "vite build",
+    "lint": "eslint resources/js/**/*.{vue,js}",
+    "lint:fix": "eslint resources/js/**/*.{vue,js} --fix",
+    "format": "prettier --write \"resources/js/**/*.{vue,js,css}\"",
+    "format:check": "prettier --check \"resources/js/**/*.{vue,js,css}\"",
+    "cs-fix": "php vendor/bin/php-cs-fixer fix",
+    "cs-check": "php vendor/bin/php-cs-fixer fix --dry-run --diff"
   },
   "dependencies": {
     "@inertiajs/core": "^3.1.1",
@@ -16,12 +22,15 @@
     "autoprefixer": "^10.5.0",
     "axios": "^1.16.0",
     "chart.js": "^4.5.1",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
+    "dompurify": "^3.4.11",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^7.5.1",
     "gsap": "^3.15.0",
     "lucide-vue-next": "^0.475.0",
+    "marked": "^18.0.5",
     "mysql2": "^3.22.3",
     "nprogress": "^0.2.0",
     "postcss": "^8.5.14",
@@ -31,6 +40,10 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "prettier": "^3.3.0",
     "vite": "^5.4.21"
   }
 }

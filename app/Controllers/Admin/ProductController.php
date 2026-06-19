@@ -9,6 +9,15 @@ use App\Models\ProductModel;
 class ProductController extends BaseController
 {
     use ApiResponseTrait;
+
+    /**
+     * Allowed image MIME types and their extensions for product uploads.
+     * Locked down to prevent arbitrary file uploads (e.g. .php) into the web root.
+     */
+    private const ALLOWED_IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+    private const ALLOWED_IMAGE_EXT  = ['jpg', 'jpeg', 'png', 'webp'];
+    private const MAX_IMAGE_KB       = 2048; // 2 MB
+
     /**
      * Display the Daily Seafood Inventory
      */
@@ -59,6 +68,10 @@ class ProductController extends BaseController
             @mkdir($uploadDir, 0755, true);
         }
         if ($img && $img->isValid() && ! $img->hasMoved()) {
+            $validation = $this->_validateImage($img);
+            if ($validation !== null) {
+                return $this->errorResponse($validation, 400);
+            }
             $imageName = $img->getRandomName();
             if (! $img->move($uploadDir, $imageName)) {
                 return $this->errorResponse('Failed to upload image', 500);
@@ -118,6 +131,31 @@ class ProductController extends BaseController
     }
 
     /**
+     * Validate an uploaded product image: type, extension, and size.
+     * Returns null on success, or an error message string on failure.
+     */
+    private function _validateImage($img): ?string
+    {
+        // MIME type from the real file info (not the client-supplied claim)
+        $mime = $img->getMimeType();
+        if (! in_array($mime, self::ALLOWED_IMAGE_MIME, true)) {
+            return 'Invalid image type. Allowed: JPG, PNG, WebP.';
+        }
+
+        // Extension from the client name (getRandomName() regenerates it anyway)
+        $ext = strtolower($img->getClientExtension() ?: pathinfo($img->getClientName(), PATHINFO_EXTENSION));
+        if (! in_array($ext, self::ALLOWED_IMAGE_EXT, true)) {
+            return 'Invalid image extension. Allowed: jpg, jpeg, png, webp.';
+        }
+
+        if ($img->getSizeByUnit('kb') > self::MAX_IMAGE_KB) {
+            return 'Image is too large. Maximum size is ' . self::MAX_IMAGE_KB . ' KB.';
+        }
+
+        return null;
+    }
+
+    /**
      * Update an existing Product
      */
     public function update()
@@ -143,6 +181,10 @@ class ProductController extends BaseController
         $imageName = $product['image'];
 
         if ($img && $img->isValid() && ! $img->hasMoved()) {
+            $validation = $this->_validateImage($img);
+            if ($validation !== null) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $validation])->setStatusCode(400);
+            }
             // Delete old image if exists
             if ($imageName) {
                 $oldPath = $uploadDir . DIRECTORY_SEPARATOR . $imageName;

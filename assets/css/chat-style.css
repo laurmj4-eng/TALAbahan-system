@@ -210,6 +210,19 @@
     line-height: 1.5 !important; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important; 
 }
+
+@media (min-width: 1024px) {
+    .message { 
+        padding: 14px 20px !important; 
+        font-size: 15px !important; 
+        line-height: 1.6 !important; 
+    }
+    #chat-messages { padding: 24px 20px !important; gap: 18px !important; }
+    #chat-input-area { padding: 14px 20px !important; }
+    #chat-input { font-size: 15px !important; }
+    .timestamp { font-size: 12px !important; }
+    .message-wrapper { max-width: 75% !important; }
+}
 .user-message { background: var(--user-bubble) !important; color: white !important; border-radius: 18px 18px 4px 18px !important; }
 .bot-message { background: var(--bot-bubble) !important; color: var(--text-main) !important; border-radius: 18px 18px 18px 4px !important; border: 1px solid #e5e7eb !important; }
 

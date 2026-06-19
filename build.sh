@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Using production Vite config"
-cp vite.config.production.js vite.config.js
-
 echo "==> Composer (production)"
 composer install --no-dev --optimize-autoloader --no-interaction
 
-echo "==> Node / Vite"
+echo "==> Node / Vite (using vite.config.js)"
 npm ci
 npm run build
 

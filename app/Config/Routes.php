@@ -14,6 +14,7 @@ $routes->get('health', 'Health::index');
 // These routes allow both admin and customer access via chatbotGuard filter
 $routes->post('admin/chatbot/process', '\App\Controllers\Admin\Chatbot::process', ['filter' => 'chatbotGuard']);
 $routes->post('admin/chatbot/deleteHistory', '\App\Controllers\Admin\Chatbot::deleteHistory', ['filter' => 'chatbotGuard']);
+$routes->get('chatbot/quota', '\App\Controllers\Admin\Chatbot::quota', ['filter' => 'chatbotGuard']);
 // Removed 'throttle' from here to fix the error
 $routes->get('/', 'Home::index');
 $routes->get('login', 'Home::login');
