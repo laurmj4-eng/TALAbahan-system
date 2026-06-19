@@ -63,23 +63,7 @@ if (!function_exists('vite_css')) {
     
     <!-- Leaflet: loaded dynamically by pages that need maps (not globally) -->
     <!-- reCAPTCHA v2: loaded by Vue composable (recaptchaLoader.js) -->
-    <script>
-        window.BASE_URL = "<?= base_url() ?>";
-        window.CSRF_TOKEN_NAME = "<?= csrf_token() ?>";
-        window.CSRF_HASH = "<?= csrf_hash() ?>";
-        <?php $recaptcha = config('Recaptcha'); ?>
-        window.RECAPTCHA_ENABLED = <?= json_encode($recaptcha->isEnabled()) ?>;
-        window.RECAPTCHA_SITE_KEY = <?= json_encode($recaptcha->siteKey) ?>;
-        window.FIREBASE_CONFIG = {
-            apiKey: "<?= env('FIREBASE_API_KEY') ?>",
-            authDomain: "<?= env('FIREBASE_AUTH_DOMAIN') ?>",
-            projectId: "<?= env('FIREBASE_PROJECT_ID') ?>",
-            storageBucket: "<?= env('FIREBASE_STORAGE_BUCKET') ?>",
-            messagingSenderId: "<?= env('FIREBASE_MESSAGING_SENDER_ID') ?>",
-            appId: "<?= env('FIREBASE_APP_ID') ?>",
-            measurementId: "<?= env('FIREBASE_MEASUREMENT_ID') ?>"
-        };
-    </script>
+    <script src="<?= base_url('app-config.js') ?>"></script>
 
     <?php if (ENVIRONMENT === 'development'): ?>
         <!-- Development: Load from Vite dev server -->

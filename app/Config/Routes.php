@@ -9,6 +9,9 @@ use CodeIgniter\Router\RouteCollection;
 // Health check for Render / load balancers (no DB, no auth)
 $routes->get('health', 'Health::index');
 
+// App config served as external JS (keeps secrets out of view-source)
+$routes->get('app-config.js', 'AppConfig::js');
+
 // --- 1. SHARED ROUTES ---
 // Chatbot remains shared but is now handled by the Admin namespace with internal role checks
 // These routes allow both admin and customer access via chatbotGuard filter

@@ -7,29 +7,29 @@
     }"
   >
     <div class="login-content-container">
-      <div class="w-full max-w-[400px] px-4 md:px-0">
-        <div class="auth-card">
+      <div class="w-full max-w-[400px] px-3 md:px-0">
+        <div class="auth-card" ref="cardRef" :style="{ transform: cardScale < 1 ? `scale(${cardScale})` : undefined, transformOrigin: 'top center' }">
 
           <!-- Logo -->
-          <div class="mb-4 md:mb-6">
+          <div class="mb-2 md:mb-4">
             <img
               :src="windowObj.BASE_URL + 'images/pic3.jpg'"
               alt="TALAbahan Logo"
               width="96"
               height="96"
               style="aspect-ratio: 1 / 1;"
-              class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
+              class="w-14 md:w-20 h-auto mx-auto rounded-xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
             />
           </div>
 
-          <h2 class="text-2xl md:text-3xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
-          <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Welcome back! Please login to your account.</p>
+          <h2 class="text-xl md:text-3xl font-black text-white mb-0 md:mb-1 tracking-tight">TALAbahan System</h2>
+          <p class="text-white/50 font-medium mb-3 md:mb-6 text-[10px] md:text-sm">Welcome back! Please login to your account.</p>
 
-          <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-3 md:space-y-4 text-left">
+          <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-2 md:space-y-4 text-left">
 
             <!-- Email Field -->
             <div class="relative">
-              <label for="email" class="block text-[12px] font-semibold text-white/90 mb-1.5 tracking-wide">Email Address</label>
+              <label for="email" class="block text-[11px] md:text-[12px] font-semibold text-white/90 mb-1 tracking-wide">Email Address</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -53,7 +53,7 @@
 
             <!-- Password Field -->
             <div class="relative">
-              <label for="password" class="block text-[12px] font-semibold text-white/90 mb-1.5 tracking-wide">Password</label>
+              <label for="password" class="block text-[11px] md:text-[12px] font-semibold text-white/90 mb-1 tracking-wide">Password</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -84,11 +84,11 @@
             </div>
 
             <!-- Forgot Password -->
-            <div class="text-center pt-1">
+            <div class="text-center pt-0">
               <a
                 href="/forgot-password"
                 class="text-white font-bold hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
-                style="font-size: 13px;"
+                style="font-size: 11px;"
               >
                 Forgot Password?
               </a>
@@ -105,7 +105,7 @@
             </div>
 
             <!-- Error Alert -->
-            <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-2 md:py-3 px-3 md:px-4 rounded-xl text-xs font-bold mb-2 md:mb-4 text-center">
+            <div v-if="error" class="bg-rose-500/10 border border-rose-500/20 text-rose-400 py-1.5 md:py-3 px-3 md:px-4 rounded-xl text-[10px] md:text-xs font-bold mb-1 md:mb-3 text-center">
               {{ error }}
             </div>
 
@@ -113,7 +113,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-3.5 md:py-4 rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-sm md:text-base flex items-center justify-center gap-2"
+              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-2.5 md:py-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-xs md:text-base flex items-center justify-center gap-2"
             >
               <svg
                 v-if="loading"
@@ -129,9 +129,9 @@
           </form>
 
           <!-- OR Separator -->
-          <div class="flex items-center my-5 md:my-6">
+          <div class="flex items-center my-3 md:my-6">
             <div class="flex-grow border-t border-white/10"></div>
-            <span class="px-4 text-white/70 text-[10px] font-black uppercase" style="letter-spacing: 0.25em;">OR</span>
+            <span class="px-3 text-white/70 text-[9px] font-black uppercase" style="letter-spacing: 0.25em;">OR</span>
             <div class="flex-grow border-t border-white/10"></div>
           </div>
 
@@ -140,7 +140,7 @@
             @click="handleGoogleLogin"
             type="button"
             :disabled="loading || googleLoading"
-            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-3 md:py-4 rounded-2xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-sm md:text-base"
+            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-2.5 md:py-4 rounded-xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-xs md:text-base"
           >
             <svg v-if="!googleLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -152,8 +152,8 @@
           </button>
 
           <!-- Register Footer -->
-          <div class="mt-8 text-center">
-            <p class="text-white font-bold text-sm">
+          <div class="mt-4 md:mt-8 text-center">
+            <p class="text-white font-bold text-xs md:text-sm">
               Don't have an account?
               <Link
                 href="/register"
@@ -176,15 +176,14 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: scroll;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2rem 0;
+  overflow: hidden;
 }
 
 .login-content-container {
@@ -192,25 +191,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0.5rem;
   margin: auto;
   flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 /* ── Auth Card ─────────────────────────────────────────────── */
 .auth-card {
   width: 100%;
+  max-width: 400px;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1.5rem;
+  border-radius: 1.25rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-  padding: 1.5rem 1.75rem;
+  padding: 1.25rem 1.25rem;
   text-align: center;
+  transition: transform 0.25s ease;
 }
 
 @media (min-width: 768px) {
   .auth-card {
     padding: 2rem;
+    border-radius: 1.5rem;
   }
 }
 
@@ -221,8 +225,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem 0;
-  margin: 0.5rem 0;
+  padding: 0.25rem 0;
+  margin: 0.25rem 0;
   position: relative;
   z-index: 50;
 }
@@ -234,9 +238,9 @@
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
-  padding: 0.5rem;
+  padding: 0.375rem;
   transition: all 0.2s ease;
-  min-height: 78px;
+  min-height: 64px;
 }
 
 .recaptcha-widget-host {
@@ -250,37 +254,44 @@
   max-width: 100%;
 }
 
-/* Ensure the puzzle iframe has room and isn't clipped by stacking contexts */
 :deep(iframe[title*="recaptcha challenge"]) {
   z-index: 9999 !important;
 }
 
 @media (max-width: 480px) {
+  .login-content-container {
+    padding: 0.25rem;
+  }
+
+  .auth-card {
+    padding: 1rem 1rem;
+  }
+
   img {
-    width: 5rem !important;
+    width: 3.5rem !important;
     height: auto !important;
   }
-}
 
-@media (max-width: 480px) {
   h2 {
-    font-size: 1.5rem !important;
-  }
-}
-
-@media (max-width: 640px) {
-  h2 {
-    margin-bottom: 0.25rem !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 0 !important;
   }
 
   p {
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-card {
+    padding: 0.875rem 0.875rem;
+    border-radius: 1rem;
   }
 }
 </style>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
@@ -300,7 +311,7 @@ async function getFirebaseModules() {
 
 const windowObj = window;
 const loginInputClass =
-  'w-full rounded-2xl pl-11 pr-4 py-3 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.45),0_0_20px_rgba(59,130,246,0.25),inset_0_1px_3px_rgba(0,0,0,0.25)]';
+  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border-2 border-white/30 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.45),0_0_20px_rgba(59,130,246,0.25),inset_0_1px_3px_rgba(0,0,0,0.25)]';
 
 const email = ref('');
 const password = ref('');
@@ -313,6 +324,19 @@ const recaptchaContainerRef = ref(null);
 const showPassword = ref(false);
 const emailFocused = ref(false);
 const passwordFocused = ref(false);
+const cardRef = ref(null);
+const cardScale = ref(1);
+
+function recalcCardScale() {
+  nextTick(() => {
+    const card = cardRef.value;
+    if (!card) return;
+    const vh = window.visualViewport?.height || window.innerHeight;
+    const cardH = card.getBoundingClientRect().height;
+    const maxH = vh - 32;
+    cardScale.value = cardH > maxH ? Math.max(0.55, maxH / cardH) : 1;
+  });
+}
 
 const {
   recaptchaError,
@@ -355,7 +379,22 @@ async function ensureFirebaseAuth() {
   }
 }
 
+let _resizeObserver = null;
+let _viewportHandler = null;
+
 onMounted(async () => {
+  recalcCardScale();
+  const card = cardRef.value;
+  if (card && typeof ResizeObserver !== 'undefined') {
+    _resizeObserver = new ResizeObserver(() => recalcCardScale());
+    _resizeObserver.observe(card);
+  }
+  if (window.visualViewport) {
+    _viewportHandler = () => recalcCardScale();
+    window.visualViewport.addEventListener('resize', _viewportHandler);
+  }
+  window.addEventListener('resize', _viewportHandler);
+
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
   if (trustedAdminEmail && email.value && email.value.toLowerCase() === trustedAdminEmail.toLowerCase()) {
     showRecaptcha.value = false;
@@ -395,7 +434,16 @@ watch(showRecaptcha, async (newVal) => {
     await nextTick();
     setTimeout(async () => {
       await rerenderRecaptcha();
+      recalcCardScale();
     }, 150);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (_resizeObserver) { _resizeObserver.disconnect(); _resizeObserver = null; }
+  if (_viewportHandler) {
+    window.visualViewport?.removeEventListener('resize', _viewportHandler);
+    window.removeEventListener('resize', _viewportHandler);
   }
 });
 
