@@ -166,25 +166,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Full-screen Google Sign-In overlay (mobile) -->
-    <teleport to="body">
-      <div
-        v-if="showGoogleOverlay"
-        class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm"
-        @click.self="showGoogleOverlay = false; googleLoading = false;"
-      >
-        <button
-          @click="showGoogleOverlay = false; googleLoading = false;"
-          class="absolute top-5 right-5 text-white/60 hover:text-white p-2"
-        >
-          <X :size="24" />
-        </button>
-        <p class="text-white text-lg font-bold mb-6">Sign in with Google</p>
-        <div id="google-button-container" class="flex items-center justify-center"></div>
-        <p class="text-white/40 text-xs mt-6">Select your Google account to continue</p>
-      </div>
-    </teleport>
   </div>
 </template>
 
@@ -560,49 +541,6 @@ const isMobile = () => /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera
 
 const showGoogleOverlay = ref(false);
 
-function initGoogleButton() {
-  const clientId = window.GOOGLE_CLIENT_ID;
-  if (!clientId || !window.google?.accounts?.id) return;
-
-  window.google.accounts.id.initialize({
-    client_id: clientId,
-    callback: async (response) => {
-      showGoogleOverlay.value = false;
-      if (!response.credential) {
-        googleLoading.value = false;
-        return;
-      }
-      try {
-        const fb = _firebaseModules || await getFirebaseModules();
-        if (!auth) await ensureFirebaseAuth();
-        const credential = fb.GoogleAuthProvider.credential(response.credential);
-        const result = await fb.signInWithCredential(auth, credential);
-        await verifyWithBackend(result.user.email, result.user.displayName, 'google');
-      } catch (err) {
-        console.error('Google sign-in error:', err);
-        error.value = 'Google login failed. Please try again.';
-        googleLoading.value = false;
-      }
-    },
-    auto_select: false,
-    cancel_on_tap_outside: true,
-    context: 'signin',
-  });
-
-  const container = document.getElementById('google-button-container');
-  if (container) {
-    container.innerHTML = '';
-    window.google.accounts.id.renderButton(container, {
-      type: 'standard',
-      size: 'large',
-      theme: 'outline',
-      text: 'signin_with',
-      shape: 'rectangular',
-      width: 280,
-    });
-  }
-}
-
 const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
@@ -618,77 +556,11 @@ const handleGoogleLogin = async () => {
 
   const fb = _firebaseModules || await getFirebaseModules();
 
-  if (isMobile()) {
-    const clientId = window.GOOGLE_CLIENT_ID;
-    if (clientId && await loadGIS()) {
-      if (auth.currentUser) {
-        await fb.signOut(auth);
-      }
-      showGoogleOverlay.value = true;
-      await nextTick();
-      setTimeout(() => initGoogleButton(), 100);
-      return;
-    }
+  if (auth.currentUser) {
+    await fb.signOut(auth);
   }
 
-  const clientId = window.GOOGLE_CLIENT_ID;
-  if (clientId && await loadGIS()) {
-    try {
-      if (auth.currentUser) {
-        await fb.signOut(auth);
-      }
-
-      const idToken = await new Promise((resolve, reject) => {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => {
-            if (response.credential) {
-              resolve(response.credential);
-            } else {
-              reject(new Error('No credential received from Google.'));
-            }
-          },
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          context: 'signin',
-          ux_mode: 'popup',
-        });
-
-        window.google.accounts.id.prompt((notification) => {
-          if (notification.isNotDisplayed()) {
-            reject(new Error('ONE_TAP_NOT_DISPLAYED'));
-          } else if (notification.isDismissedMoment()) {
-            reject(new Error('USER_DISMISSED'));
-          }
-        });
-      });
-
-      const credential = fb.GoogleAuthProvider.credential(idToken);
-      const result = await fb.signInWithCredential(auth, credential);
-      await verifyWithBackend(result.user.email, result.user.displayName, 'google');
-    } catch (err) {
-      if (err.message === 'USER_DISMISSED') {
-        googleLoading.value = false;
-        return;
-      }
-      if (err.message === 'ONE_TAP_NOT_DISPLAYED') {
-        await fallbackFirebasePopup(fb);
-        return;
-      }
-      console.error('GIS sign-in error:', err);
-      error.value = 'Google login failed. Please try again.';
-      googleLoading.value = false;
-    }
-  } else {
-    await fallbackFirebasePopup(fb);
-  }
-};
-
-async function fallbackFirebasePopup(fb) {
   try {
-    if (auth.currentUser) {
-      await fb.signOut(auth);
-    }
     const result = await fb.signInWithPopup(auth, provider);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
@@ -702,11 +574,12 @@ async function fallbackFirebasePopup(fb) {
         googleLoading.value = false;
       }
     } else {
-      error.value = 'Google login failed: ' + err.message;
+      console.error('Google sign-in error:', err);
+      error.value = 'Google login failed. Please try again.';
       googleLoading.value = false;
     }
   }
-}
+};
 
 const verifyWithBackend = async (userEmail, name, providerType) => {
   if (providerType === 'google') googleLoading.value = true;
