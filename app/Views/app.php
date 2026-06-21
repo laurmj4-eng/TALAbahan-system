@@ -85,6 +85,12 @@ if (!function_exists('vite_css')) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TALAbahan System</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
+    <link rel="manifest" href="<?= base_url('manifest.json') ?>">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TALAbahan">
+    <link rel="apple-touch-icon" href="<?= base_url('images/seafood.png') ?>">
     
     <!-- Leaflet: loaded dynamically by pages that need maps (not globally) -->
 
@@ -106,5 +112,12 @@ if (!function_exists('vite_css')) {
 </head>
 <body class="bg-slate-950 text-white">
     <?php echo inertia_div($page); ?>
+    <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+      });
+    }
+    </script>
 </body>
 </html>

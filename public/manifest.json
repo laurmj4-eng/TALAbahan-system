@@ -1,0 +1,26 @@
+{
+  "short_name": "TALAbahan",
+  "name": "TALAbahan",
+  "description": "TALAbahan Seafood System — POS, orders, inventory, and AI chatbot.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/images/seafood.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/seafood.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "food"],
+  "lang": "en"
+}
