@@ -408,21 +408,22 @@ onMounted(async () => {
     showRecaptcha.value = false;
   }
 
-  // Preload Firebase Auth to ensure signInWithPopup isn't blocked by mobile browsers due to lazy-loading delays
+  // Preload Firebase Auth eagerly on page load so it's ready when the user clicks
+  // "Sign in with Google". This prevents mobile browsers from blocking the popup
+  // due to async delays between the click and the signInWithPopup call.
   if (window.FIREBASE_CONFIG?.apiKey) {
     ensureFirebaseAuth().then(async (ok) => {
-      if (ok && window.location.href.includes('apiKey')) {
+      if (!ok) return;
+      // Handle redirect result (fallback for mobile browsers that blocked the popup)
+      try {
         const fb = await getFirebaseModules();
-        try {
-          const result = await fb.getRedirectResult(auth);
-          if (result) {
-            googleLoading.value = true;
-            verifyWithBackend(result.user.email, result.user.displayName, 'google');
-          }
-        } catch (err) {
-          console.error("Firebase redirect error:", err);
-          error.value = "Google redirect failed. Please try again.";
+        const result = await fb.getRedirectResult(auth);
+        if (result && result.user) {
+          googleLoading.value = true;
+          verifyWithBackend(result.user.email, result.user.displayName, 'google');
         }
+      } catch (err) {
+        console.error("Firebase redirect result error:", err);
       }
     });
   }
@@ -505,7 +506,8 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
-  // Lazy-init Firebase on first Google Sign-In click, but skip if already preloaded
+  // Firebase should already be preloaded from onMounted.
+  // If not ready yet (slow network), init now — but this may cause popup to be blocked on mobile.
   if (!auth) {
     const ok = await ensureFirebaseAuth();
     if (!ok) {
@@ -515,14 +517,29 @@ const handleGoogleLogin = async () => {
     }
   }
 
+  const fb = _firebaseModules || await getFirebaseModules();
+
   try {
-    // fb is loaded by getFirebaseModules and cached
-    const fb = _firebaseModules || await getFirebaseModules();
+    if (auth.currentUser) {
+      await fb.signOut(auth);
+    }
+
+    // Always try popup first — this works on both desktop and mobile
     const result = await fb.signInWithPopup(auth, provider);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
-    if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-      error.value = 'Please allow popups for this site to sign in with Google.';
+    // If popup was blocked (common on mobile browsers), fall back to redirect flow
+    if (err.code === 'auth/popup-blocked') {
+      try {
+        await fb.signInWithRedirect(auth, provider);
+        // The page will redirect; result is handled in onMounted via getRedirectResult
+        return;
+      } catch (redirectErr) {
+        error.value = 'Google login failed. Please try again.';
+        googleLoading.value = false;
+      }
+    } else if (err.code === 'auth/popup-closed-by-user') {
+      // User closed the popup manually — just reset state, no error needed
       googleLoading.value = false;
     } else {
       error.value = 'Google login failed: ' + err.message;

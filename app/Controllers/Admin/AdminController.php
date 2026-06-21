@@ -210,6 +210,8 @@ class AdminController extends BaseController
             return redirect()->back()->with('error', $errorMsg)->withInput();
         }
 
+        $userModel->skipValidation(true);
+
         if (! $userModel->update($id, $data)) {
             $errorMsg = implode(' ', $userModel->errors());
             if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {

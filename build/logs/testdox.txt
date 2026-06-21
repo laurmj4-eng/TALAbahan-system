@@ -1,0 +1,35 @@
+Chatbot (Tests\Unit\Chatbot)
+ [x] Clean history strips empty messages
+ [x] Clean history truncates oversized content
+ [x] Clean history merges consecutive same role messages
+ [x] Clean history drops leading assistant message
+ [x] Clean history treats unknown role as user
+ [x] Validate history length allows long assistant content
+ [x] Validate history length rejects long user content
+ [x] Validate history length accepts normal history
+ [x] Per model counts returns zeros for missing user
+ [x] Per model counts reset when date changed
+ [x] Per model counts returns stored values same day
+ [x] Per model counts handles missing fields
+ [x] Find available model returns gemini when all fresh
+ [x] Find available model skips exhausted gemini
+ [x] Find available model skips exhausted gemini and gemma
+ [x] Find available model falls to gemma when all exhausted
+ [x] Resolve model gemini uses native endpoint
+ [x] Resolve model gemma uses open router
+ [x] Resolve model gpt uses open router
+ [x] Resolve model no longer has free tier split
+ [x] Resolve model normalizes invalid key to gemini
+ [x] Sanitize context strips control characters
+ [x] Sanitize context collapses whitespace
+ [x] Sanitize context handles non scalar
+ [x] System prompt contains anti jailbreak instructions
+ [x] System prompt staff role has no financial data
+ [x] System prompt identifies assistant
+ [x] Api exception classifies quota error
+ [x] Api exception classifies overload as quota error
+ [x] Api exception classifies connection error
+ [x] Api exception does not fallback on generic client error
+ [x] Fallback model is open router not gemini
+ [x] Fallback resolves to valid open router model id
+

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Test Documentation</title>
+        <style>
+            body {
+                text-rendering: optimizeLegibility;
+                font-family: Source SansSerif Pro, Arial, sans-serif;
+                font-variant-ligatures: common-ligatures;
+                font-kerning: normal;
+                margin-left: 2rem;
+                background-color: #fff;
+                color: #000;
+            }
+
+            body > ul > li {
+                font-size: larger;
+            }
+
+            h2 {
+                font-size: larger;
+                text-decoration-line: underline;
+                text-decoration-thickness: 2px;
+                margin: 0;
+                padding: 0.5rem 0;
+            }
+
+            ul {
+                list-style: none;
+                margin: 0 0 2rem;
+                padding: 0 0 0 1rem;
+                text-indent: -1rem;
+            }
+
+            .success:before {
+                color: #4e9a06;
+                content: '✓';
+                padding-right: 0.5rem;
+            }
+
+            .defect {
+                color: #a40000;
+            }
+
+            .defect:before {
+                color: #a40000;
+                content: '✗';
+                padding-right: 0.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Chatbot (Tests\Unit\Chatbot)</h2>
+        <ul>
+            <li class="success">Clean history strips empty messages</li>
+            <li class="success">Clean history truncates oversized content</li>
+            <li class="success">Clean history merges consecutive same role messages</li>
+            <li class="success">Clean history drops leading assistant message</li>
+            <li class="success">Clean history treats unknown role as user</li>
+            <li class="success">Validate history length allows long assistant content</li>
+            <li class="success">Validate history length rejects long user content</li>
+            <li class="success">Validate history length accepts normal history</li>
+            <li class="success">Per model counts returns zeros for missing user</li>
+            <li class="success">Per model counts reset when date changed</li>
+            <li class="success">Per model counts returns stored values same day</li>
+            <li class="success">Per model counts handles missing fields</li>
+            <li class="success">Find available model returns gemini when all fresh</li>
+            <li class="success">Find available model skips exhausted gemini</li>
+            <li class="success">Find available model skips exhausted gemini and gemma</li>
+            <li class="success">Find available model falls to gemma when all exhausted</li>
+            <li class="success">Resolve model gemini uses native endpoint</li>
+            <li class="success">Resolve model gemma uses open router</li>
+            <li class="success">Resolve model gpt uses open router</li>
+            <li class="success">Resolve model no longer has free tier split</li>
+            <li class="success">Resolve model normalizes invalid key to gemini</li>
+            <li class="success">Sanitize context strips control characters</li>
+            <li class="success">Sanitize context collapses whitespace</li>
+            <li class="success">Sanitize context handles non scalar</li>
+            <li class="success">System prompt contains anti jailbreak instructions</li>
+            <li class="success">System prompt staff role has no financial data</li>
+            <li class="success">System prompt identifies assistant</li>
+            <li class="success">Api exception classifies quota error</li>
+            <li class="success">Api exception classifies overload as quota error</li>
+            <li class="success">Api exception classifies connection error</li>
+            <li class="success">Api exception does not fallback on generic client error</li>
+            <li class="success">Fallback model is open router not gemini</li>
+            <li class="success">Fallback resolves to valid open router model id</li>
+        </ul>
+    </body>
+</html>
