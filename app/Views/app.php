@@ -118,6 +118,16 @@ if (!function_exists('vite_css')) {
         <div id="boot-dots" style="margin-top:8px;letter-spacing:4px;color:#475569"></div>
       </div>
     </div>
+    <div id="offline-screen" style="display:none;position:fixed;inset:0;z-index:99998;background:#020617;flex-direction:column;align-items:center;justify-content:center;padding:32px;padding-top:env(safe-area-inset-top,32px);padding-bottom:env(safe-area-inset-bottom,32px);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center">
+      <div style="width:72px;height:72px;border-radius:50%;background:rgba(239,68,68,.12);display:flex;align-items:center;justify-content:center;margin-bottom:24px">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+        </svg>
+      </div>
+      <h2 style="color:#f1f5f9;font-size:20px;font-weight:700;margin:0 0 12px;letter-spacing:-.3px">No Internet Connection</h2>
+      <p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 28px;max-width:300px">TALAbahan requires an active internet connection to process transactions. Please check your mobile data or Wi-Fi.</p>
+      <button onclick="location.reload()" style="background:#ef4444;color:#fff;border:none;border-radius:12px;padding:14px 36px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:transform .15s,background .15s" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform='scale(1)'">Retry Connection</button>
+    </div>
     <style>
       @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.96)}}
       @keyframes fadeOut{to{opacity:0;pointer-events:none}}
@@ -156,6 +166,15 @@ if (!function_exists('vite_css')) {
         navigator.serviceWorker.register('/service-worker.js').catch(() => {});
       });
     }
+    (function(){
+      var offline=document.getElementById('offline-screen');
+      var app=document.getElementById('app');
+      function showOffline(){offline.style.display='flex';if(app)app.style.display='none';}
+      function hideOffline(){offline.style.display='none';if(app)app.style.display='';}
+      window.addEventListener('offline',showOffline);
+      window.addEventListener('online',hideOffline);
+      if(!navigator.onLine)showOffline();
+    })();
     </script>
 </body>
 </html>
