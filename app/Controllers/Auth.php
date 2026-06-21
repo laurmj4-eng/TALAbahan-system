@@ -178,6 +178,84 @@ class Auth extends BaseController
         return inertia('RegisterPage'); 
     }
 
+    public function mobileLogin()
+    {
+        return view('mobile_login');
+    }
+
+    public function mobileCallback()
+    {
+        try {
+            $email = strtolower(trim((string)$this->request->getGet('email')));
+            $name  = trim((string)$this->request->getGet('name'));
+            
+            if (empty($email)) {
+                return redirect()->to('/login')->with('error', 'Google login failed (no email).');
+            }
+
+            $userModel = new \App\Models\UserModel();
+            $user = $userModel->where('email', $email)->first();
+
+            if (!$user) {
+                // Generate a unique username
+                $baseUsername = !empty($name) ? $name : explode('@', $email)[0];
+                $username = $baseUsername;
+                
+                $count = 1;
+                while ($userModel->where('username', $username)->first()) {
+                    $username = $baseUsername . $count;
+                    $count++;
+                }
+
+                $newUserData = [
+                    'username' => $username,
+                    'email'    => $email,
+                    'password' => bin2hex(random_bytes(16)),
+                    'role'     => 'customer'
+                ];
+                
+                if (!$userModel->insert($newUserData)) {
+                    throw new \Exception("Failed to create Google account: " . implode(', ', $userModel->errors()));
+                }
+                $user = $userModel->where('email', $email)->first();
+            }
+
+            if ($user) {
+                $session = session();
+                $sessionData = [
+                    'user_id'    => $user['id'],
+                    'username'   => $user['username'],
+                    'email'      => $user['email'],
+                    'role'       => strtolower($user['role']),
+                    'isLoggedIn' => true,
+                ];
+                $session->set($sessionData);
+                session_write_close();
+
+                $role = strtolower($user['role']);
+                $redirectUrl = base_url($this->_getRedirectUrl($role));
+                
+                // Return simple HTML page that sets localStorage and redirects to avoid Inertia layout flashing issues on reload
+                return $this->response->setBody('
+                    <html><head><title>Logging in...</title></head><body>
+                    <script>
+                        localStorage.setItem("isLoggedIn", "true");
+                        localStorage.setItem("userRole", "' . $role . '");
+                        localStorage.setItem("username", "' . $user['username'] . '");
+                        window.location.href = "' . $redirectUrl . '";
+                    </script>
+                    </body></html>
+                ');
+            }
+
+            throw new \Exception("User authentication failed.");
+
+        } catch (\Exception $e) {
+            log_message('error', '[Auth::mobileCallback] ' . $e->getMessage());
+            return redirect()->to('/login')->with('error', 'System Error: ' . $e->getMessage());
+        }
+    }
+
     public function createAccount()
     {
         $captcha = verify_recaptcha_response($this->request->getPost('g-recaptcha-response'));

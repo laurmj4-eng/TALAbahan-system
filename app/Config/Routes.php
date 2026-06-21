@@ -23,6 +23,10 @@ $routes->get('/', 'Home::index');
 $routes->get('login', 'Home::login');
 $routes->get('logout', 'Auth::logout');
 $routes->get('register', 'Home::register');
+
+// Mobile App Auth routes
+$routes->get('auth/mobile-login', 'Auth::mobileLogin');
+$routes->get('auth/mobile-callback', 'Auth::mobileCallback');
 $routes->get('products/(:num)/details', '\App\Controllers\Customer\Dashboard::details/$1', ['filter' => 'customerGuard']);
 
 // --- API ROUTES (JSON) ---
