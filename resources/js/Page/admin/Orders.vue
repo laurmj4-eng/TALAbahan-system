@@ -1,14 +1,14 @@
 <template>
   <AdminLayout>
-    <div class="flex-1 flex flex-col space-y-4 md:space-y-8 min-h-0">
+    <div class="flex-1 flex flex-col space-y-3 md:space-y-8 min-h-0">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:mt-0">
-        <div>
-          <h1 class="text-xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:mt-0">
+        <div class="min-w-0">
+          <h1 class="text-lg md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
             Customer Orders
-            <span class="px-2 py-0.5 md:px-3 md:py-1 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black tracking-widest uppercase">Order</span>
+            <span class="px-1.5 py-0.5 md:px-3 md:py-1 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-md md:rounded-xl text-[0.5rem] md:text-sm font-black tracking-widest uppercase">{{ orders.length }}</span>
           </h1>
-          <p class="text-white/50 font-medium text-xs md:text-base">Monitor and oversee seafood fulfillment operations.</p>
+          <p class="text-white/50 font-medium text-[0.6rem] md:text-base truncate">Monitor and oversee seafood fulfillment operations.</p>
         </div>
       </div>
 
@@ -18,7 +18,7 @@
         <GlassCard customClass="hidden md:flex overflow-hidden border-white/[0.08] !p-0 flex-1 flex flex-col min-h-0">
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
-              <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
+              <thead class="sticky top-0 z-10 bg-[#1a1a1a]">
                 <tr class="bg-white/[0.03] border-b border-white/[0.08]">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Order Info</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Customer</th>
@@ -112,50 +112,41 @@
           </div>
         </GlassCard>
 
-        <!-- Mobile Card View (Visible on Mobile Only) -->
-        <div class="md:hidden space-y-3 pb-4">
-          <div v-for="order in orders" :key="order.id" class="p-4 rounded-2xl bg-white/[0.05] border border-white/15 space-y-3">
-            <div class="flex justify-between items-start gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="font-mono bg-black text-white px-3 py-2 rounded-lg border border-white/25 text-xs font-bold inline-block mb-2 shadow-lg break-all">
-                  {{ order.transaction_code }}
-                </div>
-                <div class="text-[11px] text-white/40 font-bold tracking-widest uppercase">
-                  {{ formatDate(order.created_at) }}
-                </div>
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-2 pb-4">
+          <div v-for="order in orders" :key="order.id" class="relative bg-white/[0.04] rounded-xl border border-white/[0.08] overflow-hidden">
+            <!-- Compact Row 1: Code + Amount + Status -->
+            <div class="flex items-center justify-between gap-2 px-2.5 py-2">
+              <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <span class="font-mono text-violet-400 text-[0.6rem] font-bold truncate">{{ order.transaction_code }}</span>
+                <span class="text-[0.45rem] text-white/25 shrink-0">{{ formatDateShort(order.created_at) }}</span>
               </div>
-              <span class="text-xl font-black text-emerald-400 flex-shrink-0">₱{{ formatNumber(order.total_amount) }}</span>
+              <span class="text-emerald-400 text-[0.75rem] font-black shrink-0">₱{{ formatNumber(order.total_amount) }}</span>
             </div>
 
-            <div class="flex justify-between items-center gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="font-bold text-white text-lg truncate">{{ order.customer_name || 'Walk-in' }}</div>
-                <div class="text-xs text-white/40">{{ order.item_count }} items recorded</div>
+            <!-- Compact Row 2: Customer + Payment -->
+            <div class="flex items-center justify-between gap-2 px-2.5 pb-2">
+              <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <span class="text-white text-[0.65rem] font-semibold truncate">{{ order.customer_name || 'Walk-in' }}</span>
+                <span class="text-white/20 text-[0.45rem] shrink-0">{{ order.item_count }} items</span>
               </div>
-              <span class="px-3 py-1 bg-black text-white border border-white/30 rounded-lg text-xs font-black tracking-widest uppercase flex-shrink-0">
+              <span class="px-1.5 py-px bg-white/5 text-white/50 border border-white/10 rounded text-[0.45rem] font-bold uppercase shrink-0">
                 {{ order.payment_method || 'COD' }}
               </span>
             </div>
 
-            <div class="p-4 bg-white/[0.02] rounded-xl border border-white/[0.08] space-y-2">
-              <div class="text-xs text-white/40 font-bold uppercase tracking-widest">Tracking Info</div>
-              <div class="flex flex-col gap-1">
-                <span class="text-sm text-white/70">{{ order.courier_name || 'No courier' }}</span>
-                <span class="text-xs text-white/30 font-mono break-all">{{ order.tracking_number || 'NO-TRACKING' }}</span>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-3">
+            <!-- Compact Row 3: Status Selector -->
+            <div class="px-2.5 pb-2">
               <div v-if="order.status === 'Cancelled'" class="w-full">
                 <span 
                   v-if="isCancelledByCustomer(order)"
-                  class="w-full block text-center px-3 py-2.5 bg-red-600 text-white border-2 border-red-700 rounded-xl text-xs font-black tracking-widest uppercase shadow-lg shadow-red-500/30 animate-pulse"
+                  class="w-full block text-center px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-[0.5rem] font-bold uppercase"
                 >
-                  ⚠ CUSTOMER CANCELLED
+                  ⚠ Customer Cancelled
                 </span>
                 <span 
                   v-else
-                  class="w-full block text-center px-3 py-2.5 bg-gray-600 text-white border-2 border-gray-700 rounded-xl text-xs font-black tracking-widest uppercase"
+                  class="w-full block text-center px-2 py-1 bg-white/5 text-white/30 border border-white/10 rounded text-[0.5rem] font-bold uppercase"
                 >
                   Cancelled by Admin
                 </span>
@@ -164,47 +155,53 @@
                 v-else
                 v-model="order.status" 
                 @change="updateStatus(order, $event.target.value)"
-                class="w-full bg-black text-white border-2 border-white rounded-xl px-3 py-2.5 text-xs font-black tracking-widest uppercase focus:outline-none"
-                :class="getStatusSelectClass(order.status)"
+                class="w-full bg-black/40 text-white border border-white/15 rounded-lg px-2 py-1.5 text-[0.55rem] font-bold uppercase focus:outline-none"
+                :class="getStatusSelectClassMobile(order.status)"
               >
                 <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
               </select>
+            </div>
 
-              <div class="flex flex-col gap-2">
-                <div class="flex gap-2">
-                  <button 
-                    v-if="order.status === 'Shipped'"
-                    @click="cancelDamagedInTransit(order)"
-                    class="flex-1 flex items-center justify-center gap-1.5 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-3 py-2.5 text-[10px] font-black tracking-widest uppercase active:scale-95 transition-all"
-                  >
-                    <Ban class="w-3.5 h-3.5" />
-                    Damaged
-                  </button>
-                  <button 
-                    v-if="getNextAction(order.status)"
-                    @click="updateStatus(order, getNextAction(order.status).next)"
-                    class="flex-1 flex items-center justify-center gap-1.5 bg-white text-black border-2 border-white rounded-xl px-3 py-2.5 text-[10px] font-black tracking-widest uppercase active:scale-95 transition-all"
-                  >
-                    <component :is="getNextAction(order.status).icon" class="w-3.5 h-3.5" />
-                    {{ getNextAction(order.status).label }}
-                  </button>
-                </div>
-                <div class="flex gap-2">
-                  <button @click="editTracking(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
-                    <Truck class="w-4 h-4 text-white/60" />
-                  </button>
-                  <button @click="viewOrderDetails(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
-                    <ReceiptText class="w-4 h-4 text-white/60" />
-                  </button>
-                </div>
+            <!-- Compact Row 4: Tracking (collapsed) -->
+            <div v-if="order.tracking_number || order.courier_name" class="px-2.5 pb-2">
+              <div class="flex items-center gap-1.5 text-[0.45rem] text-white/25">
+                <Truck class="w-2.5 h-2.5 shrink-0" />
+                <span class="truncate">{{ order.courier_name || '-' }}</span>
+                <span v-if="order.tracking_number" class="font-mono text-white/15 truncate">· {{ order.tracking_number }}</span>
               </div>
+            </div>
+
+            <!-- Compact Row 5: Action Buttons -->
+            <div class="flex items-center gap-1.5 px-2.5 pb-2">
+              <button 
+                v-if="order.status === 'Shipped'"
+                @click="cancelDamagedInTransit(order)"
+                class="flex items-center gap-1 px-2 py-1 bg-rose-500/15 text-rose-400 border border-rose-500/30 rounded text-[0.5rem] font-bold uppercase active:scale-95 transition-all"
+              >
+                <Ban class="w-2.5 h-2.5" /> Damaged
+              </button>
+              <button 
+                v-if="getNextAction(order.status)"
+                @click="updateStatus(order, getNextAction(order.status).next)"
+                class="flex items-center gap-1 px-2 py-1 bg-white/10 text-white border border-white/20 rounded text-[0.5rem] font-bold uppercase active:scale-95 transition-all"
+              >
+                <component :is="getNextAction(order.status).icon" class="w-2.5 h-2.5" />
+                {{ getNextAction(order.status).label }}
+              </button>
+              <div class="flex-1"></div>
+              <button @click="editTracking(order)" class="p-1.5 bg-white/5 border border-white/10 rounded active:scale-95 transition-all" title="Tracking">
+                <Truck class="w-3 h-3 text-white/30" />
+              </button>
+              <button @click="viewOrderDetails(order)" class="p-1.5 bg-white/5 border border-white/10 rounded active:scale-95 transition-all" title="Details">
+                <ReceiptText class="w-3 h-3 text-white/30" />
+              </button>
             </div>
           </div>
 
-          <div v-if="orders.length === 0" class="py-20 text-center">
-            <div class="text-white/10 flex flex-col items-center gap-4">
-              <Ghost class="w-12 h-12 opacity-5" />
-              <p class="italic text-base">No orders found.</p>
+          <div v-if="orders.length === 0" class="py-16 text-center">
+            <div class="text-white/10 flex flex-col items-center gap-3">
+              <Ghost class="w-8 h-8 opacity-5" />
+              <p class="italic text-xs">No orders found.</p>
             </div>
           </div>
         </div>
@@ -214,41 +211,39 @@
     <!-- Custom Damage Options Modal -->
     <Teleport to="body">
       <div v-if="showDamageModal" class="!z-[999999] fixed inset-0 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 " @click="showDamageModal = false"></div>
-        <div class="bg-[#11131e]/95 border border-white/[0.08] p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
+        <div class="absolute inset-0 bg-black/60" @click="showDamageModal = false"></div>
+        <div class="bg-[#11131e]/95 border border-white/[0.08] p-4 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
           <button
             @click="showDamageModal = false"
-            class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            class="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <h3 class="text-base sm:text-lg font-semibold mb-2">Damage Options</h3>
-          <p class="text-xs sm:text-sm text-gray-400 mb-6">
-            What would you like to do for Order #<span class="break-all">{{ selectedOrder?.transaction_code }}</span>?
+          <h3 class="text-sm sm:text-lg font-semibold mb-1">Damage Options</h3>
+          <p class="text-[0.6rem] sm:text-sm text-gray-400 mb-4">
+            Order #<span class="break-all">{{ selectedOrder?.transaction_code }}</span>
           </p>
 
-          <div class="flex flex-col gap-2.5 sm:flex-row sm:justify-end sm:gap-3">
+          <div class="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <button
               @click="handleCancelNoRedelivery"
-              class="w-full py-3 sm:py-2.5 sm:w-auto border border-white/20 hover:border-white/30 text-white font-medium px-4 rounded-lg transition-colors text-xs sm:text-sm"
+              class="w-full py-2.5 sm:py-2.5 sm:w-auto border border-white/20 hover:border-white/30 text-white font-medium px-3 rounded-lg transition-colors text-xs sm:text-sm"
             >
               Cancel (No Redelivery)
             </button>
             <button
               @click="handleConfirmRedelivery"
-              class="w-full py-3 sm:py-2.5 sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 rounded-lg transition-colors sm:order-2 text-xs sm:text-sm"
+              class="w-full py-2.5 sm:py-2.5 sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 rounded-lg transition-colors text-xs sm:text-sm"
             >
-              OK (Issue Free Redelivery)
+              OK (Free Redelivery)
             </button>
           </div>
         </div>
       </div>
     </Teleport>
-
-    <!-- Modal logic remains the same but with enhanced glass styling... -->
   </AdminLayout>
 </template>
 
@@ -284,6 +279,17 @@ const formatDate = (dateStr) => {
   });
 };
 
+const formatDateShort = (dateStr) => {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
 const getStatusSelectClass = (status) => {
   const s = status?.toLowerCase();
   if (s === 'completed') return 'border-emerald-500 text-emerald-500 hover:!bg-emerald-500 hover:!text-white';
@@ -292,6 +298,16 @@ const getStatusSelectClass = (status) => {
   if (s === 'processing') return 'border-sky-500 text-sky-500 hover:!bg-sky-500 hover:!text-white';
   if (s === 'shipped') return 'border-indigo-500 text-indigo-500 hover:!bg-indigo-500 hover:!text-white';
   return 'border-white';
+};
+
+const getStatusSelectClassMobile = (status) => {
+  const s = status?.toLowerCase();
+  if (s === 'completed') return 'text-emerald-400 border-emerald-500/30';
+  if (s === 'pending') return 'text-amber-400 border-amber-500/30';
+  if (s === 'cancelled') return 'text-rose-400 border-rose-500/30';
+  if (s === 'processing') return 'text-sky-400 border-sky-500/30';
+  if (s === 'shipped') return 'text-indigo-400 border-indigo-500/30';
+  return '';
 };
 
 const isCancelledByCustomer = (order) => {
@@ -368,8 +384,6 @@ const editTracking = (order) => {
 };
 
 const viewOrderDetails = (order) => {
-  // For now, let's just alert the items count or simple info
-  // You might want to implement a proper modal later
   alert(`Order ${order.transaction_code}\nCustomer: ${order.customer_name}\nTotal: ₱${formatNumber(order.total_amount)}`);
 };
 
