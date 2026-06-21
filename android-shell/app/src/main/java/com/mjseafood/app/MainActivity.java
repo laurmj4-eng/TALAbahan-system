@@ -88,7 +88,12 @@ public class MainActivity extends Activity {
                 int remoteVersion = json.getInt("versionCode");
                 String apkUrl = json.getString("apkUrl");
 
-                int currentVersion = BuildConfig.VERSION_CODE;
+                int currentVersion = 1;
+                try {
+                    currentVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 if (remoteVersion > currentVersion) {
                     mainHandler.post(() -> downloadUpdate(apkUrl));
                 }
