@@ -1,9 +1,10 @@
-const CACHE_NAME = 'talabahan-shell-v1';
+const CACHE_NAME = 'talabahan-v2';
 const SHELL_ASSETS = [
   '/',
   '/favicon.ico',
   '/images/seafood.png',
-  '/images/placeholder.png'
+  '/images/placeholder.png',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
@@ -48,6 +49,19 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.startsWith('/api/') || url.pathname.includes('ajax')) return;
 
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetched = fetch(request).then((response) => {
@@ -56,12 +70,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
-      }).catch(() => {
-        if (request.mode === 'navigate') {
-          return caches.match('/');
-        }
-        return cached;
-      });
+      }).catch(() => cached);
       return cached || fetched;
     })
   );

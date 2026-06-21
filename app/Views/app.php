@@ -82,7 +82,7 @@ if (!function_exists('vite_css')) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TALAbahan System</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
@@ -111,6 +111,44 @@ if (!function_exists('vite_css')) {
     <?php endif; ?>
 </head>
 <body class="bg-slate-950 text-white">
+    <div id="boot-splash" style="position:fixed;inset:0;z-index:99999;background:#020617;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s ease">
+      <img src="<?= base_url('images/seafood.png') ?>" alt="TALAbahan" style="width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:20px;animation:pulse 2s ease-in-out infinite">
+      <div style="color:#94a3b8;font-size:14px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:center;line-height:1.6">
+        <div id="boot-text">Connecting to TALAbahan Secure Servers...</div>
+        <div id="boot-dots" style="margin-top:8px;letter-spacing:4px;color:#475569"></div>
+      </div>
+    </div>
+    <style>
+      @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.96)}}
+      @keyframes fadeOut{to{opacity:0;pointer-events:none}}
+      @media (display-mode: standalone), (max-width: 768px) {
+        #app > div:first-child { padding-top: env(safe-area-inset-top, 0px); }
+      }
+    </style>
+    <script>
+    (function(){
+      var splash=document.getElementById('boot-splash');
+      var dotEl=document.getElementById('boot-dots');
+      var dotCount=0;
+      var dotTimer=setInterval(function(){dotCount=(dotCount%3)+1;dotEl.textContent='.'.repeat(dotCount)},500);
+      var loaded=false;
+      function hideSplash(){
+        if(loaded)return;loaded=true;
+        clearInterval(dotTimer);
+        splash.style.opacity='0';
+        setTimeout(function(){splash.remove()},500);
+      }
+      window.addEventListener('load',function(){
+        setTimeout(hideSplash,600);
+      });
+      setTimeout(function(){
+        document.getElementById('boot-text').textContent='Server is waking up, please wait...';
+      },5000);
+      setTimeout(function(){
+        if(!loaded)document.getElementById('boot-text').textContent='Almost ready...';
+      },15000);
+    })();
+    </script>
     <?php echo inertia_div($page); ?>
     <script>
     if ('serviceWorker' in navigator) {
