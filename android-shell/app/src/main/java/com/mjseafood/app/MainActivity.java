@@ -37,11 +37,13 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ProgressBar progressBar;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private static final String SITE_URL = "https://talabahan-system-1.onrender.com";
-    private static final String VERSION_URL = "https://talabahan-system-1.onrender.com/version.json";
+    private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
+    private static final String SITE_URL = BASE_URL + "/?auth_mode=mobile";
+    private static final String VERSION_URL = BASE_URL + "/version.json";
+    private static final String MOBILE_AUTH_URL = BASE_URL + "/auth/mobile-login";
     private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
     private static final String DEEP_LINK_SCHEME = "talabahan://auth";
-    private static final String[] EXTERNAL_HOSTS = {
+    private static final String[] EXTERNAL_AUTH_HOSTS = {
         "accounts.google.com",
         "google.com",
         "googleapis.com",
@@ -196,11 +198,16 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (isExternalAuthUrl(url)) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    String mobileAuthRedirect = MOBILE_AUTH_URL + "?redirect_uri=" + Uri.encode(DEEP_LINK_SCHEME);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mobileAuthRedirect));
                     startActivity(intent);
                     return true;
                 }
-                if (url.startsWith("https://talabahan-system-1.onrender.com")) {
+                if (url.startsWith(BASE_URL)) {
+                    if (!url.contains("auth_mode=mobile")) {
+                        String separator = url.contains("?") ? "&" : "?";
+                        url = url + separator + "auth_mode=mobile";
+                    }
                     return false;
                 }
                 return true;
@@ -237,7 +244,7 @@ public class MainActivity extends Activity {
 
     private boolean isExternalAuthUrl(String url) {
         String lower = url.toLowerCase();
-        for (String host : EXTERNAL_HOSTS) {
+        for (String host : EXTERNAL_AUTH_HOSTS) {
             if (lower.contains(host)) {
                 return true;
             }
