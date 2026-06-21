@@ -22,7 +22,7 @@
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-3">
+      <div class="w-full max-w-full bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-3">
         <div class="flex gap-2">
           <div class="relative flex-1 min-w-0">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Status Filter (Mobile) -->
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 md:hidden">
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 md:hidden w-full max-w-full">
           <button
             v-for="opt in statusOptions"
             :key="opt.value"
@@ -64,7 +64,7 @@
         </div>
 
         <!-- Sort (Mobile) -->
-        <div class="md:hidden">
+        <div class="md:hidden w-full">
           <select 
             v-model="sortBy" 
             class="w-full bg-black/30 border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50"
@@ -95,7 +95,7 @@
       </div>
 
       <!-- Sales Cards / Table -->
-      <GlassCard customClass="responsive-table-to-cards">
+      <GlassCard customClass="responsive-table-to-cards w-full max-w-full overflow-hidden">
         <!-- Desktop Table -->
         <div class="overflow-x-auto hidden md:block">
           <table class="w-full text-left border-collapse">
@@ -142,23 +142,23 @@
             v-for="record in paginatedSales"
             :key="'card-' + record.id"
             @click="toggleCard(record.id)"
-            class="mobile-card relative bg-white/[0.03] rounded-xl p-3 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            class="mobile-card relative bg-white/[0.03] rounded-xl p-2.5 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer"
           >
-            <!-- Row 1: Code + Revenue -->
-            <div class="flex items-center justify-between gap-2 mb-1.5">
-              <span class="text-violet-400 text-xs font-bold truncate min-w-0 flex-1">{{ record.transaction_code }}</span>
-              <span class="text-emerald-400 text-sm font-black shrink-0 pl-2">₱{{ formatNumber(record.total_amount) }}</span>
-            </div>
-            <!-- Row 2: Status + Date -->
-            <div class="flex items-center justify-between gap-2 mb-1">
-              <div class="flex items-center gap-2 min-w-0 flex-1">
-                <span class="px-2 py-0.5 rounded-full text-[0.65rem] font-bold uppercase shrink-0"
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-violet-400 text-[0.75rem] font-bold truncate pr-2">{{ record.transaction_code }}</span>
+                <span class="text-white/30 text-xs leading-none shrink-0" :class="{ '!text-indigo-400 transform rotate-90': expandedCards.has(record.id) }">›</span>
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-2">
+                 <span class="text-emerald-400 text-[0.85rem] font-black">₱{{ formatNumber(record.total_amount) }}</span>
+                 <span class="px-2 py-0.5 rounded-full text-[0.55rem] font-bold uppercase tracking-wider"
                   :class="getStatusClass(record.status || 'completed')">
                   {{ record.status || 'Completed' }}
-                </span>
-                <span class="text-[0.65rem] text-white/40 truncate">{{ formatDateShort(record.created_at) }}</span>
+                 </span>
               </div>
-              <span class="text-white/30 text-xs shrink-0" :class="{ '!text-indigo-400': expandedCards.has(record.id) }">›</span>
+
+              <span class="text-[0.65rem] text-white/40 truncate">{{ formatDateShort(record.created_at) }}</span>
             </div>
 
             <!-- Expanded Content -->
