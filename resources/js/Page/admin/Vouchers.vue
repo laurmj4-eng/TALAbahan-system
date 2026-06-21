@@ -1,13 +1,13 @@
 <template>
   <AdminLayout>
     <div class="space-y-6 sm:space-y-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
         <div class="w-full">
-          <h1 class="text-2xl sm:text-3xl font-bold text-white">Voucher Management</h1>
+          <h1 class="text-xl sm:text-3xl font-bold text-white">Voucher Management</h1>
           <p class="text-white/60 mt-1 sm:mt-2 text-xs sm:text-base leading-relaxed">Manage checkout vouchers and discounts.</p>
         </div>
-        <button @click="isAddModalOpen = true" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center active:scale-[0.98]">
-          <Plus class="w-4 h-4 mr-2" /> Add Voucher
+        <button @click="isAddModalOpen = true" class="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center active:scale-[0.98]">
+          <Plus class="w-4 h-4 mr-1.5" /> Add Voucher
         </button>
       </div>
 

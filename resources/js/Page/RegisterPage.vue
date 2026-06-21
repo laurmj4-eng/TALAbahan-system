@@ -155,7 +155,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-3.5 md:py-4 rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-sm md:text-base flex items-center justify-center gap-2 min-h-[48px]"
+              class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-black py-3 md:py-3.5 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-[0_4px_20px_rgba(59,130,246,0.45)] hover:shadow-[0_4px_28px_rgba(59,130,246,0.55)] text-sm md:text-base flex items-center justify-center gap-2 min-h-[44px]"
             >
               <svg
                 v-if="loading"

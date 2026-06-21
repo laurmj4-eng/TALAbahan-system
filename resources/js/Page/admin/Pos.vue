@@ -49,9 +49,9 @@
         </div>
 
         <!-- Cart Sidebar -->
-        <GlassCard customClass="w-full lg:w-96 p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl ">
-          <div class="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4 flex items-center gap-2">
-            <ShoppingCart class="w-5 h-5 text-indigo-400" />
+        <GlassCard customClass="w-full lg:w-96 p-4 md:p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl ">
+          <div class="text-base md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-white/10 pb-3 md:pb-4 flex items-center gap-2">
+            <ShoppingCart class="w-4 h-4 md:w-5 md:h-5 text-indigo-400" />
             <span>Current Order</span>
           </div>
           
@@ -136,7 +136,7 @@
             <button 
               @pointerdown.prevent="processCheckout"
               :disabled="cart.length === 0 || isProcessing"
-              class="w-full mt-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-black text-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95 touch-manipulation flex justify-center items-center gap-2"
+              class="w-full mt-4 py-3 md:py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl md:rounded-2xl font-black text-base md:text-lg shadow-lg shadow-emerald-500/20 transition-all active:scale-95 touch-manipulation flex justify-center items-center gap-2"
             >
               <span v-if="isProcessing" class="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
               {{ isProcessing ? 'PROCESSING...' : 'PROCESS PAYMENT' }}

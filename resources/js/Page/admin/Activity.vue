@@ -79,8 +79,8 @@
         </GlassCard>
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
-        <div class="md:hidden space-y-4 pb-20">
-          <div v-for="log in logs" :key="log.id" class="p-5 rounded-2xl bg-white/[0.03] border border-white/10  space-y-4">
+        <div class="md:hidden space-y-3 pb-4">
+          <div v-for="log in logs" :key="log.id" class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
             <div class="flex justify-between items-start">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">

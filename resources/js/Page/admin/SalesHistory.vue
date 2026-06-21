@@ -1,6 +1,6 @@
 <template>
   <AdminLayout :username="username">
-    <div class="space-y-8">
+    <div class="space-y-6 md:space-y-8">
       <div>
         <h1 class="text-3xl font-bold text-white">Financial Ledger 📈</h1>
         <p class="text-white/60">Real-time transaction logs and revenue records.</p>
@@ -221,10 +221,10 @@
               </div>
               <!-- Actions -->
               <div class="flex gap-2 pt-3 border-t border-white/10">
-                <button class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors">
+                <button class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors active:scale-95">
                   Edit
                 </button>
-                <button class="flex-1 px-3 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-xs font-bold transition-colors border border-rose-500/30">
+                <button class="flex-1 px-3 py-2 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-xs font-bold transition-colors border border-rose-500/30 active:scale-95">
                   Delete
                 </button>
               </div>

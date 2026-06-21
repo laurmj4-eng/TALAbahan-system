@@ -2,11 +2,8 @@
   <CustomerLayout>
     <div class="space-y-12 animate-fade-in">
       
-      <!-- Enhanced Hero Banner -->
-      <!-- PERF FIX:  removed from mobile — a full-section blur on scroll entry
-           forces the browser to composite the entire hero section on every paint.
-           Kept on md+ via Tailwind responsive prefix. -->
-      <section v-once class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-10 md:p-20 group shadow-2xl md:">
+      <!-- Enhanced Hero Banner (compact on mobile) -->
+      <section v-once class="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-6 md:p-20 group shadow-2xl md:">
         <!-- Fish Watermark (Right Aligned, Low Opacity) -->
         <div class="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] rotate-12 group-hover:rotate-6 group-hover:scale-110 transition-all duration-1000 pointer-events-none">
           <Fish class="w-[20rem] h-[20rem] text-cyan-400" />
@@ -15,26 +12,26 @@
         <!-- Ambient Hero Glow -->
         <div class="absolute top-0 right-0 w-64 h-64 bg-cyan-600/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-        <div class="relative z-10 max-w-3xl space-y-6">
-          <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[1.1]">
+        <div class="relative z-10 max-w-3xl space-y-3 md:space-y-6">
+          <h1 class="text-3xl md:text-7xl font-black text-white tracking-tighter leading-[1.1]">
             <span class="font-extrabold text-white/90">{{ greeting }},</span> <br/>
             <span class="text-gradient-cyan-white">{{ username }}!</span>
           </h1>
-          <p class="text-white/60 text-xl md:text-2xl font-semibold leading-relaxed max-w-xl">
+          <p class="text-white/60 text-base md:text-2xl font-semibold leading-relaxed max-w-xl">
             Ready for some fresh seafood today? <br class="hidden md:block"/> Check out our best catch below.
           </p>
         </div>
       </section>
 
-      <!-- Section Header -->
-      <header v-once class="flex items-center justify-between px-2">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 bg-cyan-600/10 rounded-[1.5rem] flex items-center justify-center border border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
-            <Gem class="text-cyan-400 w-7 h-7" />
+      <!-- Section Header (compact on mobile) -->
+      <header v-once class="flex items-center justify-between px-1 md:px-2">
+        <div class="flex items-center gap-3 md:gap-4">
+          <div class="w-10 h-10 md:w-14 md:h-14 bg-cyan-600/10 rounded-xl md:rounded-[1.5rem] flex items-center justify-center border border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
+            <Gem class="text-cyan-400 w-5 h-5 md:w-7 md:h-7" />
           </div>
-          <div class="space-y-1">
-            <h2 class="text-3xl font-black text-white tracking-tight">Available Seafood</h2>
-            <p class="text-white/40 text-[0.65rem] font-black uppercase tracking-[0.2em]">Premium Selection • Fresh Daily</p>
+          <div class="space-y-0.5 md:space-y-1">
+            <h2 class="text-xl md:text-3xl font-black text-white tracking-tight">Available Seafood</h2>
+            <p class="text-white/40 text-[0.55rem] md:text-[0.65rem] font-black uppercase tracking-[0.2em]">Premium Selection • Fresh Daily</p>
           </div>
         </div>
       </header>
@@ -441,26 +438,26 @@
           </div>
         </div>
 
-        <!-- Modal Footer (Actions) -->
-        <div class="p-4 sm:p-8 border-t border-white/5 bg-transparent  sticky bottom-0 z-10 flex gap-3 sm:gap-4">
+        <!-- Modal Footer (Actions - compact for built-in nav) -->
+        <div class="p-3 sm:p-6 md:p-8 border-t border-white/5 bg-transparent sticky bottom-0 z-10 flex gap-2 sm:gap-4" style="padding-bottom: env(safe-area-inset-bottom, 8px);">
           <button 
             v-if="currentStep === 1"
             @click="closeCheckoutModal"
-            class="w-16 sm:w-28 py-4 sm:py-5 bg-rose-500/10 border border-rose-500/20 rounded-xl sm:rounded-[1.5rem] text-rose-500 font-black text-[0.6rem] sm:text-xs uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95"
+            class="w-14 sm:w-28 py-3 sm:py-5 bg-rose-500/10 border border-rose-500/20 rounded-xl sm:rounded-[1.5rem] text-rose-500 font-black text-[0.55rem] sm:text-xs uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button 
             v-else
             @click="prevStep" 
-            class="w-16 sm:w-28 py-4 sm:py-5 bg-white/5 border border-white/10 rounded-xl sm:rounded-[1.5rem] text-white/40 font-black text-[0.6rem] sm:text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            class="w-14 sm:w-28 py-3 sm:py-5 bg-white/5 border border-white/10 rounded-xl sm:rounded-[1.5rem] text-white/40 font-black text-[0.55rem] sm:text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
           >
             Back
           </button>
           <button 
             @click="nextStep" 
             :disabled="!canGoNext || isPlacingOrder"
-            class="flex-1 py-4 sm:py-5 bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl sm:rounded-[1.5rem] transition-all duration-500 active:scale-[0.98] flex items-center justify-center gap-2 sm:gap-3 shadow-2xl shadow-cyan-400/20 disabled:opacity-30 disabled:grayscale disabled:active:scale-100 group overflow-hidden relative"
+            class="flex-1 py-3 sm:py-5 bg-cyan-400 text-slate-950 font-black text-[0.6rem] sm:text-sm rounded-xl sm:rounded-[1.5rem] transition-all duration-500 active:scale-[0.98] flex items-center justify-center gap-2 sm:gap-3 shadow-2xl shadow-cyan-400/20 disabled:opacity-30 disabled:grayscale disabled:active:scale-100 group overflow-hidden relative"
           >
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             <Loader2 v-if="isPlacingOrder" class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />

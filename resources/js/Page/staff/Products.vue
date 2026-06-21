@@ -1,25 +1,25 @@
 <template>
   <StaffLayout :username="username">
-    <div class="space-y-8">
-      <div class="header flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="space-y-6">
+      <div class="header flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">📦 Product Inventory</h1>
-          <p class="text-white/50 font-medium">Monitor stock levels and manage fresh seafood products.</p>
+          <h1 class="text-2xl md:text-5xl font-black tracking-tight text-white mb-1">📦 Product Inventory</h1>
+          <p class="text-white/50 font-medium text-sm">Monitor stock levels and manage fresh seafood products.</p>
         </div>
-        <Link href="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
-          <ChevronLeft class="w-5 h-5" />
+        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+          <ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
           <span>Dashboard</span>
         </Link>
       </div>
 
-      <GlassCard customClass="p-8 border-white/10">
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
+      <GlassCard customClass="p-4 md:p-8 border-white/10">
+        <div class="flex flex-col md:flex-row gap-3 md:gap-4 mb-4 md:mb-8">
           <div class="flex-1 relative group">
-            <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+            <Search class="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
             <input 
               v-model="searchQuery" 
               type="text" 
-              class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white placeholder-white/20 focus:outline-none focus:border-indigo-500/50 transition-all"
+              class="w-full bg-white/5 border border-white/10 rounded-xl md:rounded-2xl py-3 md:py-4 pl-10 md:pl-12 pr-4 md:pr-6 text-white placeholder-white/20 focus:outline-none focus:border-indigo-500/50 transition-all text-sm md:text-base"
               placeholder="Search products by name or category..."
             />
           </div>

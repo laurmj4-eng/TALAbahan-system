@@ -4,12 +4,8 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
-          <Link href="/admin/activity" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10  border border-violet-500/20 rounded-xl text-white/80 font-semibold text-sm hover:bg-violet-500/20 hover:border-violet-500/40 hover:-translate-x-1 transition-all group mb-4">
-            <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Monitor</span>
-          </Link>
-          <h2 class="text-[2.2rem] font-bold text-white leading-tight">User Timeline: {{ user.username }}</h2>
-          <p class="text-white/60">Detailed activity history for this identity node.</p>
+          <h2 class="text-2xl md:text-[2.2rem] font-bold text-white leading-tight">User Timeline: {{ user.username }}</h2>
+          <p class="text-white/60 text-sm">Detailed activity history for this identity node.</p>
         </div>
 
         <div class="w-full md:w-auto p-5 rounded-2xl bg-white/[0.03] border border-white/10  text-right">
@@ -71,9 +67,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ArrowLeft, Laptop, MapPin, Network } from 'lucide-vue-next';
+import { Laptop, MapPin, Network } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 
 const props = defineProps({

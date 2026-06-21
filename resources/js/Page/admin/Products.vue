@@ -2,15 +2,15 @@
   <AdminLayout>
     <div class="flex-1 flex flex-col space-y-6 md:space-y-8 min-h-0">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
         <div class="flex-1">
-          <h1 class="text-3xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-sky-400 bg-clip-text text-transparent leading-tight">
+          <h1 class="text-2xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-sky-400 bg-clip-text text-transparent leading-tight">
             Inventory Management
           </h1>
-          <p class="text-white/50 font-medium text-sm md:text-base">Add, modify, or toggle visibility of seafood products.</p>
+          <p class="text-white/50 font-medium text-xs md:text-base">Add, modify, or toggle visibility of seafood products.</p>
         </div>
-        <button @click="openAddModal" class="w-full md:w-auto px-8 py-4 md:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold shadow-lg shadow-violet-500/20 transition-all active:scale-95 flex items-center justify-center gap-2">
-          <Plus class="w-5 h-5" />
+        <button @click="openAddModal" class="w-full md:w-auto px-5 py-2.5 md:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl md:rounded-2xl font-bold shadow-lg shadow-violet-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm md:text-base">
+          <Plus class="w-4 h-4 md:w-5 md:h-5" />
           <span>Add Product</span>
         </button>
       </div>
@@ -131,11 +131,11 @@
               </div>
 
               <div class="flex gap-2">
-                <button @click="openEditModal(product)" class="flex-1 flex items-center justify-center gap-2 p-3 bg-white/[0.05] border border-white/10 rounded-xl text-xs font-bold text-white/70">
-                  <Edit2 class="w-4 h-4" /> Edit
+                <button @click="openEditModal(product)" class="flex-1 flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl text-xs font-bold text-white/70 active:scale-95 transition-all">
+                  <Edit2 class="w-3.5 h-3.5" /> Edit
                 </button>
-                <button @click="deleteProduct(product.id)" class="flex-1 flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400">
-                  <Trash2 class="w-4 h-4" /> Delete
+                <button @click="deleteProduct(product.id)" class="flex-1 flex items-center justify-center gap-1.5 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400 active:scale-95 transition-all">
+                  <Trash2 class="w-3.5 h-3.5" /> Delete
                 </button>
               </div>
             </div>

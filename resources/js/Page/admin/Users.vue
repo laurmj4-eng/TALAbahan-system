@@ -59,7 +59,7 @@
             <button 
               type="submit"
               :disabled="isSubmitting"
-              class="w-full md:w-auto md:ml-auto flex justify-center px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] disabled:opacity-50 touch-manipulation"
+              class="w-full md:w-auto md:ml-auto flex justify-center px-6 py-3 md:px-8 md:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] disabled:opacity-50 touch-manipulation text-sm md:text-base"
             >
               {{ isSubmitting ? 'EXECUTING...' : 'ADD ENTITY+' }}
             </button>

@@ -2,18 +2,18 @@
   <AdminLayout>
     <div class="space-y-10">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+      <div class="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
-          <h1 class="text-3xl md:text-[3rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight mb-2">
+          <h1 class="text-2xl md:text-[3rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight mb-1">
             Welcome back, {{ username }}!
           </h1>
-          <p class="text-sm md:text-[1.1rem] font-medium text-white/50 mb-1">
+          <p class="text-xs md:text-[1.1rem] font-medium text-white/50 mb-1">
             Manage products, monitor sales, and track order activity in one clean owner dashboard.
           </p>
-          <p class="text-[0.8rem] text-white/40">Server Time: <span class="font-mono">{{ serverTime }}</span></p>
+          <p class="text-[0.75rem] text-white/40">Server Time: <span class="font-mono">{{ serverTime }}</span></p>
         </div>
-        <button @click="printReport" class="flex items-center gap-3 px-6 py-3 bg-white/[0.05]  border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group shadow-lg shadow-indigo-500/20">
-          <Printer class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
+        <button @click="printReport" class="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 md:px-6 md:py-3 bg-white/[0.05] border border-white/10 rounded-xl md:rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all group shadow-lg shadow-indigo-500/20 text-sm md:text-base">
+          <Printer class="w-4 h-4 md:w-5 md:h-5 text-blue-400 group-hover:scale-110 transition-transform" />
           <span class="font-bold">Print Daily Report</span>
         </button>
       </div>
@@ -77,24 +77,24 @@
       </div>
 
       <!-- Alerts -->
-      <div v-if="cards.stale_orders_count > 0" class="flex items-center justify-between p-6 bg-orange-500/10  border border-orange-500/20 rounded-2xl">
-        <div class="flex items-center gap-5">
-          <AlertTriangle class="w-8 h-8 text-orange-400" />
+      <div v-if="cards.stale_orders_count > 0" class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl gap-3">
+        <div class="flex items-center gap-4">
+          <AlertTriangle class="w-6 h-6 md:w-8 md:h-8 text-orange-400" />
           <div>
-            <h4 class="font-extrabold text-orange-400 text-lg">Action Required: {{ cards.stale_orders_count }} Stale Orders</h4>
-            <p class="text-sm text-slate-400">Some orders have been pending for more than 24 hours. Please review and update their status.</p>
+            <h4 class="font-extrabold text-orange-400 text-base md:text-lg">Action Required: {{ cards.stale_orders_count }} Stale Orders</h4>
+            <p class="text-xs md:text-sm text-slate-400">Some orders have been pending for more than 24 hours. Please review and update their status.</p>
           </div>
         </div>
-        <Link href="/admin/orders" class="px-6 py-2.5 bg-orange-500 text-black text-sm font-extrabold rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-lg shadow-orange-500/20">
+        <Link href="/admin/orders" class="w-full sm:w-auto px-5 py-2.5 bg-orange-500 text-black text-xs md:text-sm font-extrabold rounded-xl hover:bg-orange-400 transition-all active:scale-95 shadow-lg shadow-orange-500/20 text-center">
           View Orders
         </Link>
       </div>
 
       <!-- Performance Overview -->
-      <div class="space-y-6">
+      <div class="space-y-4 md:space-y-6">
         <div class="flex items-center gap-3">
-          <LineChart class="text-violet-500 w-6 h-6" />
-          <h3 class="text-xl font-bold text-white tracking-tight">Performance Overview</h3>
+          <LineChart class="text-violet-500 w-5 h-5 md:w-6 md:h-6" />
+          <h3 class="text-lg md:text-xl font-bold text-white tracking-tight">Performance Overview</h3>
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -132,26 +132,26 @@
       </div>
 
       <!-- Quick Actions -->
-      <div class="space-y-6" v-once>
+      <div class="space-y-4 md:space-y-6" v-once>
         <div class="flex items-center gap-3">
-          <Zap class="text-violet-500 w-6 h-6" />
-          <h3 class="text-xl font-bold text-white tracking-tight">Quick Management</h3>
+          <Zap class="text-violet-500 w-5 h-5 md:w-6 md:h-6" />
+          <h3 class="text-lg md:text-xl font-bold text-white tracking-tight">Quick Management</h3>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          <Link v-for="action in quickActions" :key="action.name" :href="action.path" class="group p-6 rounded-[24px] bg-white/[0.02] border border-white/10  flex flex-col items-center justify-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
-            <component :is="action.icon" :class="action.color" class="w-8 h-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300" />
-            <span class="font-bold text-[1.1rem] tracking-tight group-hover:text-violet-400 transition-colors">{{ action.name }}</span>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+          <Link v-for="action in quickActions" :key="action.name" :href="action.path" class="group p-4 md:p-6 rounded-2xl md:rounded-[24px] bg-white/[0.02] border border-white/10 flex flex-col items-center justify-center gap-3 md:gap-4 transition-all duration-300 hover:-translate-y-2 hover:bg-violet-500/10 hover:border-violet-500/30 hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)]">
+            <component :is="action.icon" :class="action.color" class="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300" />
+            <span class="font-bold text-[0.85rem] md:text-[1.1rem] tracking-tight group-hover:text-violet-400 transition-colors">{{ action.name }}</span>
           </Link>
         </div>
       </div>
 
       <!-- Activity Feed -->
-      <div class="space-y-6">
+      <div class="space-y-4 md:space-y-6">
         <div class="flex items-center gap-3">
-          <Activity class="text-violet-500 w-6 h-6" />
-          <h3 class="text-xl font-bold text-white tracking-tight">Live Activity Feed</h3>
+          <Activity class="text-violet-500 w-5 h-5 md:w-6 md:h-6" />
+          <h3 class="text-lg md:text-xl font-bold text-white tracking-tight">Live Activity Feed</h3>
         </div>
-        <GlassCard customClass="p-[25px] rounded-[24px]">
+        <GlassCard customClass="p-4 md:p-[25px] rounded-2xl md:rounded-[24px]">
           <div v-if="activities.length" class="space-y-4">
             <div v-for="(act, index) in activities" :key="index" class="flex items-center justify-between pb-4 border-b border-white/[0.05] last:border-0 last:pb-0 group">
               <div class="flex items-center gap-5">

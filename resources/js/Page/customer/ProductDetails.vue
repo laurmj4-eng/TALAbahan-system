@@ -212,18 +212,18 @@ const buyNow = () => {
         
         <div class="min-h-screen text-white selection:bg-cyan-500/30 font-sans overflow-x-hidden" style="background-color: oklch(0.13 0.04 265);">
             
-            <!-- Premium Floating Back Button (Teleported to body) -->
+            <!-- Floating Back Button (compact for built-in nav phones) -->
             <Teleport to="body">
                 <Transition name="back-button">
                     <Link 
                         v-if="isBackButtonVisible"
                         href="/customer/dashboard" 
-                        class="fixed top-4 left-4 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-2 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04]  px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
+                        class="fixed top-14 left-3 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-1.5 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04] px-2.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
                     >
                         <span class="inline-block transition-transform duration-300 group-hover:-translate-x-1">
-                            <ArrowLeft class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <ArrowLeft class="w-3 h-3 sm:w-4 sm:h-4" />
                         </span>
-                        <span class="text-[0.6rem] sm:text-xs tracking-widest uppercase font-bold">Back to Menu</span>
+                        <span class="text-[0.5rem] sm:text-xs tracking-widest uppercase font-bold">Back</span>
                     </Link>
                 </Transition>
             </Teleport>
@@ -307,24 +307,24 @@ const buyNow = () => {
                 </section>
             </main>
 
-            <!-- Sticky Order Bar -->
-            <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-3 sm:p-4 md:p-6 translate-y-full opacity-0 pointer-events-none">
-                <div class="max-w-4xl mx-auto bg-white/[0.04]  border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
+            <!-- Sticky Order Bar (compact for built-in nav phones) -->
+            <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-2 sm:p-3 md:p-6 translate-y-full opacity-0 pointer-events-none" style="padding-bottom: env(safe-area-inset-bottom, 8px);">
+                <div class="max-w-4xl mx-auto bg-white/[0.04] border border-white/10 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
                     <!-- Glow effect inside bar -->
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
                     
                     <div class="flex flex-col">
-                        <span class="text-[0.55rem] sm:text-xs text-white/50 uppercase tracking-widest font-semibold">{{ product.unit }}</span>
+                        <span class="text-[0.5rem] sm:text-xs text-white/50 uppercase tracking-widest font-semibold">{{ product.unit }}</span>
                         <div class="flex items-baseline gap-1">
-                            <span class="text-cyan-400 font-black text-lg sm:text-xl">₱</span>
-                            <span class="text-xl sm:text-2xl md:text-3xl font-black text-white">{{ parseFloat(product.price).toFixed(2) }}</span>
+                            <span class="text-cyan-400 font-black text-base sm:text-xl">₱</span>
+                            <span class="text-lg sm:text-2xl md:text-3xl font-black text-white">{{ parseFloat(product.price).toFixed(2) }}</span>
                         </div>
                     </div>
 
-                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-lg sm:rounded-xl bg-cyan-400 text-slate-950 px-6 sm:px-8 py-2.5 sm:py-3 md:py-4 font-black uppercase tracking-wider text-[0.6rem] sm:text-xs md:text-sm transition-all duration-300 active:scale-95 flex items-center gap-2 sm:gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/20 hover:bg-cyan-300">
+                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-lg sm:rounded-xl bg-cyan-400 text-slate-950 px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-4 font-black uppercase tracking-wider text-[0.55rem] sm:text-xs md:text-sm transition-all duration-300 active:scale-95 flex items-center gap-1.5 sm:gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/20 hover:bg-cyan-300">
                         <span class="relative z-10">{{ isProcessing ? 'Processing...' : 'Order Now' }}</span>
-                        <Loader2 v-if="isProcessing" class="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 animate-spin" />
-                        <ShoppingCart v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                        <Loader2 v-if="isProcessing" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 animate-spin" />
+                        <ShoppingCart v-else class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     </button>
                 </div>
             </div>

@@ -1,13 +1,13 @@
 <template>
   <div class="flex min-h-screen lg:h-screen bg-[#0f172a] lg:overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
-    <!-- Mobile Top Bar -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-black/40 backdrop-blur-xl border-b border-white/10 z-[50] flex items-center px-4 gap-4">
-      <button @click="isSidebarOpen = !isSidebarOpen" class="w-10 h-10 bg-indigo-500/20 text-white rounded-lg flex items-center justify-center border border-indigo-500/30 cursor-pointer active:scale-95 transition-all">
-        <Menu class="w-6 h-6" />
+    <!-- Mobile Top Bar (compact for built-in nav phones) -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-12 bg-black/40 backdrop-blur-xl border-b border-white/10 z-[50] flex items-center px-3 gap-3">
+      <button @click="isSidebarOpen = !isSidebarOpen" class="w-8 h-8 bg-indigo-500/20 text-white rounded-lg flex items-center justify-center border border-indigo-500/30 cursor-pointer active:scale-95 transition-all">
+        <Menu class="w-5 h-5" />
       </button>
-      <div class="flex items-center gap-3">
-        <Gem class="text-[#818cf8] w-6 h-6" />
-        <h2 class="text-lg font-bold text-white tracking-wide">Mj Pogi</h2>
+      <div class="flex items-center gap-2">
+        <Gem class="text-[#818cf8] w-5 h-5" />
+        <h2 class="text-base font-bold text-white tracking-wide">Mj Pogi</h2>
       </div>
     </div>
 
@@ -82,8 +82,8 @@
       <!-- Background Gradient -->
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#1e293b] to-[#0f172a] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
-      <!-- Page Content -->
-      <main class="flex-1 lg:overflow-y-auto pt-20 lg:pt-10 p-4 md:p-6 lg:p-10 relative smooth-scroll-container">
+      <!-- Page Content (pt-16 for compact mobile top bar, safe-area for gesture nav) -->
+      <main class="flex-1 lg:overflow-y-auto pt-16 lg:pt-10 p-4 md:p-6 lg:p-10 relative smooth-scroll-container" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <div class="space-y-4">
           <slot></slot>
         </div>

@@ -1,9 +1,9 @@
 <template>
   <StaffLayout :username="username">
-    <div class="space-y-8">
+    <div class="space-y-6">
       <div>
-        <h1 class="text-3xl font-bold text-white">Order Items 🧾</h1>
-        <p class="text-white/60">Line-by-line product receipts from customer orders.</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-white">Order Items 🧾</h1>
+        <p class="text-white/60 text-sm">Line-by-line product receipts from customer orders.</p>
       </div>
 
       <GlassCard customClass="overflow-hidden">

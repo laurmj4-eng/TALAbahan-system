@@ -2,9 +2,9 @@
   <AdminLayout>
     <div class="flex-1 flex flex-col space-y-4 md:space-y-8 min-h-0">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:mt-0">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:mt-0">
         <div>
-          <h1 class="text-2xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
+          <h1 class="text-xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
             Customer Orders
             <span class="px-2 py-0.5 md:px-3 md:py-1 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black tracking-widest uppercase">Order</span>
           </h1>
@@ -113,8 +113,8 @@
         </GlassCard>
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
-        <div class="md:hidden space-y-4 pb-20">
-          <div v-for="order in orders" :key="order.id" class="p-5 rounded-2xl bg-white/[0.05] border border-white/15  space-y-5">
+        <div class="md:hidden space-y-3 pb-4">
+          <div v-for="order in orders" :key="order.id" class="p-4 rounded-2xl bg-white/[0.05] border border-white/15 space-y-3">
             <div class="flex justify-between items-start gap-3">
               <div class="flex-1 min-w-0">
                 <div class="font-mono bg-black text-white px-3 py-2 rounded-lg border border-white/25 text-xs font-bold inline-block mb-2 shadow-lg break-all">
@@ -145,17 +145,17 @@
               </div>
             </div>
 
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-3">
               <div v-if="order.status === 'Cancelled'" class="w-full">
                 <span 
                   v-if="isCancelledByCustomer(order)"
-                  class="w-full block text-center px-4 py-3 bg-red-600 text-white border-2 border-red-700 rounded-xl text-sm font-black tracking-widest uppercase shadow-lg shadow-red-500/30 animate-pulse"
+                  class="w-full block text-center px-3 py-2.5 bg-red-600 text-white border-2 border-red-700 rounded-xl text-xs font-black tracking-widest uppercase shadow-lg shadow-red-500/30 animate-pulse"
                 >
                   ⚠ CUSTOMER CANCELLED
                 </span>
                 <span 
                   v-else
-                  class="w-full block text-center px-4 py-3 bg-gray-600 text-white border-2 border-gray-700 rounded-xl text-sm font-black tracking-widest uppercase"
+                  class="w-full block text-center px-3 py-2.5 bg-gray-600 text-white border-2 border-gray-700 rounded-xl text-xs font-black tracking-widest uppercase"
                 >
                   Cancelled by Admin
                 </span>
@@ -164,7 +164,7 @@
                 v-else
                 v-model="order.status" 
                 @change="updateStatus(order, $event.target.value)"
-                class="w-full bg-black text-white border-2 border-white rounded-xl px-4 py-3 text-sm font-black tracking-widest uppercase focus:outline-none"
+                class="w-full bg-black text-white border-2 border-white rounded-xl px-3 py-2.5 text-xs font-black tracking-widest uppercase focus:outline-none"
                 :class="getStatusSelectClass(order.status)"
               >
                 <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
@@ -175,26 +175,26 @@
                   <button 
                     v-if="order.status === 'Shipped'"
                     @click="cancelDamagedInTransit(order)"
-                    class="flex-1 flex items-center justify-center gap-2 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-4 py-3 text-xs font-black tracking-widest uppercase active:scale-95 transition-all"
+                    class="flex-1 flex items-center justify-center gap-1.5 bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 rounded-xl px-3 py-2.5 text-[10px] font-black tracking-widest uppercase active:scale-95 transition-all"
                   >
-                    <Ban class="w-4 h-4" />
+                    <Ban class="w-3.5 h-3.5" />
                     Damaged
                   </button>
                   <button 
                     v-if="getNextAction(order.status)"
                     @click="updateStatus(order, getNextAction(order.status).next)"
-                    class="flex-1 flex items-center justify-center gap-2 bg-white text-black border-2 border-white rounded-xl px-4 py-3 text-xs font-black tracking-widest uppercase active:scale-95 transition-all"
+                    class="flex-1 flex items-center justify-center gap-1.5 bg-white text-black border-2 border-white rounded-xl px-3 py-2.5 text-[10px] font-black tracking-widest uppercase active:scale-95 transition-all"
                   >
-                    <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
+                    <component :is="getNextAction(order.status).icon" class="w-3.5 h-3.5" />
                     {{ getNextAction(order.status).label }}
                   </button>
                 </div>
                 <div class="flex gap-2">
-                  <button @click="editTracking(order)" class="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
-                    <Truck class="w-5 h-5 text-white/60" />
+                  <button @click="editTracking(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                    <Truck class="w-4 h-4 text-white/60" />
                   </button>
-                  <button @click="viewOrderDetails(order)" class="flex-1 p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
-                    <ReceiptText class="w-5 h-5 text-white/60" />
+                  <button @click="viewOrderDetails(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                    <ReceiptText class="w-4 h-4 text-white/60" />
                   </button>
                 </div>
               </div>

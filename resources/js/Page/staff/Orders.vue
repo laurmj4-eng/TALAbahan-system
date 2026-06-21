@@ -1,17 +1,17 @@
 <template>
   <StaffLayout :username="username">
-    <div class="flex-1 flex flex-col space-y-4 md:space-y-8 min-h-0">
+    <div class="flex-1 flex flex-col space-y-3 md:space-y-8 min-h-0">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:mt-0">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 md:mt-0">
         <div>
-          <h1 class="text-2xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
+          <h1 class="text-xl md:text-[2.5rem] font-extrabold tracking-tight bg-gradient-to-r from-white to-violet-400 bg-clip-text text-transparent leading-tight flex flex-wrap items-center gap-2 md:gap-4">
             Order Fulfillment
             <span class="px-2 py-0.5 md:px-3 md:py-1 bg-violet-500/20 text-violet-400 border border-violet-500/30 rounded-lg md:rounded-xl text-[10px] md:text-sm font-black tracking-widest uppercase">Staff</span>
           </h1>
           <p class="text-white/50 font-medium text-xs md:text-base">Manage and process your fresh seafood deliveries.</p>
         </div>
-        <Link href="/staff/dashboard" class="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
-          <ChevronLeft class="w-5 h-5" />
+        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+          <ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
           <span>Dashboard</span>
         </Link>
       </div>
@@ -94,8 +94,8 @@
         </GlassCard>
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
-        <div class="md:hidden space-y-4 pb-20">
-          <div v-for="order in localOrders" :key="order.id" class="p-4 rounded-2xl bg-white/[0.03] border border-white/10  space-y-4">
+        <div class="md:hidden space-y-3 pb-4">
+          <div v-for="order in localOrders" :key="order.id" class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
             <div class="flex justify-between items-start">
               <div>
                 <div class="font-mono bg-black text-white px-2 py-1 rounded-lg border border-white/20 text-[10px] font-bold inline-block mb-1 shadow-lg">
@@ -105,12 +105,12 @@
                   {{ formatDate(order.created_at) }}
                 </div>
               </div>
-              <span class="text-lg font-black text-emerald-400">₱{{ formatNumber(order.total_amount) }}</span>
+              <span class="text-base md:text-lg font-black text-emerald-400">₱{{ formatNumber(order.total_amount) }}</span>
             </div>
 
             <div class="flex justify-between items-center">
               <div>
-                <div class="font-bold text-white text-base">{{ order.customer_name || 'Walk-in' }}</div>
+                <div class="font-bold text-white text-sm md:text-base">{{ order.customer_name || 'Walk-in' }}</div>
                 <div class="text-[10px] text-white/40">{{ order.item_count }} items recorded</div>
               </div>
               <span class="px-2 py-0.5 bg-black text-white border border-white/30 rounded-lg text-[9px] font-black tracking-widest uppercase">
@@ -118,7 +118,7 @@
               </span>
             </div>
 
-            <div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
+            <div class="p-2.5 md:p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-1">
               <div class="text-[10px] text-white/40 font-bold uppercase tracking-widest">Tracking Info</div>
               <div class="flex justify-between items-center">
                 <span class="text-xs text-white/70">{{ order.courier_name || 'No courier' }}</span>
@@ -126,11 +126,11 @@
               </div>
             </div>
 
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-2">
               <select 
                 v-model="order.status" 
                 @change="updateStatus(order, $event.target.value)"
-                class="w-full bg-black text-white border-2 border-white rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase focus:outline-none"
+                class="w-full bg-black text-white border-2 border-white rounded-xl px-3 py-2 md:py-2.5 text-[0.65rem] md:text-[0.7rem] font-black tracking-widest uppercase focus:outline-none"
                 :class="getStatusSelectClass(order.status)"
               >
                 <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
@@ -140,25 +140,25 @@
                 <button 
                   v-if="getNextAction(order.status)"
                   @click="updateStatus(order, getNextAction(order.status).next)"
-                  class="flex-1 flex items-center justify-center gap-2 bg-white text-black border-2 border-white rounded-xl px-4 py-2.5 text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
+                  class="flex-1 flex items-center justify-center gap-1.5 bg-white text-black border-2 border-white rounded-xl px-3 py-2 md:py-2.5 text-[0.6rem] md:text-[0.7rem] font-black tracking-widest uppercase active:scale-95 transition-all"
                 >
-                  <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
+                  <component :is="getNextAction(order.status).icon" class="w-3.5 h-3.5 md:w-4 md:h-4" />
                   {{ getNextAction(order.status).label }}
                 </button>
-                <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                <button @click="editTracking(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
                   <Truck class="w-4 h-4 text-white/60" />
                 </button>
-                <button @click="viewDetails(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                <button @click="viewDetails(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
                   <ReceiptText class="w-4 h-4 text-white/60" />
                 </button>
               </div>
             </div>
           </div>
 
-          <div v-if="localOrders.length === 0" class="py-20 text-center">
-            <div class="text-white/10 flex flex-col items-center gap-4">
-              <PackageOpen class="w-12 h-12 opacity-5" />
-              <p class="italic text-base">No orders found.</p>
+          <div v-if="localOrders.length === 0" class="py-16 md:py-20 text-center">
+            <div class="text-white/10 flex flex-col items-center gap-3 md:gap-4">
+              <PackageOpen class="w-10 h-10 md:w-12 md:h-12 opacity-5" />
+              <p class="italic text-sm md:text-base">No orders found.</p>
             </div>
           </div>
         </div>
@@ -168,52 +168,52 @@
     <!-- Details Modal -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-slate-950/80 " @click="closeModal"></div>
-      <GlassCard customClass="relative w-full max-w-2xl p-8 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
-          <h2 class="text-3xl font-black text-white tracking-tight">Order Details</h2>
-          <button @click="closeModal" class="text-white/40 hover:text-white transition-colors">
-            <X class="w-7 h-7" />
+      <GlassCard customClass="relative w-full max-w-2xl p-5 md:p-8 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-5 md:mb-8 border-b border-white/10 pb-4 md:pb-6">
+          <h2 class="text-xl md:text-3xl font-black text-white tracking-tight">Order Details</h2>
+          <button @click="closeModal" class="text-white/40 hover:text-white transition-colors active:scale-90">
+            <X class="w-5 h-5 md:w-7 md:h-7" />
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
-            <div class="text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-2">Customer</div>
-            <div class="text-xl font-bold text-white">{{ selectedOrder.customer_name || 'Walk-in Customer' }}</div>
-            <div class="text-sm text-white/40 font-medium mt-1">{{ formatDate(selectedOrder.created_at) }}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 mb-5 md:mb-8">
+          <div class="p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+            <div class="text-[0.6rem] md:text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-1 md:mb-2">Customer</div>
+            <div class="text-base md:text-xl font-bold text-white">{{ selectedOrder.customer_name || 'Walk-in Customer' }}</div>
+            <div class="text-xs text-white/40 font-medium mt-0.5 md:mt-1">{{ formatDate(selectedOrder.created_at) }}</div>
           </div>
-          <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
-            <div class="text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-2">Total Amount</div>
-            <div class="text-3xl font-black text-emerald-400">₱{{ formatNumber(selectedOrder.total_amount) }}</div>
+          <div class="p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+            <div class="text-[0.6rem] md:text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-1 md:mb-2">Total Amount</div>
+            <div class="text-2xl md:text-3xl font-black text-emerald-400">₱{{ formatNumber(selectedOrder.total_amount) }}</div>
           </div>
         </div>
 
-        <div v-if="selectedOrder.items && selectedOrder.items.length > 0" class="overflow-x-auto mb-8">
+        <div v-if="selectedOrder.items && selectedOrder.items.length > 0" class="overflow-x-auto mb-5 md:mb-8">
           <table class="w-full text-left">
             <thead>
-              <tr class="text-[0.65rem] font-black text-white/30 uppercase tracking-widest border-b border-white/5">
-                <th class="py-4">Product</th>
-                <th class="py-4 text-right">Price</th>
-                <th class="py-4 text-center">Qty</th>
-                <th class="py-4 text-right">Subtotal</th>
+              <tr class="text-[0.6rem] md:text-[0.65rem] font-black text-white/30 uppercase tracking-widest border-b border-white/5">
+                <th class="py-3 md:py-4">Product</th>
+                <th class="py-3 md:py-4 text-right">Price</th>
+                <th class="py-3 md:py-4 text-center">Qty</th>
+                <th class="py-3 md:py-4 text-right">Subtotal</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
               <tr v-for="item in selectedOrder.items" :key="item.id">
-                <td class="py-4 font-bold text-white">{{ item.product_name }}</td>
-                <td class="py-4 text-right text-white/60">₱{{ formatNumber(item.unit_price) }}</td>
-                <td class="py-4 text-center text-white/40">{{ item.quantity }} {{ item.unit }}</td>
-                <td class="py-4 text-right font-bold text-white">₱{{ formatNumber(item.subtotal) }}</td>
+                <td class="py-3 md:py-4 font-bold text-white text-sm">{{ item.product_name }}</td>
+                <td class="py-3 md:py-4 text-right text-white/60 text-sm">₱{{ formatNumber(item.unit_price) }}</td>
+                <td class="py-3 md:py-4 text-center text-white/40 text-sm">{{ item.quantity }} {{ item.unit }}</td>
+                <td class="py-3 md:py-4 text-right font-bold text-white text-sm">₱{{ formatNumber(item.subtotal) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div v-else class="py-12 text-center text-white/20 font-medium italic">
+        <div v-else class="py-8 md:py-12 text-center text-white/20 font-medium italic text-sm">
           No items found for this order.
         </div>
 
-        <div class="flex justify-end gap-3 pt-6 border-t border-white/10">
-          <button @click="closeModal" class="px-8 py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-white hover:bg-white/10 transition-all">
+        <div class="flex justify-end gap-2 md:gap-3 pt-4 md:pt-6 border-t border-white/10">
+          <button @click="closeModal" class="px-5 py-2 md:px-8 md:py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-white hover:bg-white/10 transition-all text-sm active:scale-95">
             Close
           </button>
         </div>

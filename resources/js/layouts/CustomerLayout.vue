@@ -57,40 +57,37 @@
       </div>
     </aside>
 
-    <!-- Mobile Bottom Navigation -->
-    <!-- PERF FIX: 'backdrop-blur-3xl' is extremely GPU-heavy. Replaced with a solid
-         background on mobile using inline style override. The blur is only kept on
-         desktop where the GPU can handle it. -->
-    <nav class="lg:hidden fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-6 right-6 h-20 bg-[#140f2d]/90 border border-white/10 rounded-[2.5rem] z-[100] flex items-center justify-around px-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]" style="-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);">
+    <!-- Mobile Bottom Navigation (compact for built-in nav phones) -->
+    <nav class="lg:hidden fixed bottom-[env(safe-area-inset-bottom,12px)] left-4 right-4 h-14 bg-[#140f2d]/90 border border-white/10 rounded-2xl z-[100] flex items-center justify-around px-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]" style="-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);">
       <Link 
         v-for="item in navItems" 
         :key="item.path" 
         :href="item.path"
-        class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
+        class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-xl transition-all duration-300"
         :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith(item.path) }"
       >
-        <component :is="item.icon" class="w-6 h-6" />
-        <span class="text-[0.65rem] font-black uppercase tracking-widest">{{ item.name }}</span>
+        <component :is="item.icon" class="w-5 h-5" />
+        <span class="text-[0.55rem] font-black uppercase tracking-widest">{{ item.name }}</span>
       </Link>
       
       <!-- Global Cart Trigger -->
-      <button @click="triggerOpenCart" class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl relative">
+      <button @click="triggerOpenCart" class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-xl relative">
         <div class="relative">
-          <ShoppingBag class="w-6 h-6" />
-          <div v-if="cartCount > 0" class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white w-4 h-4 rounded-full text-[0.6rem] font-black flex items-center justify-center border-2 border-[#140f2d]">
+          <ShoppingBag class="w-5 h-5" />
+          <div v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-rose-500 text-white w-3.5 h-3.5 rounded-full text-[0.5rem] font-black flex items-center justify-center border border-[#140f2d]">
             {{ cartCount }}
           </div>
         </div>
-        <span class="text-[0.65rem] font-black uppercase tracking-widest">Cart</span>
+        <span class="text-[0.55rem] font-black uppercase tracking-widest">Cart</span>
       </button>
 
       <Link 
         href="/customer/profile"
-        class="flex flex-col items-center justify-center gap-1.5 flex-1 h-full rounded-2xl transition-all duration-300"
+        class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-xl transition-all duration-300"
         :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith('/customer/profile') }"
       >
-        <User class="w-6 h-6" />
-        <span class="text-[0.65rem] font-black uppercase tracking-widest">Profile</span>
+        <User class="w-5 h-5" />
+        <span class="text-[0.55rem] font-black uppercase tracking-widest">Profile</span>
       </Link>
     </nav>
 
