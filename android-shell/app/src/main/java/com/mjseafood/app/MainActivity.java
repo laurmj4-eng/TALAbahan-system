@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
     private static final String SITE_URL = "https://talabahan-system-1.onrender.com";
     private static final String VERSION_URL = "https://talabahan-system-1.onrender.com/version.json";
     private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
+    private static final String DEEP_LINK_SCHEME = "talabahan://auth";
     private static final String[] EXTERNAL_HOSTS = {
         "accounts.google.com",
         "google.com",
@@ -62,9 +63,33 @@ public class MainActivity extends Activity {
         webView = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progress_bar);
         setupWebView();
-        webView.loadUrl(SITE_URL);
 
+        handleDeepLinkIntent(getIntent());
+
+        webView.loadUrl(SITE_URL);
         checkForUpdates();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleDeepLinkIntent(intent);
+    }
+
+    private void handleDeepLinkIntent(Intent intent) {
+        if (intent == null || intent.getData() == null) return;
+
+        Uri data = intent.getData();
+        if ("talabahan".equals(data.getScheme()) && "auth".equals(data.getHost())) {
+            String redirectTo = data.getQueryParameter("redirect");
+            if (redirectTo != null && !redirectTo.isEmpty()) {
+                webView.loadUrl(redirectTo);
+            } else {
+                webView.loadUrl(SITE_URL);
+            }
+            intent.setData(null);
+        }
     }
 
     private void checkForUpdates() {
@@ -233,7 +258,6 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
-        webView.reload();
         CookieManager.getInstance().flush();
     }
 
