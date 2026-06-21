@@ -7,22 +7,22 @@
           <p class="text-white/60 font-medium text-sm">Welcome, <strong class="text-violet-400">{{ username }}</strong>. Manage your purchases quickly.</p>
         </div>
         <div class="profile-actions flex flex-wrap gap-2">
-          <Link href="/customer/dashboard" class="btn-soft px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
-            <Store class="w-4 h-4 md:w-5 md:h-5 text-violet-400" />
+          <Link href="/customer/dashboard" class="btn-soft px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+            <Store class="w-4.5 h-4.5 md:w-5 md:h-5 text-violet-400" />
             <span>Back to Shop</span>
           </Link>
-          <Link href="/customer/orders" class="btn-soft px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
-            <ClipboardList class="w-4 h-4 md:w-5 md:h-5 text-violet-400" />
+          <Link href="/customer/orders" class="btn-soft px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+            <ClipboardList class="w-4.5 h-4.5 md:w-5 md:h-5 text-violet-400" />
             <span>View All Orders</span>
           </Link>
           <button @click="handleLogout" class="btn-soft px-4 py-2 md:px-6 md:py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl md:rounded-2xl font-bold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-2 text-sm active:scale-95">
-            <LogOut class="w-4 h-4 md:w-5 md:h-5" />
+            <LogOut class="w-4.5 h-4.5 md:w-5 md:h-5" />
             <span>Logout</span>
           </button>
         </div>
       </div>
 
-      <GlassCard customClass="p-4 md:p-8 border-white/10 shadow-2xl">
+      <GlassCard customClass="p-4 md:p-8 border-white/[0.08] shadow-2xl">
         <div class="purchases-header flex items-center justify-between mb-4 md:mb-8">
           <h3 class="text-lg md:text-2xl font-bold text-white flex items-center gap-2 md:gap-3">
             <ShoppingBag class="w-5 h-5 md:w-7 md:h-7 text-violet-400" />
@@ -36,9 +36,9 @@
             v-for="badge in badges" 
             :key="badge.tab"
             :href="'/customer/orders?tab=' + badge.tab"
-            class="group relative flex items-center justify-between p-3 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-3xl hover:bg-white/10 hover:border-violet-500/40 transition-all overflow-hidden active:scale-95"
+            class="group relative flex items-center justify-between p-3 md:p-6 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-3xl hover:bg-white/10 hover:border-violet-500/40 transition-all overflow-hidden active:scale-95"
           >
-            <span class="absolute top-2 right-2 md:top-3 md:right-3 px-2 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/10 rounded-full text-[0.5rem] md:text-[0.65rem] font-black uppercase tracking-widest text-white/60">{{ badge.pill }}</span>
+            <span class="absolute top-2 right-2 md:top-3 md:right-3 px-2 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/[0.08] rounded-full text-[0.5rem] md:text-[0.65rem] font-black uppercase tracking-widest text-white/60">{{ badge.pill }}</span>
             <div class="flex items-center gap-2 md:gap-4">
               <div class="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                 <component :is="badge.icon" class="w-4 h-4 md:w-6 md:h-6 text-violet-400" />

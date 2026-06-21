@@ -1,7 +1,7 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="relative bg-[#11131e]/90 border border-white/10 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+    <div class="relative bg-[#11131e]/90 border border-white/[0.08] rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
       <button
         @click="$emit('close')"
         class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"

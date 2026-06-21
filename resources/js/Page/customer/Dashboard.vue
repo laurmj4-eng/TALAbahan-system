@@ -3,7 +3,7 @@
     <div class="space-y-12 animate-fade-in">
       
       <!-- Enhanced Hero Banner (compact on mobile) -->
-      <section v-once class="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/10 p-6 md:p-20 group shadow-2xl md:">
+      <section v-once class="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] bg-gradient-to-br from-indigo-950/60 via-slate-900/40 to-transparent border border-white/[0.08] p-6 md:p-20 group shadow-2xl md:">
         <!-- Fish Watermark (Right Aligned, Low Opacity) -->
         <div class="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.08] rotate-12 group-hover:rotate-6 group-hover:scale-110 transition-all duration-1000 pointer-events-none">
           <Fish class="w-[20rem] h-[20rem] text-cyan-400" />
@@ -31,7 +31,7 @@
           </div>
           <div class="space-y-0.5 md:space-y-1">
             <h2 class="text-xl md:text-3xl font-black text-white tracking-tight">Available Seafood</h2>
-            <p class="text-white/40 text-[0.55rem] md:text-[0.65rem] font-black uppercase tracking-[0.2em]">Premium Selection • Fresh Daily</p>
+            <p class="text-white/40 text-[0.65rem] md:text-[0.65rem] font-black uppercase tracking-[0.2em]">Premium Selection • Fresh Daily</p>
           </div>
         </div>
       </header>
@@ -41,7 +41,7 @@
           <article 
             v-if="parseInt(product.is_available) === 1"
             v-memo="[product.id, buyingNow[product.id], addingToCart[product.id]]"
-            class="group relative flex flex-col bg-white/[0.04]  border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
+            class="group relative flex flex-col bg-white/[0.04]  border border-white/[0.08] rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-500 hover:bg-white/[0.08] hover:border-white/20 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]"
             :class="{ 'opacity-50 grayscale pointer-events-none': parseInt(product.is_available) !== 1 }"
           >
           <!-- Product Image Container -->
@@ -65,9 +65,9 @@
             </div>
 
             <!-- Floating Badge -->
-            <div class="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-1 sm:px-3 sm:py-1.5 bg-black/40  border border-white/10 rounded-full flex items-center gap-1 sm:gap-2">
+            <div class="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-1 sm:px-3 sm:py-1.5 bg-black/40  border border-white/[0.08] rounded-full flex items-center gap-1 sm:gap-2">
               <Star class="w-2.5 h-2.5 sm:w-3 h-3 text-amber-400 fill-amber-400" />
-              <span class="text-[0.55rem] sm:text-[0.65rem] font-black">{{ product.real_rating || '5.0' }}</span>
+              <span class="text-[0.65rem] sm:text-[0.65rem] font-black">{{ product.real_rating || '5.0' }}</span>
             </div>
           </div>
 
@@ -120,7 +120,7 @@
                 @pointerdown.prevent="addToCart(product)"
                 :disabled="addingToCart[product.id]"
                 class="w-full border font-black py-2 sm:py-3 rounded-lg sm:rounded-xl text-[0.6rem] sm:text-xs transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 group/cart touch-manipulation"
-                :class="addingToCart[product.id] ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/10 text-white/60 hover:bg-white hover:text-slate-950 hover:border-white'"
+                :class="addingToCart[product.id] ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/[0.08] text-white/60 hover:bg-white hover:text-slate-950 hover:border-white'"
               >
                 <CheckCircle v-if="addingToCart[product.id]" class="w-3 h-3 sm:w-3.5 h-3.5 text-emerald-400" />
                 <Plus v-else class="w-3 h-3 sm:w-3.5 h-3.5 transition-transform duration-300 group-hover/cart:rotate-90" />
@@ -150,7 +150,7 @@
     <!-- Checkout Modal -->
     <Teleport to="body">
       <div v-if="showCheckoutModal" class="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60  animate-fade-in p-0 sm:p-4 pointer-events-auto">
-      <div class="relative w-full max-w-2xl bg-[#0c0f22] sm:bg-[#161b33] border-t sm:border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh] transition-all duration-500">
+      <div class="relative w-full max-w-2xl bg-[#0c0f22] sm:bg-[#161b33] border-t sm:border border-white/[0.08] rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh] transition-all duration-500">
         <!-- Modal Header -->
         <div class="p-4 sm:p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-[#0c0f22] sm:bg-[#161b33] z-10">
           <div class="flex items-center gap-4">
@@ -163,7 +163,7 @@
                 <div class="flex gap-1">
                   <div v-for="step in 3" :key="step" class="w-3 h-0.5 sm:w-4 sm:h-1 rounded-full transition-all duration-500" :class="step <= currentStep ? 'bg-cyan-400' : 'bg-white/10'"></div>
                 </div>
-                <p class="text-[0.55rem] sm:text-[0.6rem] text-white/30 font-black uppercase tracking-[0.2em]">Step {{ currentStep }} of 3</p>
+                <p class="text-[0.65rem] sm:text-[0.6rem] text-white/30 font-black uppercase tracking-[0.2em]">Step {{ currentStep }} of 3</p>
               </div>
             </div>
           </div>
@@ -177,10 +177,10 @@
           <!-- Step 1: Cart Confirmation -->
           <div v-if="currentStep === 1" class="space-y-4 sm:space-y-8 animate-slide-in-right">
             <div class="space-y-2 sm:space-y-4">
-              <div v-for="item in cartItems" :key="item.id" class="p-3 sm:p-5 bg-white/[0.03] border border-white/5 rounded-[1.2rem] sm:rounded-[2rem] flex items-center gap-3 sm:gap-5 group transition-all duration-300 hover:bg-white/[0.05] hover:border-white/10">
+              <div v-for="item in cartItems" :key="item.id" class="p-3 sm:p-5 bg-white/[0.03] border border-white/5 rounded-[1.2rem] sm:rounded-[2rem] flex items-center gap-3 sm:gap-5 group transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.08]">
                 <div class="relative w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0">
-                  <img :src="getImageUrl(item.image)" class="w-full h-full rounded-lg sm:rounded-2xl object-cover border border-white/10 shadow-lg" />
-                  <div class="absolute -top-1 -right-1 w-5 h-5 sm:w-7 sm:h-7 bg-cyan-500 text-slate-950 rounded-full flex items-center justify-center text-[0.55rem] sm:text-[0.7rem] font-black border-2 border-[#0c0f22]">
+                  <img :src="getImageUrl(item.image)" class="w-full h-full rounded-lg sm:rounded-2xl object-cover border border-white/[0.08] shadow-lg" />
+                  <div class="absolute -top-1 -right-1 w-5 h-5 sm:w-7 sm:h-7 bg-cyan-500 text-slate-950 rounded-full flex items-center justify-center text-[0.65rem] sm:text-[0.7rem] font-black border-2 border-[#0c0f22]">
                     {{ item.quantity }}
                   </div>
                 </div>
@@ -192,7 +192,7 @@
                   </div>
 
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center bg-white/5 rounded-lg border border-white/10 p-0.5">
+                    <div class="flex items-center bg-white/5 rounded-lg border border-white/[0.08] p-0.5">
                       <button @click="updateQty(item.id, -1)" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-all">
                         <Minus class="w-3 sm:w-4 h-3 sm:h-4" />
                       </button>
@@ -211,32 +211,32 @@
             </div>
 
             <!-- Order Summary Card -->
-            <div class="p-4 sm:p-8 bg-white/[0.03] border border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] space-y-3 sm:space-y-5 relative overflow-hidden group">
+            <div class="p-4 sm:p-8 bg-white/[0.03] border border-white/[0.08] rounded-[1.5rem] sm:rounded-[2.5rem] space-y-3 sm:space-y-5 relative overflow-hidden group">
               <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-3xl pointer-events-none"></div>
               
               <div class="space-y-2 sm:space-y-4">
-                <div class="flex justify-between items-center text-[0.55rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
+                <div class="flex justify-between items-center text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
                   <span>Items Subtotal</span>
                   <span class="text-white">₱{{ formatNumber(cartSubtotal) }}</span>
                 </div>
-                <div class="flex justify-between items-center text-[0.55rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
+                <div class="flex justify-between items-center text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
                   <span>Estimated Delivery</span>
                   <span class="text-white">₱{{ formatNumber(quote?.shipping_fee || 0) }}</span>
                 </div>
-                <div v-if="quote?.voucher_discount > 0" class="flex justify-between items-center text-[0.55rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-amber-400">
+                <div v-if="quote?.voucher_discount > 0" class="flex justify-between items-center text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-amber-400">
                   <span>Voucher applied</span>
                   <span>-₱{{ formatNumber(quote.voucher_discount) }}</span>
                 </div>
               </div>
               
-              <div class="pt-3 sm:pt-5 border-t border-white/10 flex justify-between items-center">
+              <div class="pt-3 sm:pt-5 border-t border-white/[0.08] flex justify-between items-center">
                 <div class="space-y-0.5">
-                  <span class="text-[0.55rem] sm:text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/20">Grand Total</span>
+                  <span class="text-[0.65rem] sm:text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/20">Grand Total</span>
                   <div class="text-xl sm:text-3xl font-black text-cyan-400 tracking-tighter drop-shadow-sm">
                     ₱{{ formatNumber(quote?.final_total || cartSubtotal) }}
                   </div>
                 </div>
-                <div class="hidden xs:block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/5 border border-white/10 rounded-full text-[0.5rem] sm:text-[0.6rem] font-black text-white/40 uppercase tracking-widest">
+                <div class="hidden xs:block px-3 py-1.5 sm:px-4 sm:py-2 bg-white/5 border border-white/[0.08] rounded-full text-[0.5rem] sm:text-[0.6rem] font-black text-white/40 uppercase tracking-widest">
                   Secure Checkout
                 </div>
               </div>
@@ -262,14 +262,14 @@
               <div class="group space-y-2">
                 <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4 group-focus-within:text-cyan-400 transition-colors">Receiver Name</label>
                 <div class="relative">
-                  <input v-model="deliveryDetails.name" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="Full name">
+                  <input v-model="deliveryDetails.name" type="text" class="w-full bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="Full name">
                 </div>
               </div>
               <div class="group space-y-2">
                 <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4 group-focus-within:text-cyan-400 transition-colors">Contact Number</label>
                 <div class="relative flex gap-2">
                   <div class="relative flex-1">
-                    <input v-model="deliveryDetails.phone" :readonly="isPhoneVerified" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="09XXXXXXXXX">
+                    <input v-model="deliveryDetails.phone" :readonly="isPhoneVerified" type="text" class="w-full bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all placeholder:text-white/10" placeholder="09XXXXXXXXX">
                     <div v-if="isPhoneVerified" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400">
                       <CheckCircle class="w-5 h-5" />
                     </div>
@@ -291,13 +291,13 @@
                  <p v-if="phoneError && !showOtpInput" class="text-[0.65rem] font-bold text-rose-400 mt-2 ml-1">{{ phoneError }}</p>
 
                  <!-- OTP Verification Section (Inline) -->
-                 <div v-if="showOtpInput && !isPhoneVerified" class="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 animate-slide-in-right">
+                 <div v-if="showOtpInput && !isPhoneVerified" class="mt-4 p-4 bg-white/5 border border-white/[0.08] rounded-xl space-y-3 animate-slide-in-right">
                    <div class="flex items-center gap-2 mb-1">
                      <Zap class="w-3 h-3 text-cyan-400" />
                      <span class="text-[0.6rem] font-black text-white uppercase tracking-wider">Enter 6-Digit Code</span>
                    </div>
                    <div class="flex gap-2">
-                      <input v-model="otpCode" type="text" maxlength="6" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-cyan-500/50 outline-none text-center tracking-[0.3em]" placeholder="000000">
+                      <input v-model="otpCode" type="text" maxlength="6" class="flex-1 bg-white/5 border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-bold focus:border-cyan-500/50 outline-none text-center tracking-[0.3em]" placeholder="000000">
                       <button 
                         @click="verifyOtpCode" 
                         :disabled="isVerifyingCode || !otpCode"
@@ -307,7 +307,7 @@
                         <span v-else>Verify</span>
                       </button>
                     </div>
-                   <p v-if="phoneError" class="text-[0.55rem] font-bold text-rose-400">{{ phoneError }}</p>
+                   <p v-if="phoneError" class="text-[0.65rem] font-bold text-rose-400">{{ phoneError }}</p>
                  </div>
                </div>
              </div>
@@ -317,19 +317,19 @@
              <!-- Auto-detection Section -->
             <div v-if="ship_to_all !== '1'" class="space-y-4 sm:space-y-6">
               <!-- Interactive Map Container -->
-              <div class="relative w-full h-48 sm:h-64 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 group">
+              <div class="relative w-full h-48 sm:h-64 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-white/[0.08] bg-black/20 group">
                 <div id="checkout-map" class="w-full h-full z-0"></div>
                 <div v-if="!isMapInitialized" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40  z-10 pointer-events-none transition-opacity duration-500">
                   <MapPin class="w-8 h-8 sm:w-10 sm:h-10 text-white/20 mb-2" />
                   <p class="text-[0.65rem] sm:text-xs font-black text-white/40 uppercase tracking-widest">Map awaiting location...</p>
                 </div>
                 <!-- GPS Coordinates Overlay -->
-                <div v-if="coords" class="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60  rounded-lg border border-white/10 pointer-events-none">
+                <div v-if="coords" class="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60  rounded-lg border border-white/[0.08] pointer-events-none">
                   <p class="text-[0.5rem] font-black text-cyan-400/80 tracking-widest">{{ coords.lat.toFixed(4) }}, {{ coords.lng.toFixed(4) }}</p>
                 </div>
               </div>
 
-              <button @click="getLocation" :disabled="isDetectingLocation" class="w-full py-4 sm:py-5 bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50 group border-dashed hover:border-solid hover:border-cyan-500/30">
+              <button @click="getLocation" :disabled="isDetectingLocation" class="w-full py-4 sm:py-5 bg-white/5 border border-white/[0.08] rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-[0.98] disabled:opacity-50 group border-dashed hover:border-solid hover:border-cyan-500/30">
                 <Loader2 v-if="isDetectingLocation" class="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-cyan-400" />
                 <MapPin v-else class="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 group-hover:animate-bounce" />
                 <span class="text-sm sm:text-base font-black tracking-tight">{{ isDetectingLocation ? 'Detecting...' : 'Detect Current Location' }}</span>
@@ -350,16 +350,16 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div class="group space-y-2">
                   <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4">Province / City</label>
-                  <input v-model="deliveryDetails.city" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all" placeholder="City">
+                  <input v-model="deliveryDetails.city" type="text" class="w-full bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all" placeholder="City">
                 </div>
                 <div class="group space-y-2">
                   <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4">Barangay</label>
-                  <input v-model="deliveryDetails.barangay" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all" placeholder="Barangay">
+                  <input v-model="deliveryDetails.barangay" type="text" class="w-full bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all" placeholder="Barangay">
                 </div>
               </div>
               <div class="group space-y-2">
                 <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4">Exact Street / Landmarks</label>
-                <textarea v-model="deliveryDetails.street" rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all resize-none" placeholder="House #, Street name, Near Landmark..."></textarea>
+                <textarea v-model="deliveryDetails.street" rows="2" class="w-full bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold focus:bg-white/[0.08] focus:border-cyan-500/50 outline-none transition-all resize-none" placeholder="House #, Street name, Near Landmark..."></textarea>
               </div>
             </div>
           </div>
@@ -373,7 +373,7 @@
                 <button 
                   @click="paymentMethod = 'COD'"
                   class="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border transition-all duration-500 flex flex-col items-center gap-3 sm:gap-4 text-center group relative overflow-hidden"
-                  :class="paymentMethod === 'COD' ? 'bg-cyan-500/10 border-cyan-500 shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/10'"
+                  :class="paymentMethod === 'COD' ? 'bg-cyan-500/10 border-cyan-500 shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/[0.08]'"
                 >
                   <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[1.5rem] flex items-center justify-center border transition-all duration-500" :class="paymentMethod === 'COD' ? 'bg-cyan-500 text-slate-950 border-cyan-400 scale-110 shadow-lg' : 'bg-white/5 text-white/20 border-white/5'">
                     <CreditCard class="w-5 h-5 sm:w-8 sm:h-8" />
@@ -387,7 +387,7 @@
                 <button 
                   @click="paymentMethod = 'GCASH'"
                   class="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border transition-all duration-500 flex flex-col items-center gap-3 sm:gap-4 text-center group relative overflow-hidden"
-                  :class="paymentMethod === 'GCASH' ? 'bg-blue-600/10 border-blue-500 shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/10'"
+                  :class="paymentMethod === 'GCASH' ? 'bg-blue-600/10 border-blue-500 shadow-xl' : 'bg-white/5 border-white/5 hover:border-white/[0.08]'"
                 >
                   <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-[1.5rem] flex items-center justify-center border transition-all duration-500" :class="paymentMethod === 'GCASH' ? 'bg-blue-600 text-white border-blue-400 scale-110 shadow-lg' : 'bg-white/5 text-white/20 border-white/5'">
                     <Zap class="w-5 h-5 sm:w-8 sm:h-8 fill-current" />
@@ -403,7 +403,7 @@
             <div class="group space-y-2">
               <label class="text-[0.6rem] font-black uppercase tracking-widest text-white/30 ml-4 group-focus-within:text-cyan-400 transition-colors">Voucher Code (Optional)</label>
               <div class="flex gap-2 sm:gap-3">
-                <input v-model="voucherCode" type="text" class="flex-1 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold outline-none transition-all placeholder:text-white/10" placeholder="CODE">
+                <input v-model="voucherCode" type="text" class="flex-1 bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-2xl px-5 py-3.5 sm:px-6 sm:py-4 text-xs sm:text-sm font-bold outline-none transition-all placeholder:text-white/10" placeholder="CODE">
                 <button @click="fetchQuote" :disabled="isFetchingQuote" class="px-5 sm:px-8 bg-white text-slate-950 font-black rounded-xl sm:rounded-2xl text-[0.65rem] sm:text-xs hover:bg-cyan-100 transition-all active:scale-95 disabled:opacity-50">
                   <Loader2 v-if="isFetchingQuote" class="w-3.5 h-3.5 animate-spin" />
                   <span v-else>Apply</span>
@@ -412,23 +412,23 @@
             </div>
 
             <!-- Order Confirmation Summary -->
-            <div class="p-6 sm:p-8 bg-white/[0.03] border border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] space-y-4 sm:space-y-5 relative overflow-hidden group">
+            <div class="p-6 sm:p-8 bg-white/[0.03] border border-white/[0.08] rounded-[1.5rem] sm:rounded-[2.5rem] space-y-4 sm:space-y-5 relative overflow-hidden group">
               <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 blur-3xl pointer-events-none"></div>
               
               <div class="space-y-3 sm:space-y-4">
-                <div class="flex justify-between items-center text-[0.55rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
+                <div class="flex justify-between items-center text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
                   <span>Subtotal</span>
                   <span class="text-white">₱{{ formatNumber(quote?.subtotal || cartSubtotal) }}</span>
                 </div>
-                <div class="flex justify-between items-center text-[0.55rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
+                <div class="flex justify-between items-center text-[0.65rem] sm:text-[0.7rem] font-black uppercase tracking-[0.15em] text-white/30">
                   <span>Shipping</span>
                   <span class="text-white">₱{{ formatNumber(quote?.shipping_fee || 0) }}</span>
                 </div>
               </div>
               
-              <div class="pt-4 sm:pt-5 border-t border-white/10 flex justify-between items-center">
+              <div class="pt-4 sm:pt-5 border-t border-white/[0.08] flex justify-between items-center">
                 <div class="space-y-0.5">
-                  <span class="text-[0.55rem] sm:text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/20">Grand Total</span>
+                  <span class="text-[0.65rem] sm:text-[0.65rem] font-black uppercase tracking-[0.2em] text-white/20">Grand Total</span>
                   <div class="text-2xl sm:text-4xl font-black text-[#00ff88] tracking-tighter drop-shadow-[0_0_15px_rgba(0,255,136,0.2)]">
                     ₱{{ formatNumber(quote?.final_total || cartSubtotal) }}
                   </div>
@@ -443,14 +443,14 @@
           <button 
             v-if="currentStep === 1"
             @click="closeCheckoutModal"
-            class="w-14 sm:w-28 py-3 sm:py-5 bg-rose-500/10 border border-rose-500/20 rounded-xl sm:rounded-[1.5rem] text-rose-500 font-black text-[0.55rem] sm:text-xs uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95"
+            class="w-14 sm:w-28 py-3 sm:py-5 bg-rose-500/10 border border-rose-500/20 rounded-xl sm:rounded-[1.5rem] text-rose-500 font-black text-[0.65rem] sm:text-xs uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button 
             v-else
             @click="prevStep" 
-            class="w-14 sm:w-28 py-3 sm:py-5 bg-white/5 border border-white/10 rounded-xl sm:rounded-[1.5rem] text-white/40 font-black text-[0.55rem] sm:text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            class="w-14 sm:w-28 py-3 sm:py-5 bg-white/5 border border-white/[0.08] rounded-xl sm:rounded-[1.5rem] text-white/40 font-black text-[0.65rem] sm:text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95"
           >
             Back
           </button>
@@ -471,7 +471,7 @@
 
     <!-- GCash Mock UI -->
     <div v-if="showGcashMock" class="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/90  p-6 animate-fade-in">
-      <div class="w-full max-w-md bg-blue-600 rounded-[3rem] p-10 text-center space-y-10 shadow-[0_0_100px_rgba(37,99,235,0.2)] border border-white/10 relative overflow-hidden group">
+      <div class="w-full max-w-md bg-blue-600 rounded-[3rem] p-10 text-center space-y-10 shadow-[0_0_100px_rgba(37,99,235,0.2)] border border-white/[0.08] relative overflow-hidden group">
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-white/10 blur-3xl rounded-full pointer-events-none"></div>
         
         <div class="space-y-3 relative z-10">

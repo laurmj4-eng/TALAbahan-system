@@ -6,16 +6,16 @@
           <h1 class="text-2xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white to-emerald-400 bg-clip-text text-transparent">💰 Sales History</h1>
           <p class="text-white/50 font-medium mt-1 text-sm">Track daily revenue and historical transaction data.</p>
         </div>
-        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
-          <ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
+        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+          <ChevronLeft class="w-4.5 h-4.5 md:w-5 md:h-5" />
           <span>Dashboard</span>
         </Link>
       </div>
 
       <!-- Stats Grid -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-        <GlassCard v-for="stat in stats" :key="stat.label" customClass="p-4 md:p-8 border-white/10 flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
-          <div class="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
+        <GlassCard v-for="stat in stats" :key="stat.label" customClass="p-4 md:p-8 border-white/[0.08] flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
+          <div class="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
             <component :is="stat.icon" class="w-5 h-5 md:w-7 md:h-7" :class="stat.iconColor" />
           </div>
           <div class="text-[0.5rem] md:text-[0.65rem] font-black text-white/40 uppercase tracking-[0.2em] mb-0.5 md:mb-1">{{ stat.label }}</div>
@@ -23,7 +23,7 @@
         </GlassCard>
       </div>
 
-      <GlassCard customClass="overflow-hidden border-white/10">
+      <GlassCard customClass="overflow-hidden border-white/[0.08]">
         <div class="overflow-x-auto">
           <table class="w-full text-left">
             <thead>
@@ -56,8 +56,8 @@
                     <span class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white/40 group-hover/items:bg-indigo-500/20 group-hover/items:text-indigo-300 transition-colors">
                       {{ sale.items_summary.split(',').length }} Items
                     </span>
-                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50 text-left">
-                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/10 pb-1 italic">Purchased Items</p>
+                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50 text-left">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/[0.08] pb-1 italic">Purchased Items</p>
                       <ul class="space-y-1">
                         <li v-for="(item, idx) in sale.items_summary.split(',')" :key="idx" class="text-xs text-white/70 flex items-start gap-2">
                           <span class="text-indigo-400">•</span> {{ item.trim() }}

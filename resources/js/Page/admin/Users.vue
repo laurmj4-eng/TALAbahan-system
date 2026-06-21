@@ -20,7 +20,7 @@
               type="text" 
               placeholder="Username..." 
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -30,7 +30,7 @@
               type="email" 
               placeholder="Email address..." 
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -40,7 +40,7 @@
               type="password" 
               placeholder="••••••••" 
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -48,7 +48,7 @@
             <select 
               v-model="addForm.role"
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors appearance-none"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors appearance-none"
             >
               <option value="admin" class="bg-slate-900">Admin</option>
               <option value="staff" class="bg-slate-900">Staff</option>
@@ -78,7 +78,7 @@
               <col class="w-[80px] md:w-[100px]">
             </colgroup>
             <thead class="sticky top-0 z-10 bg-[#0f172a]">
-              <tr class="bg-white/5 border-b border-white/10">
+              <tr class="bg-white/5 border-b border-white/[0.08]">
                 <th class="px-3 md:px-6 py-4 text-[0.65rem] font-black text-white/40 uppercase tracking-widest">ID</th>
                 <th class="px-3 md:px-6 py-4 text-[0.65rem] font-black text-white/40 uppercase tracking-widest">EMAIL</th>
                 <th class="px-3 md:px-6 py-4 text-[0.65rem] font-black text-white/40 uppercase tracking-widest">ROLE</th>
@@ -95,7 +95,7 @@
                 </td>
                 <td class="px-3 md:px-6 py-4 md:py-5">
                   <span 
-                    class="px-2 md:px-3 py-1 rounded-full text-[0.55rem] md:text-[10px] font-black tracking-widest uppercase whitespace-nowrap"
+                    class="px-2 md:px-3 py-1 rounded-full text-[0.65rem] md:text-[10px] font-black tracking-widest uppercase whitespace-nowrap"
                     :class="getRoleClass(user.role)"
                   >
                     {{ user.role }}
@@ -139,7 +139,7 @@
               v-model="editForm.username" 
               type="text" 
               required
-              class="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3.5 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -148,7 +148,7 @@
               v-model="editForm.email" 
               type="email" 
               required
-              class="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3.5 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -157,7 +157,7 @@
               v-model="editForm.password" 
               type="password" 
               placeholder="Leave blank to keep current"
-              class="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3.5 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-1.5">
@@ -165,7 +165,7 @@
             <select 
               v-model="editForm.role"
               required
-              class="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors appearance-none"
+              class="w-full px-4 py-3.5 bg-white/5 border border-white/[0.08] rounded-xl text-white text-[16px] focus:outline-none focus:border-indigo-500/50 transition-colors appearance-none"
             >
               <option value="admin" class="bg-slate-900">Administrator</option>
               <option value="staff" class="bg-slate-900">Staff Command</option>

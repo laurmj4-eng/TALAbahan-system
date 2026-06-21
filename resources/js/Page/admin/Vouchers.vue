@@ -16,7 +16,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-white/5 border-b border-white/10">
+              <tr class="bg-white/5 border-b border-white/[0.08]">
                 <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">CODE</th>
                 <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">NAME</th>
                 <th class="px-6 py-4 font-semibold text-white/70 text-xs sm:text-sm">SCOPE</th>
@@ -63,7 +63,7 @@
                 <td class="px-6 py-4 text-right">
                   <button 
                     @click="toggleVoucher(voucher)"
-                    class="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black tracking-widest uppercase hover:bg-white hover:text-black transition-all"
+                    class="px-4 py-1.5 bg-white/5 border border-white/[0.08] rounded-xl text-[10px] font-black tracking-widest uppercase hover:bg-white hover:text-black transition-all"
                   >
                     {{ parseInt(voucher.is_active) === 1 ? 'Deactivate' : 'Activate' }}
                   </button>
@@ -120,7 +120,7 @@
               </div>
               <button 
                 @click="toggleVoucher(voucher)"
-                class="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all"
+                class="px-4 py-2 bg-white/5 border border-white/[0.08] rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all"
               >
                 {{ parseInt(voucher.is_active) === 1 ? 'Deactivate' : 'Activate' }}
               </button>
@@ -146,41 +146,41 @@
         <form @submit.prevent="saveVoucher" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Code</label>
-            <input v-model="form.code" type="text" placeholder="PLAT40" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <input v-model="form.code" type="text" placeholder="PLAT40" required class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Name</label>
-            <input v-model="form.name" type="text" placeholder="Platform 40 Off" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <input v-model="form.name" type="text" placeholder="Platform 40 Off" required class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Scope</label>
-            <select v-model="form.scope" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <select v-model="form.scope" required class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
               <option value="platform">Platform</option>
               <option value="shop">Shop</option>
             </select>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Discount Type</label>
-            <select v-model="form.discount_type" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <select v-model="form.discount_type" required class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
               <option value="fixed">Fixed</option>
               <option value="percent">Percent</option>
             </select>
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Discount Value</label>
-            <input v-model="form.discount_value" type="number" min="0.01" step="0.01" required class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <input v-model="form.discount_value" type="number" min="0.01" step="0.01" required class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Max Discount (Optional)</label>
-            <input v-model="form.max_discount" type="number" min="0" step="0.01" placeholder="120" class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <input v-model="form.max_discount" type="number" min="0" step="0.01" placeholder="120" class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Min Order Amount</label>
-            <input v-model="form.min_order_amount" type="number" min="0" step="0.01" class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <input v-model="form.min_order_amount" type="number" min="0" step="0.01" class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
           </div>
           <div class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Payment Limit (Optional)</label>
-            <select v-model="form.payment_method_limit" class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+            <select v-model="form.payment_method_limit" class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
               <option value="">Any</option>
               <option value="COD">COD only</option>
               <option value="GCASH">GCash only</option>

@@ -19,7 +19,7 @@
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
               <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
-                <tr class="bg-white/[0.03] border-b border-white/10">
+                <tr class="bg-white/[0.03] border-b border-white/[0.08]">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Order Info</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Customer</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Payment</th>
@@ -98,10 +98,10 @@
                         <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
                         {{ getNextAction(order.status).label }}
                       </button>
-                      <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="Update Tracking">
+                      <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="Update Tracking">
                         <Truck class="w-4 h-4 text-white/40 group-hover/btn:text-black" />
                       </button>
-                      <button @click="viewOrderDetails(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="View Items">
+                      <button @click="viewOrderDetails(order)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="View Items">
                         <ReceiptText class="w-4 h-4 text-white/40 group-hover/btn:text-black" />
                       </button>
                     </div>
@@ -137,7 +137,7 @@
               </span>
             </div>
 
-            <div class="p-4 bg-white/[0.02] rounded-xl border border-white/10 space-y-2">
+            <div class="p-4 bg-white/[0.02] rounded-xl border border-white/[0.08] space-y-2">
               <div class="text-xs text-white/40 font-bold uppercase tracking-widest">Tracking Info</div>
               <div class="flex flex-col gap-1">
                 <span class="text-sm text-white/70">{{ order.courier_name || 'No courier' }}</span>
@@ -190,10 +190,10 @@
                   </button>
                 </div>
                 <div class="flex gap-2">
-                  <button @click="editTracking(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                  <button @click="editTracking(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
                     <Truck class="w-4 h-4 text-white/60" />
                   </button>
-                  <button @click="viewOrderDetails(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                  <button @click="viewOrderDetails(order)" class="flex-1 p-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
                     <ReceiptText class="w-4 h-4 text-white/60" />
                   </button>
                 </div>
@@ -215,7 +215,7 @@
     <Teleport to="body">
       <div v-if="showDamageModal" class="!z-[999999] fixed inset-0 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60 " @click="showDamageModal = false"></div>
-        <div class="bg-[#11131e]/95 border border-white/10 p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
+        <div class="bg-[#11131e]/95 border border-white/[0.08] p-5 sm:p-6 rounded-xl shadow-2xl w-full max-w-[92%] sm:max-w-md text-white relative">
           <button
             @click="showDamageModal = false"
             class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"

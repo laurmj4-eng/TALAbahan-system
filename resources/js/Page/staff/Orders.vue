@@ -10,8 +10,8 @@
           </h1>
           <p class="text-white/50 font-medium text-xs md:text-base">Manage and process your fresh seafood deliveries.</p>
         </div>
-        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
-          <ChevronLeft class="w-4 h-4 md:w-5 md:h-5" />
+        <Link href="/staff/dashboard" class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2 text-sm active:scale-95">
+          <ChevronLeft class="w-4.5 h-4.5 md:w-5 md:h-5" />
           <span>Dashboard</span>
         </Link>
       </div>
@@ -23,7 +23,7 @@
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
               <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
-                <tr class="bg-white/[0.03] border-b border-white/10">
+                <tr class="bg-white/[0.03] border-b border-white/[0.08]">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Order Info</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Customer</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Payment</th>
@@ -79,10 +79,10 @@
                         <component :is="getNextAction(order.status).icon" class="w-4 h-4" />
                         {{ getNextAction(order.status).label }}
                       </button>
-                      <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="Update Tracking">
+                      <button @click="editTracking(order)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="Update Tracking">
                         <Truck class="w-4 h-4 text-white/40 group-hover/btn:text-black" />
                       </button>
-                      <button @click="viewDetails(order)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="View Items">
+                      <button @click="viewDetails(order)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-white hover:text-black transition-all group/btn shadow-md" title="View Items">
                         <ReceiptText class="w-4 h-4 text-white/40 group-hover/btn:text-black" />
                       </button>
                     </div>
@@ -95,7 +95,7 @@
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
         <div class="md:hidden space-y-3 pb-4">
-          <div v-for="order in localOrders" :key="order.id" class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+          <div v-for="order in localOrders" :key="order.id" class="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3">
             <div class="flex justify-between items-start">
               <div>
                 <div class="font-mono bg-black text-white px-2 py-1 rounded-lg border border-white/20 text-[10px] font-bold inline-block mb-1 shadow-lg">
@@ -145,10 +145,10 @@
                   <component :is="getNextAction(order.status).icon" class="w-3.5 h-3.5 md:w-4 md:h-4" />
                   {{ getNextAction(order.status).label }}
                 </button>
-                <button @click="editTracking(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                <button @click="editTracking(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
                   <Truck class="w-4 h-4 text-white/60" />
                 </button>
-                <button @click="viewDetails(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/10 rounded-xl active:scale-95 transition-all">
+                <button @click="viewDetails(order)" class="p-2.5 md:p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl active:scale-95 transition-all">
                   <ReceiptText class="w-4 h-4 text-white/60" />
                 </button>
               </div>
@@ -169,7 +169,7 @@
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-slate-950/80 " @click="closeModal"></div>
       <GlassCard customClass="relative w-full max-w-2xl p-5 md:p-8 border-white/20 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <div class="flex justify-between items-center mb-5 md:mb-8 border-b border-white/10 pb-4 md:pb-6">
+        <div class="flex justify-between items-center mb-5 md:mb-8 border-b border-white/[0.08] pb-4 md:pb-6">
           <h2 class="text-xl md:text-3xl font-black text-white tracking-tight">Order Details</h2>
           <button @click="closeModal" class="text-white/40 hover:text-white transition-colors active:scale-90">
             <X class="w-5 h-5 md:w-7 md:h-7" />
@@ -177,12 +177,12 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 mb-5 md:mb-8">
-          <div class="p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+          <div class="p-5 md:p-6 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl">
             <div class="text-[0.6rem] md:text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-1 md:mb-2">Customer</div>
             <div class="text-base md:text-xl font-bold text-white">{{ selectedOrder.customer_name || 'Walk-in Customer' }}</div>
             <div class="text-xs text-white/40 font-medium mt-0.5 md:mt-1">{{ formatDate(selectedOrder.created_at) }}</div>
           </div>
-          <div class="p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+          <div class="p-5 md:p-6 bg-white/5 border border-white/[0.08] rounded-xl md:rounded-2xl">
             <div class="text-[0.6rem] md:text-[0.65rem] font-black text-white/40 uppercase tracking-widest mb-1 md:mb-2">Total Amount</div>
             <div class="text-2xl md:text-3xl font-black text-emerald-400">₱{{ formatNumber(selectedOrder.total_amount) }}</div>
           </div>
@@ -212,8 +212,8 @@
           No items found for this order.
         </div>
 
-        <div class="flex justify-end gap-2 md:gap-3 pt-4 md:pt-6 border-t border-white/10">
-          <button @click="closeModal" class="px-5 py-2 md:px-8 md:py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-white hover:bg-white/10 transition-all text-sm active:scale-95">
+        <div class="flex justify-end gap-2 md:gap-3 pt-4 md:pt-6 border-t border-white/[0.08]">
+          <button @click="closeModal" class="px-5 py-2 md:px-8 md:py-3 bg-white/5 border border-white/[0.08] rounded-xl font-bold text-white hover:bg-white/10 transition-all text-sm active:scale-95">
             Close
           </button>
         </div>

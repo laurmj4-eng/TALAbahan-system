@@ -10,18 +10,18 @@
           <p class="text-white/50 font-medium text-xs md:text-base">Add, modify, or toggle visibility of seafood products.</p>
         </div>
         <button @click="openAddModal" class="w-full md:w-auto px-5 py-2.5 md:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl md:rounded-2xl font-bold shadow-lg shadow-violet-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm md:text-base">
-          <Plus class="w-4 h-4 md:w-5 md:h-5" />
+          <Plus class="w-4.5 h-4.5 md:w-5 md:h-5" />
           <span>Add Product</span>
         </button>
       </div>
 
       <!-- Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 ">
+        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/[0.08] ">
           <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Live Items</div>
           <div class="text-3xl font-black text-emerald-400">{{ liveItemsCount }}</div>
         </div>
-        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/10 ">
+        <div class="p-6 rounded-[24px] bg-white/[0.03] border border-white/[0.08] ">
           <div class="text-white/40 text-[0.7rem] font-black uppercase tracking-widest mb-1">Total Products</div>
           <div class="text-3xl font-black text-sky-400">{{ products.length }}</div>
         </div>
@@ -33,7 +33,7 @@
           <!-- Desktop Table (Hidden on Mobile) -->
           <table class="hidden md:table w-full text-left border-collapse">
             <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
-              <tr class="bg-white/[0.02] border-b border-white/10">
+              <tr class="bg-white/[0.02] border-b border-white/[0.08]">
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Node</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</th>
                 <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Price Point</th>
@@ -45,7 +45,7 @@
               <tr v-for="product in products" :key="product.id" class="hover:bg-white/[0.02] transition-colors group animate-slide-in-right">
                 <td class="px-8 py-6">
                   <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex items-center justify-center p-1 group-hover:border-violet-500/30 transition-colors">
+                    <div class="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/[0.08] overflow-hidden flex items-center justify-center p-1 group-hover:border-violet-500/30 transition-colors">
                       <img 
                         v-if="product.image" 
                         :src="getImageUrl(product.image)" 
@@ -83,10 +83,10 @@
                 </td>
                 <td class="px-8 py-6 text-right">
                   <div class="flex justify-end gap-3 transition-opacity">
-                    <button @click="openEditModal(product)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-violet-500/20 hover:border-violet-500/40 hover:text-violet-400 transition-all">
+                    <button @click="openEditModal(product)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-violet-500/20 hover:border-violet-500/40 hover:text-violet-400 transition-all">
                       <Edit2 class="w-4 h-4" />
                     </button>
-                    <button @click="deleteProduct(product.id)" class="p-3 bg-white/[0.05] border border-white/10 rounded-xl hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-400 transition-all">
+                    <button @click="deleteProduct(product.id)" class="p-3 bg-white/[0.05] border border-white/[0.08] rounded-xl hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-400 transition-all">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -107,7 +107,7 @@
           <div class="md:hidden divide-y divide-white/[0.05]">
             <div v-for="product in products" :key="product.id" class="p-4 space-y-4">
               <div class="flex gap-4">
-                <div class="w-16 h-16 rounded-2xl bg-white/[0.05] border border-white/10 overflow-hidden flex-shrink-0">
+                <div class="w-16 h-16 rounded-2xl bg-white/[0.05] border border-white/[0.08] overflow-hidden flex-shrink-0">
                   <img v-if="product.image" :src="getImageUrl(product.image)" class="w-full h-full object-cover">
                   <div v-else class="w-full h-full flex items-center justify-center text-2xl opacity-20">🐟</div>
                 </div>
@@ -125,13 +125,13 @@
                     <span class="font-bold text-white text-xs">{{ product.unit || 'kg' }}</span>
                   </div>
                 </div>
-                <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/10" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
+                <button @click="toggleStatus(product)" class="px-3 py-1 rounded-full text-[0.6rem] font-black text-white uppercase tracking-widest border border-white/[0.08]" :class="parseInt(product.is_available) === 1 ? 'bg-emerald-500/80' : 'bg-rose-500/80'">
                   {{ parseInt(product.is_available) === 1 ? 'LIVE' : 'HIDDEN' }}
                 </button>
               </div>
 
               <div class="flex gap-2">
-                <button @click="openEditModal(product)" class="flex-1 flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.05] border border-white/10 rounded-xl text-xs font-bold text-white/70 active:scale-95 transition-all">
+                <button @click="openEditModal(product)" class="flex-1 flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-xs font-bold text-white/70 active:scale-95 transition-all">
                   <Edit2 class="w-3.5 h-3.5" /> Edit
                 </button>
                 <button @click="deleteProduct(product.id)" class="flex-1 flex items-center justify-center gap-1.5 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-bold text-rose-400 active:scale-95 transition-all">
@@ -157,23 +157,23 @@
           <form @submit.prevent="saveProduct" class="space-y-6">
             <div class="space-y-2">
               <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Name</label>
-              <input v-model="form.name" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="e.g. Bangus Large" required />
+              <input v-model="form.name" type="text" class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="e.g. Bangus Large" required />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
                 <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Cost Price (₱)</label>
-                <input v-model="form.cost_price" type="number" step="0.01" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
+                <input v-model="form.cost_price" type="number" step="0.01" class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
               </div>
               <div class="space-y-2">
                 <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Selling Price (₱)</label>
-                <input v-model="form.selling_price" type="number" step="0.01" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
+                <input v-model="form.selling_price" type="number" step="0.01" class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all" placeholder="0.00" required />
               </div>
             </div>
 
             <div class="space-y-2">
               <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Unit</label>
-              <select v-model="form.unit" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
+              <select v-model="form.unit" class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-violet-500/50 transition-all appearance-none">
                 <option value="kg" class="bg-slate-900">kg</option>
                 <option value="piece" class="bg-slate-900">piece</option>
                 <option value="batch" class="bg-slate-900">batch</option>
@@ -186,7 +186,7 @@
             <div class="space-y-2">
               <label class="text-[0.7rem] font-black text-white/40 uppercase tracking-widest">Product Image</label>
               <div class="flex items-center gap-4">
-                <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center overflow-hidden">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
                   <div v-else class="text-3xl opacity-10">📸</div>
                 </div>

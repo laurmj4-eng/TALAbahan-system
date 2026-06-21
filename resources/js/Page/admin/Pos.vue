@@ -49,9 +49,9 @@
         </div>
 
         <!-- Cart Sidebar -->
-        <GlassCard customClass="w-full lg:w-96 p-4 md:p-6 lg:p-8 lg:sticky lg:top-8 border-white/10 bg-black/40 shadow-2xl ">
-          <div class="text-base md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-white/10 pb-3 md:pb-4 flex items-center gap-2">
-            <ShoppingCart class="w-4 h-4 md:w-5 md:h-5 text-indigo-400" />
+        <GlassCard customClass="w-full lg:w-96 p-5 md:p-6 lg:p-8 lg:sticky lg:top-8 border-white/[0.08] bg-black/40 shadow-2xl ">
+          <div class="text-base md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-white/[0.08] pb-3 md:pb-4 flex items-center gap-2">
+            <ShoppingCart class="w-4.5 h-4.5 md:w-5 md:h-5 text-indigo-400" />
             <span>Current Order</span>
           </div>
           
@@ -61,7 +61,7 @@
               <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Select Customer</label>
               <select 
                 v-model="customerName"
-                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
+                class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
               >
                 <option value="Walk-in Customer" class="bg-slate-900">Walk-in Customer</option>
                 <option v-for="user in customers" :key="user.id" :value="user.username" class="bg-slate-900">{{ user.username }}</option>
@@ -75,7 +75,7 @@
                 v-model="customerAlias"
                 type="text" 
                 placeholder="e.g. Table 5 / John Doe"
-                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
+                class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-colors text-sm font-medium"
               >
             </div>
           </div>
@@ -103,7 +103,7 @@
           </div>
 
           <!-- Summary -->
-          <div class="border-t-2 border-white/10 pt-6 space-y-3">
+          <div class="border-t-2 border-white/[0.08] pt-6 space-y-3">
             <div class="flex justify-between text-sm text-white/60">
               <span>Subtotal</span>
               <span>₱{{ formatNumber(subtotal) }}</span>
@@ -118,13 +118,13 @@
             </div>
 
             <!-- Voucher -->
-            <div class="pt-6 border-t border-dashed border-white/10">
+            <div class="pt-6 border-t border-dashed border-white/[0.08]">
               <div class="flex gap-2">
                 <input 
                   v-model="voucherCode"
                   type="text" 
                   placeholder="Voucher Code"
-                  class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+                  class="flex-1 bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
                 >
                 <button @click="applyVoucher" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">APPLY</button>
               </div>

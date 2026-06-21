@@ -10,7 +10,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-white/5 border-b border-white/10">
+              <tr class="bg-white/5 border-b border-white/[0.08]">
                 <th class="px-6 py-4 font-semibold text-white/70">TXN CODE</th>
                 <th class="px-6 py-4 font-semibold text-white/70">CUSTOMER</th>
                 <th class="px-6 py-4 font-semibold text-white/70">PRODUCT</th>
@@ -99,6 +99,6 @@ const getStatusClass = (status) => {
   if (s === 'completed') return 'bg-green-500/20 text-green-400 border border-green-500/30';
   if (s === 'pending') return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
   if (s === 'cancelled') return 'bg-red-500/20 text-red-400 border border-red-500/30';
-  return 'bg-white/5 text-white/40 border border-white/10';
+  return 'bg-white/5 text-white/40 border border-white/[0.08]';
 };
 </script>

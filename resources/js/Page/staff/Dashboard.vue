@@ -8,8 +8,8 @@
 
       <!-- Stats Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-        <GlassCard v-for="stat in dashboardStats" :key="stat.label" customClass="p-4 md:p-6 border-white/10 flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
-          <div class="w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
+        <GlassCard v-for="stat in dashboardStats" :key="stat.label" customClass="p-5 md:p-6 border-white/[0.08] flex flex-col items-center text-center group hover:bg-white/[0.04] transition-all">
+          <div class="w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
             <component :is="stat.icon" class="w-5 h-5 md:w-6 md:h-6" :class="stat.iconColor" />
           </div>
           <div class="text-[0.5rem] md:text-[0.6rem] font-black text-white/40 uppercase tracking-[0.2em] mb-0.5 md:mb-1">{{ stat.label }}</div>
@@ -20,7 +20,7 @@
       <!-- Quick Navigation -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6" v-once>
         <Link href="/staff/pos" class="group block h-full">
-          <GlassCard customClass="p-4 md:p-8 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
+          <GlassCard customClass="p-4 md:p-8 border-white/[0.08] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
             <div class="w-12 h-12 md:w-20 md:h-20 rounded-xl md:rounded-[2rem] bg-violet-500/10 border border-violet-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
               <ShoppingCart class="w-6 h-6 md:w-10 md:h-10 text-violet-400" />
             </div>
@@ -32,7 +32,7 @@
         </Link>
 
         <Link href="/staff/orders" class="group block h-full">
-          <GlassCard customClass="p-4 md:p-8 border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
+          <GlassCard customClass="p-4 md:p-8 border-white/[0.08] hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
             <div class="w-12 h-12 md:w-20 md:h-20 rounded-xl md:rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
               <ClipboardList class="w-6 h-6 md:w-10 md:h-10 text-indigo-400" />
             </div>
@@ -44,7 +44,7 @@
         </Link>
 
         <Link href="/staff/products" class="group block h-full">
-          <GlassCard customClass="p-4 md:p-8 border-white/10 hover:border-emerald-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
+          <GlassCard customClass="p-4 md:p-8 border-white/[0.08] hover:border-emerald-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
             <div class="w-12 h-12 md:w-20 md:h-20 rounded-xl md:rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:-rotate-6 transition-transform">
               <Package class="w-6 h-6 md:w-10 md:h-10 text-emerald-400" />
             </div>
@@ -56,7 +56,7 @@
         </Link>
 
         <Link href="/staff/salesHistory" class="group block h-full">
-          <GlassCard customClass="p-4 md:p-8 border-white/10 hover:border-sky-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
+          <GlassCard customClass="p-4 md:p-8 border-white/[0.08] hover:border-sky-500/30 hover:bg-white/[0.04] transition-all h-full flex flex-col items-center justify-center text-center space-y-2 md:space-y-4">
             <div class="w-12 h-12 md:w-20 md:h-20 rounded-xl md:rounded-[2rem] bg-sky-500/10 border border-sky-500/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
               <BarChart3 class="w-6 h-6 md:w-10 md:h-10 text-sky-400" />
             </div>
@@ -69,7 +69,7 @@
       </div>
 
       <!-- Recent Activity Placeholder -->
-      <GlassCard customClass="p-4 md:p-8 border-white/10">
+      <GlassCard customClass="p-4 md:p-8 border-white/[0.08]">
         <div class="flex items-center justify-between mb-4 md:mb-8">
           <h3 class="text-lg md:text-2xl font-bold text-white flex items-center gap-2 md:gap-3">
             <Activity class="w-5 h-5 md:w-6 md:h-6 text-indigo-400" />

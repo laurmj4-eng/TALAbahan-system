@@ -32,23 +32,23 @@
     </div>
 
     <!-- Desktop Table (Hidden on mobile) -->
-    <div v-if="!loading" class="hidden md:block overflow-x-auto bg-[#1a1a1a]/60 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl">
+    <div v-if="!loading" class="hidden md:block overflow-x-auto bg-[#1a1a1a]/60 backdrop-blur-md border border-white/[0.08] rounded-2xl shadow-xl">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="border-b border-white/10 bg-white/5">
+          <tr class="border-b border-white/[0.08] bg-white/5">
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">PICTURE</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">PRODUCT NAME</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">UNIT</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">COST PRICE</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">SELLING PRICE</th>
             <th class="px-6 py-4 text-sm font-semibold text-gray-300">VISIBILITY</th>
-            <th class="px-6 py-4 text-sm font-semibold text-gray-300 sticky right-0 bg-[#1a1a1a]/80 backdrop-blur-md border-l border-white/10">ACTIONS</th>
+            <th class="px-6 py-4 text-sm font-semibold text-gray-300 sticky right-0 bg-[#1a1a1a]/80 backdrop-blur-md border-l border-white/[0.08]">ACTIONS</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-white/5">
           <tr v-for="product in products" :key="product.id" class="hover:bg-white/[0.05] transition-colors group">
             <td class="px-6 py-4">
-              <img :src="getImageUrl(product.image)" class="w-12 h-12 rounded-lg object-cover border border-white/10 shadow-sm" />
+              <img :src="getImageUrl(product.image)" class="w-12 h-12 rounded-lg object-cover border border-white/[0.08] shadow-sm" />
             </td>
             <td class="px-6 py-4">
               <div class="text-white font-medium">{{ product.name }}</div>
@@ -76,7 +76,7 @@
                 </span>
               </div>
             </td>
-            <td class="px-6 py-4 sticky right-0 bg-[#1a1a1a]/80 backdrop-blur-md border-l border-white/10">
+            <td class="px-6 py-4 sticky right-0 bg-[#1a1a1a]/80 backdrop-blur-md border-l border-white/[0.08]">
               <div class="flex gap-2">
                 <button 
                   @click="openEditModal(product)"
@@ -103,8 +103,8 @@
 
     <!-- Product Modal -->
     <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-        <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+      <div class="bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/[0.08] w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+        <div class="px-6 py-4 border-b border-white/[0.08] flex justify-between items-center bg-white/5">
           <h3 class="text-xl font-bold text-white">{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h3>
           <button @click="showModal = false" class="text-gray-400 hover:text-white transition-colors p-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -122,7 +122,7 @@
                   v-model="form.name" 
                   type="text" 
                   required
-                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                  class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -131,7 +131,7 @@
                   v-model="form.unit" 
                   type="text" 
                   required
-                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                  class="w-full bg-white/5 border border-white/[0.08] rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -144,7 +144,7 @@
                       type="number" 
                       step="0.01" 
                       required
-                      class="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                      class="w-full bg-white/5 border border-white/[0.08] rounded-xl pl-8 pr-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -157,7 +157,7 @@
                       type="number" 
                       step="0.01" 
                       required
-                      class="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                      class="w-full bg-white/5 border border-white/[0.08] rounded-xl pl-8 pr-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -169,7 +169,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-400 mb-1">Product Image</label>
                 <div 
-                  class="relative group border-2 border-dashed border-white/10 rounded-2xl aspect-square flex flex-col items-center justify-center overflow-hidden hover:border-blue-500/50 transition-colors"
+                  class="relative group border-2 border-dashed border-white/[0.08] rounded-2xl aspect-square flex flex-col items-center justify-center overflow-hidden hover:border-blue-500/50 transition-colors"
                   @click="$refs.fileInput.click()"
                 >
                   <img 

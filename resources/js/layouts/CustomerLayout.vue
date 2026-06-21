@@ -12,12 +12,12 @@
           <Gem class="text-cyan-400 w-5 h-5 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
           <h2 class="text-lg font-black tracking-tight m-0">TALAbahan</h2>
         </div>
-        <small class="text-cyan-400/80 font-black tracking-[0.3em] text-[0.55rem] uppercase">Customer</small>
+        <small class="text-cyan-400/80 font-black tracking-[0.3em] text-[0.65rem] uppercase">Customer</small>
       </div>
 
       <!-- Nav -->
       <nav class="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
-        <div class="px-4 pb-4 text-[0.55rem] font-black tracking-[0.2em] text-white/20 uppercase animate-fade-in">
+        <div class="px-4 pb-4 text-[0.65rem] font-black tracking-[0.2em] text-white/20 uppercase animate-fade-in">
           Main Menu
         </div>
         <ul class="space-y-1 list-none p-0">
@@ -37,7 +37,7 @@
 
       <!-- Footer -->
       <div class="p-4 mt-auto space-y-3 animate-slide-in-bottom">
-        <div class="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 backdrop-blur-md">
+        <div class="p-3 bg-white/5 border border-white/[0.08] rounded-xl flex items-center gap-2 backdrop-blur-md">
           <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/30">
             <User class="w-4 h-4" />
           </div>
@@ -58,7 +58,7 @@
     </aside>
 
     <!-- Mobile Bottom Navigation (compact for built-in nav phones) -->
-    <nav class="lg:hidden fixed bottom-[env(safe-area-inset-bottom,12px)] left-4 right-4 h-14 bg-[#140f2d]/90 border border-white/10 rounded-2xl z-[100] flex items-center justify-around px-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]" style="-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);">
+    <nav class="lg:hidden fixed bottom-[env(safe-area-inset-bottom,12px)] left-4 right-4 h-16 bg-[#140f2d]/90 border border-white/[0.08] rounded-2xl z-[100] flex items-center justify-around px-1 shadow-[0_8px_32px_rgba(0,0,0,0.4)]" style="-webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);">
       <Link 
         v-for="item in navItems" 
         :key="item.path" 
@@ -67,7 +67,7 @@
         :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith(item.path) }"
       >
         <component :is="item.icon" class="w-5 h-5" />
-        <span class="text-[0.55rem] font-black uppercase tracking-widest">{{ item.name }}</span>
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">{{ item.name }}</span>
       </Link>
       
       <!-- Global Cart Trigger -->
@@ -78,7 +78,7 @@
             {{ cartCount }}
           </div>
         </div>
-        <span class="text-[0.55rem] font-black uppercase tracking-widest">Cart</span>
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">Cart</span>
       </button>
 
       <Link 
@@ -87,14 +87,14 @@
         :class="{ 'text-violet-400 bg-violet-500/10': $page.url.startsWith('/customer/profile') }"
       >
         <User class="w-5 h-5" />
-        <span class="text-[0.55rem] font-black uppercase tracking-widest">Profile</span>
+        <span class="text-[0.65rem] font-black uppercase tracking-widest">Profile</span>
       </Link>
     </nav>
 
     <!-- Global Floating Cart Button (Hidden on mobile if nav has cart) -->
     <button 
       @click="triggerOpenCart"
-      class="hidden lg:flex fixed bottom-12 right-12 w-20 h-20 bg-violet-600 rounded-[2rem] items-center justify-center text-white cursor-pointer shadow-[0_25px_50px_-10px_rgba(139,92,246,0.5)] border border-white/20 transition-all duration-500 hover:scale-110 hover:-translate-y-2 active:scale-95 z-[100] group"
+      class="hidden lg:flex fixed bottom-20 right-4 lg:bottom-12 lg:right-12 w-20 h-20 bg-violet-600 rounded-[2rem] items-center justify-center text-white cursor-pointer shadow-[0_25px_50px_-10px_rgba(139,92,246,0.5)] border border-white/20 transition-all duration-500 hover:scale-110 hover:-translate-y-2 active:scale-95 z-[100] group"
     >
       <ShoppingCart class="w-8 h-8 group-hover:scale-110 transition-transform" />
       <div v-if="cartCount > 0" class="absolute -top-2 -right-2 bg-rose-500 text-white w-8 h-8 rounded-2xl text-[0.8rem] font-black flex items-center justify-center border-4 border-[#0c0616] animate-pulse">

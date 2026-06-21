@@ -12,10 +12,10 @@
           v-for="tab in tabs" 
           :key="tab.id"
           @click="activeTab = tab.id"
-          class="px-3 py-1.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-extrabold text-xs md:text-sm transition-all flex items-center gap-2 md:gap-3 border-b-2 border active:scale-95"
+          class="px-3 py-1.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-extrabold text-sm md:text-base transition-all flex items-center gap-2 md:gap-3 border-b-2 border active:scale-95"
           :class="activeTab === tab.id 
             ? 'bg-violet-600/20 text-cyan-400 border-violet-500/30 border-b-cyan-400 shadow-lg shadow-violet-500/10' 
-            : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10 hover:text-slate-200'"
+            : 'bg-white/5 text-slate-400 border-white/[0.08] hover:bg-white/10 hover:text-slate-200'"
         >
           <span>{{ tab.label }}</span>
           <span class="px-1.5 py-0.5 bg-white/10 rounded-lg text-[0.6rem] md:text-[0.7rem]">{{ counts[tab.id] || 0 }}</span>
@@ -27,7 +27,7 @@
         <GlassCard 
           v-for="order in filteredOrders" 
           :key="order.id"
-          customClass="p-4 md:p-6 border-white/10 hover:border-violet-500/30 hover:bg-white/[0.04] transition-all group"
+          customClass="p-5 md:p-6 border-white/[0.08] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all group"
         >
           <!-- Damaged in Transit Alert -->
           <div 
@@ -71,7 +71,7 @@
                 </span>
                 
                 <div class="flex gap-1.5">
-                  <button @click="viewDetails(order)" class="p-2 md:p-3 bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 transition-all flex items-center gap-1.5 active:scale-95">
+                  <button @click="viewDetails(order)" class="p-2 md:p-3 bg-white/5 border border-white/[0.08] rounded-lg md:rounded-xl text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 transition-all flex items-center gap-1.5 active:scale-95">
                     <Eye class="w-3.5 h-3.5 md:w-4 md:h-4" />
                     <span class="text-[0.6rem] md:text-xs font-bold uppercase tracking-widest">Details</span>
                   </button>
@@ -86,7 +86,7 @@
                     <button 
                       v-else-if="['Processing', 'Shipped', 'Completed'].includes(order.status)"
                       disabled
-                      class="p-2 md:p-3 bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-white/20 cursor-not-allowed"
+                      class="p-2 md:p-3 bg-white/5 border border-white/[0.08] rounded-lg md:rounded-xl text-white/20 cursor-not-allowed"
                     >
                       <X class="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
@@ -112,7 +112,7 @@
           <h2 class="text-xl md:text-2xl font-bold">No orders found</h2>
           <p class="font-medium text-sm">No orders match this category yet.</p>
         </div>
-        <Link href="/customer/dashboard" class="px-5 py-2.5 md:px-8 md:py-3 bg-white text-violet-900 rounded-xl md:rounded-2xl font-black text-xs md:text-sm hover:bg-violet-50 transition-all active:scale-95">
+        <Link href="/customer/dashboard" class="px-5 py-2.5 md:px-8 md:py-3 bg-white text-violet-900 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-violet-50 transition-all active:scale-95">
           Go to Shop
         </Link>
       </div>
@@ -124,7 +124,7 @@
           <div class="flex justify-between items-center mb-6 md:mb-8">
             <div>
               <h2 class="text-xl md:text-2xl font-bold text-white mb-1">Order {{ selectedOrder.transaction_code }}</h2>
-              <p class="text-white/40 text-xs md:text-sm font-medium">Stage: {{ selectedOrder.stage_label }} | Status: {{ selectedOrder.status }}</p>
+              <p class="text-white/40 text-sm md:text-base font-medium">Stage: {{ selectedOrder.stage_label }} | Status: {{ selectedOrder.status }}</p>
             </div>
             <button @click="closeModal" class="text-white/40 hover:text-white transition-colors active:scale-90">
               <X class="w-5 h-5 md:w-6 md:h-6" />
@@ -144,8 +144,8 @@
             </div>
 
             <!-- Total -->
-            <div class="pt-4 md:pt-6 border-t border-white/10 flex justify-between items-end">
-              <div class="text-xs md:text-sm text-white/40 font-bold uppercase tracking-widest">Total Amount</div>
+            <div class="pt-4 md:pt-6 border-t border-white/[0.08] flex justify-between items-end">
+              <div class="text-sm md:text-base text-white/40 font-bold uppercase tracking-widest">Total Amount</div>
               <div class="text-2xl md:text-3xl font-black text-[#00ff88]">₱{{ formatNumber(selectedOrder.total_amount) }}</div>
             </div>
 
@@ -166,7 +166,7 @@
                 <button 
                   v-else-if="['Processing', 'Shipped', 'Completed'].includes(selectedOrder.status)" 
                   disabled 
-                  class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/10 text-white/30 rounded-xl font-bold cursor-not-allowed text-sm"
+                  class="px-4 py-2 md:px-6 md:py-3 bg-white/5 border border-white/[0.08] text-white/30 rounded-xl font-bold cursor-not-allowed text-sm"
                 >
                   Cancel Order
                 </button>
@@ -260,7 +260,7 @@ const getStatusClass = (status) => {
   if (s === 'shipped') return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
   if (s === 'completed') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
   if (s === 'cancelled') return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-  return 'bg-white/5 text-white/40 border-white/10';
+  return 'bg-white/5 text-white/40 border-white/[0.08]';
 };
 
 const viewDetails = async (order) => {

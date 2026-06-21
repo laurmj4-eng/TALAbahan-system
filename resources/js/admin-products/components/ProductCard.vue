@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[#1a1a1a]/60 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
+  <div class="bg-[#1a1a1a]/60 backdrop-blur-md border border-white/[0.08] rounded-2xl overflow-hidden flex flex-col shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
     <div class="relative h-48">
       <img 
         :src="getImageUrl(product.image)" 

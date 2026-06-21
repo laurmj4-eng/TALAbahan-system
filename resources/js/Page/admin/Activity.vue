@@ -3,7 +3,7 @@
     <div class="flex-1 flex flex-col space-y-4 md:space-y-8 min-h-0">
       <div class="mt-8 md:mt-0">
         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-sky-400 bg-clip-text text-transparent">Activity Monitor</h1>
-        <p class="text-white/50 text-xs md:text-sm font-medium mt-1 md:mt-2">Clean, professional tracking of system interactions.</p>
+        <p class="text-white/50 text-sm md:text-base font-medium mt-1 md:mt-2">Clean, professional tracking of system interactions.</p>
       </div>
 
       <!-- Content Area -->
@@ -13,7 +13,7 @@
           <div class="overflow-x-auto overflow-y-auto max-h-[70vh] md:max-h-[calc(100vh-300px)] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             <table class="w-full text-left border-collapse">
               <thead class="sticky top-0 z-10 bg-[#1a1a1a] ">
-                <tr class="bg-white/5 border-b border-white/10">
+                <tr class="bg-white/5 border-b border-white/[0.08]">
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">TIME</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest">USER</th>
                   <th class="px-8 py-5 text-[0.7rem] font-black text-white/40 uppercase tracking-widest hidden md:table-cell">IP ADDRESS</th>
@@ -80,7 +80,7 @@
 
         <!-- Mobile Card View (Visible on Mobile Only) -->
         <div class="md:hidden space-y-3 pb-4">
-          <div v-for="log in logs" :key="log.id" class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+          <div v-for="log in logs" :key="log.id" class="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3">
             <div class="flex justify-between items-start">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">

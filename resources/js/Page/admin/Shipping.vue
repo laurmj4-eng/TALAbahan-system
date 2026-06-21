@@ -12,7 +12,7 @@
       </div>
 
       <!-- Global Shipping Toggle -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 p-5 sm:p-6 rounded-2xl border border-white/10">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 p-5 sm:p-6 rounded-2xl border border-white/[0.08]">
         <div class="flex-1">
           <span class="font-bold text-white block mb-1">Ship to All Locations (Global)</span>
           <span class="text-[10px] sm:text-xs text-white/40 uppercase tracking-widest font-black">
@@ -30,7 +30,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-white/5 border-b border-white/10">
+              <tr class="bg-white/5 border-b border-white/[0.08]">
                 <th class="px-6 py-4 font-semibold text-white/70">BARANGAY NAME</th>
                 <th class="px-6 py-4 font-semibold text-white/70">CITY / MUNICIPALITY</th>
                 <th class="px-6 py-4 font-semibold text-white/70">STATUS</th>
@@ -94,7 +94,7 @@
             <div class="flex items-center justify-between pt-2 border-t border-white/5">
               <div class="text-[10px] text-white/30 uppercase tracking-widest font-black">Quick Actions</div>
               <div class="flex items-center gap-2">
-                <button @click="openEditModal(location)" class="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all">
+                <button @click="openEditModal(location)" class="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/[0.08] rounded-xl text-[10px] font-black tracking-widest uppercase active:bg-white active:text-black transition-all">
                   <Edit class="w-3.5 h-3.5" />
                   Edit
                 </button>
@@ -129,7 +129,7 @@
               type="text" 
               placeholder="e.g. Villamonte" 
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div class="space-y-2">
@@ -138,14 +138,14 @@
               v-model="form.city_municipality" 
               type="text" 
               required
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
           </div>
           <div v-if="editingLocation" class="space-y-2">
             <label class="text-xs font-black text-white/40 uppercase tracking-widest">Status</label>
             <select 
               v-model="form.is_active"
-              class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
+              class="w-full px-4 py-3 bg-white/5 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50 transition-colors"
             >
               <option value="1">Shippable</option>
               <option value="0">Not Shippable</option>

@@ -22,7 +22,7 @@
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4">
+      <div class="bg-white/5 p-6 rounded-2xl border border-white/[0.08] space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
           <div class="relative w-full md:w-64">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -31,7 +31,7 @@
               type="text" 
               id="transaction-search"
               placeholder="Search by transaction code, customer..." 
-              class="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50"
+              class="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-indigo-500/50"
             >
           </div>
 
@@ -39,13 +39,13 @@
             <input 
               v-model="startDate"
               type="date" 
-              class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+              class="bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
             >
             <span class="text-white/40">to</span>
             <input 
               v-model="endDate"
               type="date" 
-              class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+              class="bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
             >
             <button @click="fetchSales" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 touch-manipulation">
               Filter
@@ -56,7 +56,7 @@
             <button class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all">
               <Download class="w-4 h-4" /> Export Data
             </button>
-            <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+            <div class="absolute right-0 mt-2 w-48 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
               <button @click="exportData('csv')" class="w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 flex items-center gap-3 transition-colors active:scale-[0.98] touch-manipulation">
                 <FileText class="w-4 h-4 text-emerald-400" /> Export CSV
               </button>
@@ -84,7 +84,7 @@
           </div>
           <select 
             v-model="sortBy" 
-            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+            class="bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
           >
             <option v-for="option in sortOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -97,13 +97,13 @@
           <input 
             v-model="startDate"
             type="date" 
-            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+            class="bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
           >
           <span class="text-white/40">to</span>
           <input 
             v-model="endDate"
             type="date" 
-            class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+            class="bg-black/30 border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/50"
           >
           <button @click="fetchSales" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">
             Filter
@@ -116,7 +116,7 @@
         <div class="overflow-x-auto hidden md:block">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-white/5 border-b border-white/10">
+              <tr class="bg-white/5 border-b border-white/[0.08]">
                 <th class="px-6 py-4 font-semibold text-white/70">TRANSACTION CODE</th>
                 <th class="px-6 py-4 font-semibold text-white/70">DATE & TIME</th>
                 <th class="px-6 py-4 font-semibold text-white/70">CUSTOMER</th>
@@ -145,8 +145,8 @@
                     <span class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white/70 group-hover/items:bg-indigo-500/20 group-hover/items:text-indigo-300 transition-colors">
                       {{ record.items_summary.split(',').length }} Items
                     </span>
-                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50">
-                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/10 pb-1">Items List</p>
+                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/[0.08] pb-1">Items List</p>
                       <ul class="space-y-1">
                         <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-xs text-white/70 flex items-start gap-2">
                           <span class="text-indigo-400">•</span> {{ item.trim() }}
@@ -177,7 +177,7 @@
             v-for="record in paginatedSales"
             :key="'card-' + record.id"
             @click="toggleCard(record.id)"
-            class="mobile-card bg-white/[0.03] rounded-3xl p-4 border border-white/10 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            class="mobile-card bg-white/[0.03] rounded-3xl p-4 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer"
             :class="{ 'is-expanded': expandedCards.has(record.id) }"
           >
             <!-- Card Header: Status + Code + Revenue -->
@@ -199,7 +199,7 @@
             </div>
 
             <!-- Expanded Content -->
-            <div v-if="expandedCards.has(record.id)" class="mt-4 pt-4 border-t border-white/10 space-y-3">
+            <div v-if="expandedCards.has(record.id)" class="mt-4 pt-4 border-t border-white/[0.08] space-y-3">
               <div>
                 <span class="text-[10px] font-black uppercase tracking-widest text-white/40">Date & Time</span>
                 <p class="text-sm text-white/60 mt-0.5">{{ formatDate(record.created_at) }}</p>
@@ -220,7 +220,7 @@
                 </ul>
               </div>
               <!-- Actions -->
-              <div class="flex gap-2 pt-3 border-t border-white/10">
+              <div class="flex gap-2 pt-3 border-t border-white/[0.08]">
                 <button class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors active:scale-95">
                   Edit
                 </button>
@@ -243,7 +243,7 @@
         <button 
           @click="prevPage" 
           :disabled="currentPage === 1"
-          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/10 active:scale-95 touch-manipulation"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
         >
           ← Previous
         </button>
@@ -255,7 +255,7 @@
         <button 
           @click="nextPage" 
           :disabled="currentPage === totalPages"
-          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/10 active:scale-95 touch-manipulation"
+          class="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
         >
           Next →
         </button>
@@ -355,7 +355,7 @@ const getStatusClass = (status) => {
     'cancelled': 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
     'refunded': 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
   };
-  return classes[status?.toLowerCase()] || 'bg-white/10 text-white/60 border border-white/10';
+  return classes[status?.toLowerCase()] || 'bg-white/10 text-white/60 border border-white/[0.08]';
 };
 
 const fetchSales = () => {

@@ -218,7 +218,7 @@ const buyNow = () => {
                     <Link 
                         v-if="isBackButtonVisible"
                         href="/customer/dashboard" 
-                        class="fixed top-14 left-3 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-1.5 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04] px-2.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
+                        class="fixed top-14 left-3 sm:top-6 sm:left-6 md:top-12 md:left-12 lg:top-16 lg:left-[240px] z-[9999] flex items-center gap-1.5 sm:gap-3 text-white/60 hover:text-cyan-400 bg-white/[0.04] px-2.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] transition-all duration-300 group shadow-lg hover:-translate-x-1"
                     >
                         <span class="inline-block transition-transform duration-300 group-hover:-translate-x-1">
                             <ArrowLeft class="w-3 h-3 sm:w-4 sm:h-4" />
@@ -242,7 +242,7 @@ const buyNow = () => {
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.15),transparent_70%)]"></div>
 
                 <div class="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto">
-                    <span class="text-cyan-400 text-[0.6rem] sm:text-xs md:text-sm tracking-[0.3em] uppercase mb-4 sm:mb-6 font-bold drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
+                    <span class="text-cyan-400 text-[0.6rem] sm:text-sm md:text-base tracking-[0.3em] uppercase mb-4 sm:mb-6 font-bold drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
                         Premium Selection
                     </span>
                     <h1 ref="titleRef" class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tighter leading-tight filter drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
@@ -265,7 +265,7 @@ const buyNow = () => {
                     </div>
                     <div class="w-full md:w-1/2 split-image relative">
                         <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 rounded-xl sm:rounded-2xl blur-2xl"></div>
-                        <div class="relative aspect-square md:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.04]  p-1.5 sm:p-2">
+                        <div class="relative aspect-square md:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl bg-white/[0.04]  p-1.5 sm:p-2">
                              <div class="w-full h-full rounded-lg sm:rounded-xl bg-cover bg-center mix-blend-overlay" :style="`background-image: url('${getImageUrl(product.image)}');`"></div>
                         </div>
                     </div>
@@ -274,12 +274,12 @@ const buyNow = () => {
                 <!-- Specs Section -->
                 <section :ref="setSplitSectionRef" class="max-w-7xl mx-auto px-3 sm:px-6 py-16 sm:py-24 md:py-32 flex flex-col-reverse md:flex-row items-center gap-8 sm:gap-12 md:gap-24">
                     <div class="w-full md:w-1/2 split-image relative grid grid-cols-2 gap-3 sm:gap-4">
-                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-cyan-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-cyan-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
                             <Star class="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400 mb-3 sm:mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
                             <span class="text-[0.6rem] sm:text-xs text-white/40 uppercase tracking-widest mb-1">Preparation</span>
                             <span class="text-xs sm:text-sm font-semibold text-white/90">{{ product.prep_style }}</span>
                         </div>
-                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/10 p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-purple-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)] mt-6 sm:mt-8">
+                        <div class="aspect-square rounded-xl sm:rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 sm:p-6 flex flex-col justify-center items-center text-center group hover:border-purple-500/50 hover:bg-white/[0.08] transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)] mt-6 sm:mt-8">
                             <Info class="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mb-3 sm:mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
                             <span class="text-[0.6rem] sm:text-xs text-white/40 uppercase tracking-widest mb-1">Flavor Notes</span>
                             <span class="text-xs sm:text-sm font-semibold text-white/90">{{ product.flavor_notes }}</span>
@@ -309,7 +309,7 @@ const buyNow = () => {
 
             <!-- Sticky Order Bar (compact for built-in nav phones) -->
             <div ref="stickyBarRef" class="fixed bottom-0 left-0 w-full z-50 p-2 sm:p-3 md:p-6 translate-y-full opacity-0 pointer-events-none" style="padding-bottom: env(safe-area-inset-bottom, 8px);">
-                <div class="max-w-4xl mx-auto bg-white/[0.04] border border-white/10 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
+                <div class="max-w-4xl mx-auto bg-white/[0.04] border border-white/[0.08] rounded-xl sm:rounded-2xl p-2.5 sm:p-4 md:px-8 md:py-5 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)] hover:bg-white/[0.08] hover:border-white/20 transition-all duration-500 pointer-events-auto relative overflow-hidden">
                     <!-- Glow effect inside bar -->
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
                     
@@ -321,7 +321,7 @@ const buyNow = () => {
                         </div>
                     </div>
 
-                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-lg sm:rounded-xl bg-cyan-400 text-slate-950 px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-4 font-black uppercase tracking-wider text-[0.55rem] sm:text-xs md:text-sm transition-all duration-300 active:scale-95 flex items-center gap-1.5 sm:gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/20 hover:bg-cyan-300">
+                    <button @pointerdown.prevent="buyNow" :disabled="isProcessing" class="relative group overflow-hidden rounded-lg sm:rounded-xl bg-cyan-400 text-slate-950 px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-4 font-black uppercase tracking-wider text-[0.65rem] sm:text-sm md:text-base transition-all duration-300 active:scale-95 flex items-center gap-1.5 sm:gap-3 touch-manipulation disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-400/20 hover:bg-cyan-300">
                         <span class="relative z-10">{{ isProcessing ? 'Processing...' : 'Order Now' }}</span>
                         <Loader2 v-if="isProcessing" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 animate-spin" />
                         <ShoppingCart v-else class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 transition-transform duration-300 group-hover:scale-110" />
