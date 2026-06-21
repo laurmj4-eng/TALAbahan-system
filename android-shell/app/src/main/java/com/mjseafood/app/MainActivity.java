@@ -1,7 +1,9 @@
 package com.mjseafood.app;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -18,7 +20,12 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ProgressBar progressBar;
     private static final String SITE_URL = "https://talabahan-system-1.onrender.com";
-    private static final String CHROME_UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36";
+    private static final String[] EXTERNAL_HOSTS = {
+        "accounts.google.com",
+        "google.com",
+        "googleapis.com",
+        "gstatic.com"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +56,6 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setUserAgentString(CHROME_UA);
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -58,6 +64,11 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (isExternalAuthUrl(url)) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
                 if (url.startsWith("https://talabahan-system-1.onrender.com")) {
                     return false;
                 }
@@ -93,6 +104,16 @@ public class MainActivity extends Activity {
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
+    private boolean isExternalAuthUrl(String url) {
+        String lower = url.toLowerCase();
+        for (String host : EXTERNAL_HOSTS) {
+            if (lower.contains(host)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) {
@@ -106,6 +127,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
+        webView.reload();
         CookieManager.getInstance().flush();
     }
 
