@@ -40,7 +40,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const statusEl = document.getElementById('status');
 
@@ -51,26 +51,37 @@
             const auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
-            // First check if we are returning from a redirect
-            getRedirectResult(auth).then((result) => {
-                if (result && result.user) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
                     statusEl.innerText = "Verifying...";
-                    
-                    const email = encodeURIComponent(result.user.email);
-                    const name = encodeURIComponent(result.user.displayName || '');
-                    
-                    // The backend callback URL that will establish the session
+                    const email = encodeURIComponent(user.email);
+                    const name = encodeURIComponent(user.displayName || '');
                     const callbackUrl = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name;
-                    
-                    // Redirect back to the mobile app
                     window.location.href = 'talabahan://auth?redirect=' + encodeURIComponent(callbackUrl);
                 } else {
-                    // Start the redirect login flow
-                    signInWithRedirect(auth, provider);
+                    getRedirectResult(auth).then((result) => {
+                        if (result && result.user) {
+                            // Handled by onAuthStateChanged above
+                        } else {
+                            const hasTriggered = sessionStorage.getItem('mobileLoginTriggered');
+                            if (!hasTriggered) {
+                                sessionStorage.setItem('mobileLoginTriggered', 'true');
+                                signInWithRedirect(auth, provider);
+                            } else {
+                                statusEl.innerHTML = "Google Sign-In failed or was cancelled.<br><br><button id='retryBtn' style='padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;'>Try Again</button>";
+                                document.querySelector('.spinner').style.display = 'none';
+                                document.getElementById('retryBtn').addEventListener('click', () => {
+                                    sessionStorage.removeItem('mobileLoginTriggered');
+                                    window.location.reload();
+                                });
+                            }
+                        }
+                    }).catch((error) => {
+                        console.error("Firebase auth error:", error);
+                        statusEl.innerText = "Authentication failed: " + error.message;
+                        document.querySelector('.spinner').style.display = 'none';
+                    });
                 }
-            }).catch((error) => {
-                console.error("Firebase auth error:", error);
-                statusEl.innerText = "Authentication failed: " + error.message;
             });
         }
     </script>
