@@ -18,7 +18,7 @@
               width="96"
               height="96"
               style="aspect-ratio: 1 / 1;"
-              class="w-14 md:w-20 h-auto mx-auto rounded-xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
+              class="w-14 md:w-20 h-auto mx-auto rounded-xl shadow-lg border border-white/[0.08] hover:scale-105 transition-transform duration-300"
             />
           </div>
 
@@ -94,7 +94,7 @@
             </div>
 
             <!-- reCAPTCHA Widget -->
-            <div v-if="showRecaptcha" class="recaptcha-section">
+            <div v-if="showRecaptcha && !recaptchaFailed" class="recaptcha-section">
               <div class="recaptcha-inner">
                 <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
               </div>
@@ -129,9 +129,9 @@
 
           <!-- OR Separator -->
           <div class="flex items-center my-3 md:my-6">
-            <div class="flex-grow border-t border-white/10"></div>
+            <div class="flex-grow border-t border-white/[0.08]"></div>
             <span class="px-3 text-white/70 text-[9px] font-black uppercase" style="letter-spacing: 0.25em;">OR</span>
-            <div class="flex-grow border-t border-white/10"></div>
+            <div class="flex-grow border-t border-white/[0.08]"></div>
           </div>
 
           <!-- Google Sign-In Button -->
@@ -139,7 +139,7 @@
             @click="handleGoogleLogin"
             type="button"
             :disabled="loading || googleLoading"
-            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/10 text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-xs md:text-base"
+            class="w-full flex items-center justify-center gap-2 md:gap-3 bg-white/5 border border-white/[0.08] text-white font-bold py-2.5 md:py-3 rounded-xl hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 text-xs md:text-base"
           >
             <svg v-if="!googleLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
@@ -152,7 +152,7 @@
 
           <!-- Register Footer -->
           <div class="mt-4 md:mt-8 text-center">
-            <p class="text-white font-bold text-xs md:text-sm">
+            <p class="text-white font-bold text-sm md:text-base">
               Don't have an account?
               <Link
                 href="/register"
@@ -364,6 +364,54 @@ const passwordFocused = ref(false);
 const cardRef = ref(null);
 const cardScale = ref(1);
 
+const loginAttempts = ref(0);
+const lockoutUntil = ref(0);
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_BASE_MS = 15000;
+const isLockedOut = ref(false);
+const lockoutTimer = ref('');
+
+function checkAndUpdateLockout() {
+  const now = Date.now();
+  if (lockoutUntil.value > now) {
+    isLockedOut.value = true;
+    updateLockoutDisplay();
+    return true;
+  }
+  isLockedOut.value = false;
+  lockoutTimer.value = '';
+  return false;
+}
+
+function updateLockoutDisplay() {
+  const remaining = Math.ceil((lockoutUntil.value - Date.now()) / 1000);
+  if (remaining <= 0) {
+    isLockedOut.value = false;
+    lockoutTimer.value = '';
+    return;
+  }
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  lockoutTimer.value = m > 0 ? `${m}m ${s}s` : `${s}s`;
+  setTimeout(updateLockoutDisplay, 1000);
+}
+
+function recordFailedAttempt() {
+  loginAttempts.value++;
+  if (loginAttempts.value >= MAX_ATTEMPTS) {
+    const delay = LOCKOUT_BASE_MS * Math.pow(2, loginAttempts.value - MAX_ATTEMPTS);
+    lockoutUntil.value = Date.now() + Math.min(delay, 300000);
+    checkAndUpdateLockout();
+  }
+}
+
+function resetAttempts() {
+  loginAttempts.value = 0;
+  lockoutUntil.value = 0;
+  isLockedOut.value = false;
+  lockoutTimer.value = '';
+}
+
 function recalcCardScale() {
   nextTick(() => {
     const card = cardRef.value;
@@ -382,6 +430,7 @@ function recalcCardScale() {
 
 const {
   recaptchaError,
+  recaptchaFailed,
   getResponse,
   reset: resetRecaptcha,
   rerender: rerenderRecaptcha,
@@ -475,7 +524,7 @@ watch(email, (newEmail) => {
 });
 
 watch(showRecaptcha, async (newVal) => {
-  if (newVal) {
+  if (newVal && !recaptchaFailed.value) {
     await nextTick();
     setTimeout(async () => {
       await rerenderRecaptcha();
@@ -493,9 +542,15 @@ onBeforeUnmount(() => {
 });
 
 const handleLogin = async () => {
-  const recaptchaResponse = showRecaptcha.value ? getResponse() : '';
+  if (checkAndUpdateLockout()) {
+    error.value = `Too many failed attempts. Please wait ${lockoutTimer.value}.`;
+    return;
+  }
 
-  if (showRecaptcha.value && !recaptchaResponse) {
+  const recaptchaAvailable = showRecaptcha.value && !recaptchaFailed.value;
+  const recaptchaResponse = recaptchaAvailable ? getResponse() : '';
+
+  if (recaptchaAvailable && !recaptchaResponse) {
     error.value = 'Please complete the reCAPTCHA verification.';
     return;
   }
@@ -509,25 +564,32 @@ const handleLogin = async () => {
     formData.append('email', email.value);
     formData.append('password', password.value);
     formData.append('provider', 'email');
-    formData.append('is_trusted_device', !showRecaptcha.value);
-    if (showRecaptcha.value) {
+    formData.append('is_trusted_device', !recaptchaAvailable);
+    if (recaptchaAvailable) {
       formData.append('g-recaptcha-response', recaptchaResponse);
     }
 
     const response = await axios.post('/api/auth/verify', formData);
 
     if (response.data.status === 'success') {
+      resetAttempts();
       handleSuccessfulLogin(response.data);
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Login failed. Please check your credentials.';
+
+    recordFailedAttempt();
+
+    if (isLockedOut.value) {
+      error.value = `Too many failed attempts. Please wait ${lockoutTimer.value}.`;
+    }
 
     if (err.response?.data?.message?.toLowerCase().includes('recaptcha')) {
       showRecaptcha.value = true;
       localStorage.removeItem('trustedAdminEmail');
     }
 
-    if (showRecaptcha.value) resetRecaptcha();
+    if (showRecaptcha.value && !recaptchaFailed.value) resetRecaptcha();
 
     if (err.response?.data?.token) {
       window.CSRF_HASH = err.response.data.token;

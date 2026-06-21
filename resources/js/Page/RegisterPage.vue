@@ -15,12 +15,12 @@
             <img
               :src="windowObj.BASE_URL + 'images/pic3.jpg'"
               alt="TALAbahan Logo"
-              class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/10 hover:scale-105 transition-transform duration-300"
+              class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/[0.08] hover:scale-105 transition-transform duration-300"
             />
           </div>
 
           <h2 class="auth-heading text-white mb-1 md:mb-2 tracking-tight">Create Account</h2>
-          <p class="text-white/50 font-medium mb-6 md:mb-8 text-xs md:text-sm">Join us and start managing your seafood today.</p>
+          <p class="text-white/50 font-medium mb-6 md:mb-8 text-sm md:text-base">Join us and start managing your seafood today.</p>
 
           <form @submit.prevent="handleRegister" class="space-y-3 md:space-y-4 text-left">
 
@@ -139,7 +139,7 @@
             </div>
 
             <!-- reCAPTCHA Widget -->
-            <div v-if="recaptchaRequired" class="recaptcha-section my-4 md:my-6">
+            <div v-if="recaptchaRequired && !recaptchaFailed" class="recaptcha-section my-4 md:my-6">
               <div ref="recaptchaContainerRef" class="recaptcha-widget-host"></div>
               <p v-if="recaptchaError" class="text-amber-300 text-xs text-center mt-2 px-2">
                 {{ recaptchaError }}
@@ -399,7 +399,7 @@ const confirmPasswordFocused = ref(false);
 
 const recaptchaRequired = window.RECAPTCHA_ENABLED !== false;
 const recaptchaContainerRef = ref(null);
-const { recaptchaError, getResponse, reset: resetRecaptcha } =
+const { recaptchaError, recaptchaFailed, getResponse, reset: resetRecaptcha } =
   useRecaptcha(recaptchaContainerRef, { theme: 'dark' });
 
 const handleRegister = () => {
@@ -409,9 +409,10 @@ const handleRegister = () => {
       return;
     }
 
-    const recaptchaResponse = recaptchaRequired ? getResponse() : '';
+    const recaptchaAvailable = recaptchaRequired && !recaptchaFailed.value;
+    const recaptchaResponse = recaptchaAvailable ? getResponse() : '';
 
-    if (recaptchaRequired && !recaptchaResponse) {
+    if (recaptchaAvailable && !recaptchaResponse) {
       error.value = 'Please complete the reCAPTCHA verification.';
       return;
     }
@@ -425,7 +426,7 @@ const handleRegister = () => {
       formData.append('username', username.value);
       formData.append('email', email.value);
       formData.append('password', password.value);
-      if (recaptchaRequired) {
+      if (recaptchaAvailable) {
         formData.append('g-recaptcha-response', recaptchaResponse);
       }
 
@@ -436,7 +437,7 @@ const handleRegister = () => {
       }
     } catch (err) {
       error.value = err.response?.data?.message || 'Registration failed. Please try again.';
-      resetRecaptcha();
+      if (!recaptchaFailed.value) resetRecaptcha();
       if (err.response?.data?.token) {
         window.CSRF_HASH = err.response.data.token;
       }

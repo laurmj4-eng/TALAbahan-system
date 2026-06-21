@@ -38,18 +38,30 @@ class Auth extends BaseController
             // md5() produces a safe 32-char lowercase hex string with no reserved characters.
             $cacheKey = 'google_login_' . md5($email);
 
-            // Optional: rate-limit Google login attempts per email (max 10 per 5 minutes)
-            if ($provider === 'google') {
-                $attempts = cache($cacheKey) ?? 0;
-                if ($attempts >= 10) {
-                    return $this->response->setJSON([
-                        'status'  => 'error',
-                        'message' => 'Too many login attempts. Please try again later.',
-                        'token'   => csrf_hash()
-                    ])->setStatusCode(429);
-                }
-                cache()->save($cacheKey, $attempts + 1, 300); // TTL: 300 seconds (5 minutes)
+            // Rate-limit login attempts per email (max 10 per 5 minutes for all providers)
+            $attempts = cache($cacheKey) ?? 0;
+            if ($attempts >= 10) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Too many login attempts. Please try again later.',
+                    'token'   => csrf_hash()
+                ])->setStatusCode(429);
             }
+
+            // Also rate-limit by IP address to prevent distributed brute force
+            $ipKey = 'login_ip_' . md5($this->request->getIPAddress());
+            $ipAttempts = cache($ipKey) ?? 0;
+            if ($ipAttempts >= 20) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Too many login attempts from this IP. Please try again later.',
+                    'token'   => csrf_hash()
+                ])->setStatusCode(429);
+            }
+            cache()->save($ipKey, $ipAttempts + 1, 300);
+
+            // Increment email-based attempt counter for all providers
+            cache()->save($cacheKey, $attempts + 1, 300);
 
             // 4. Connect to database
             $userModel = new UserModel();
@@ -112,6 +124,9 @@ class Auth extends BaseController
 
             // 6. Set Session and Redirect
             if ($user) {
+                // Reset login attempt counter on successful login
+                cache()->delete($cacheKey);
+
                 // Ensure session is started
                 $session = session();
                 

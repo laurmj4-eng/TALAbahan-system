@@ -20,6 +20,7 @@ function isRecaptchaEnabled(options) {
 
 export function useRecaptcha(containerRef, options = {}) {
   const recaptchaError = ref('');
+  const recaptchaFailed = ref(false);
   const widgetId = ref(null);
   const scriptReady = ref(false);
   const enabled = isRecaptchaEnabled(options);
@@ -58,6 +59,7 @@ export function useRecaptcha(containerRef, options = {}) {
         return renderWidget(attempt + 1);
       }
       recaptchaError.value = err.message;
+      recaptchaFailed.value = true;
       return;
     }
 
@@ -72,6 +74,7 @@ export function useRecaptcha(containerRef, options = {}) {
           return;
         }
         recaptchaError.value = 'reCAPTCHA script did not initialize grecaptcha.render.';
+        recaptchaFailed.value = true;
         return;
       }
 
@@ -113,6 +116,7 @@ export function useRecaptcha(containerRef, options = {}) {
         }
         recaptchaError.value =
           'Could not display reCAPTCHA. Please check your internet connection and try again.';
+        recaptchaFailed.value = true;
       }
     });
   };
@@ -169,6 +173,7 @@ export function useRecaptcha(containerRef, options = {}) {
   return {
     enabled,
     recaptchaError,
+    recaptchaFailed,
     scriptReady,
     getResponse,
     reset,
