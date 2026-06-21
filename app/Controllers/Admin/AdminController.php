@@ -192,6 +192,24 @@ class AdminController extends BaseController
             $data['password'] = $this->request->getPost('password');
         }
 
+        $rules = [
+            'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username,id,' . $id . ']',
+            'email'    => 'required|valid_email|max_length[100]|is_unique[users.email,id,' . $id . ']',
+            'role'     => 'required|in_list[admin,staff,customer]',
+        ];
+
+        if (!empty($data['password'])) {
+            $rules['password'] = 'required|min_length[6]|max_length[255]';
+        }
+
+        if (!$this->validate($rules)) {
+            $errorMsg = implode(' ', $this->validator->getErrors());
+            if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
+                return $this->response->setJSON(['status' => 'error', 'message' => $errorMsg, 'token' => csrf_hash()])->setStatusCode(400);
+            }
+            return redirect()->back()->with('error', $errorMsg)->withInput();
+        }
+
         if (! $userModel->update($id, $data)) {
             $errorMsg = implode(' ', $userModel->errors());
             if ($this->request->isAJAX() || strpos($this->request->getUri()->getPath(), 'api/') !== false) {
