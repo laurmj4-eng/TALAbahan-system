@@ -1,13 +1,13 @@
 <template>
   <div class="flex h-screen bg-[#0f172a] overflow-hidden w-full font-['Plus_Jakarta_Sans',sans-serif]">
     <!-- Mobile Top Bar -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 h-11 bg-black/40 backdrop-blur-xl border-b border-white/[0.08] z-[50] flex items-center px-2.5 gap-2">
-      <button @click="isSidebarOpen = !isSidebarOpen" class="w-7 h-7 bg-violet-500/20 text-white rounded-lg flex items-center justify-center border border-violet-500/30 cursor-pointer active:scale-95 transition-all">
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-12 bg-black/40 backdrop-blur-xl border-b border-white/[0.08] z-[50] flex items-center px-3 gap-2">
+      <button @click="isSidebarOpen = !isSidebarOpen" class="w-8 h-8 bg-violet-500/20 text-white rounded-lg flex items-center justify-center border border-violet-500/30 cursor-pointer active:scale-95 transition-all">
         <Menu class="w-4 h-4" />
       </button>
-      <div class="flex items-center gap-1.5">
-        <Gem class="text-[#a855f7] w-4 h-4" />
-        <h2 class="text-xs font-bold text-white tracking-wide">Mj Pogi</h2>
+      <div class="flex items-center gap-2">
+        <Gem class="text-[#a855f7] w-5 h-5" />
+        <h2 class="text-sm font-bold text-white tracking-wide">Mj Pogi</h2>
       </div>
     </div>
 
@@ -32,14 +32,14 @@
           <Gem class="text-[#a855f7] w-5 h-5 lg:w-6 lg:h-6 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
           <h2 class="m-0 text-[1rem] lg:text-[1.2rem] font-bold text-white tracking-wide">Mj Pogi</h2>
         </div>
-        <small class="block text-violet-400 font-bold text-[0.6rem] lg:text-[0.7rem] tracking-widest uppercase">Superadmin</small>
+        <small class="block text-violet-400 font-bold text-[0.65rem] lg:text-[0.7rem] tracking-widest uppercase">Superadmin</small>
       </div>
       
       <!-- Menu -->
-      <nav class="flex-1 px-1.5 lg:px-2 py-2.5 lg:py-4 space-y-1.5 lg:space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-violet-500/20 scrollbar-track-transparent">
-        <div v-for="section in navSections" :key="section.title" class="mb-1.5 lg:mb-3">
-          <div class="px-2.5 lg:px-3 pb-1 lg:pb-2 flex items-center gap-1.5 lg:gap-2 text-[0.55rem] lg:text-[0.65rem] font-bold tracking-[1.2px] text-slate-500 uppercase">
-            <component :is="section.icon" class="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+      <nav class="flex-1 px-2 lg:px-2 py-3 lg:py-4 space-y-2 lg:space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-violet-500/20 scrollbar-track-transparent">
+        <div v-for="section in navSections" :key="section.title" class="mb-2 lg:mb-3">
+          <div class="px-3 pb-2 flex items-center gap-2 text-[0.6rem] lg:text-[0.65rem] font-bold tracking-[1.2px] text-slate-500 uppercase">
+            <component :is="section.icon" class="w-3 h-3 lg:w-3 lg:h-3" />
             <span>{{ section.title }}</span>
           </div>
           
@@ -47,7 +47,7 @@
             <li v-for="item in section.items" :key="item.path">
               <Link
                 :href="item.path"
-                class="flex items-center gap-2 lg:gap-2.5 px-2.5 lg:px-3 py-2 lg:py-2.5 text-white/70 font-medium text-[0.8rem] lg:text-[0.85rem] rounded-lg lg:rounded-xl border-l-[3px] lg:border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
+                class="flex items-center gap-2.5 px-3 py-2.5 text-white/70 font-medium text-[0.8rem] lg:text-[0.85rem] rounded-lg lg:rounded-xl border-l-[3px] lg:border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
                 :class="{ 'bg-white/5 text-white font-semibold border-l-[3px] lg:border-l-4 !border-indigo-500 shadow-lg': $page.url.startsWith(item.path) }"
               >
                 <component :is="item.icon" class="w-4 h-4 lg:w-5 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7]" :class="{ 'text-violet-300': $page.url.startsWith(item.path) }" />
@@ -55,23 +55,23 @@
               </Link>
             </li>
           </ul>
-          <div v-if="section.divider" class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-2.5 lg:mx-3 my-2 lg:my-3"></div>
+          <div v-if="section.divider" class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-3 my-2 lg:my-3"></div>
         </div>
       </nav>
 
       <!-- Footer -->
-      <div class="p-2 lg:p-3 bg-black/20 border-t border-white/[0.08]">
+      <div class="p-2.5 lg:p-3 bg-black/20 border-t border-white/[0.08]">
         <div class="flex items-center gap-2 lg:gap-2.5 p-2 lg:p-2.5 bg-white/[0.03] rounded-lg lg:rounded-xl mb-2 lg:mb-2.5 border border-white/[0.05]">
-          <div class="w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl bg-violet-500/15 flex items-center justify-center text-base lg:text-xl text-[#a855f7] border border-violet-500/20">
+          <div class="w-8 h-8 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl bg-violet-500/15 flex items-center justify-center text-lg lg:text-xl text-[#a855f7] border border-violet-500/20">
             <UserCircle />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="text-[0.7rem] lg:text-[0.8rem] text-white font-semibold truncate">{{ username }}</div>
-            <div class="text-[0.55rem] lg:text-[0.7rem] text-violet-400 font-medium">Admin</div>
+            <div class="text-[0.75rem] lg:text-[0.8rem] text-white font-semibold truncate">{{ username }}</div>
+            <div class="text-[0.6rem] lg:text-[0.7rem] text-violet-400 font-medium">Admin</div>
           </div>
         </div>
-        <button @click="handleLogout" class="flex items-center justify-center gap-1.5 lg:gap-2 w-full p-2 lg:p-2.5 bg-rose-500/10 border border-rose-500/20 text-[#fca5a5] rounded-lg lg:rounded-xl font-bold text-[0.75rem] lg:text-[0.85rem] hover:bg-rose-500/20 hover:text-white hover:border-rose-500/40 transition-all active:scale-95 cursor-pointer">
-          <LogOut class="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+        <button @click="handleLogout" class="flex items-center justify-center gap-2 lg:gap-2 w-full p-2.5 lg:p-2.5 bg-rose-500/10 border border-rose-500/20 text-[#fca5a5] rounded-lg lg:rounded-xl font-bold text-[0.8rem] lg:text-[0.85rem] hover:bg-rose-500/20 hover:text-white hover:border-rose-500/40 transition-all active:scale-95 cursor-pointer">
+          <LogOut class="w-4 h-4 lg:w-4 lg:h-4" />
           <span>Logout</span>
         </button>
       </div>
@@ -82,8 +82,8 @@
       <!-- Background Gradient -->
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
-      <!-- Page Content (pt-11 for mobile top bar, safe-area for gesture nav) -->
-      <main class="flex-1 overflow-y-auto pt-13 lg:pt-4 p-2.5 md:p-6 lg:p-8 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto pt-14 lg:pt-4 p-3 md:p-6 lg:p-8 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <div class="space-y-4">
           <slot></slot>
         </div>
@@ -214,7 +214,6 @@ const handleLogout = () => {
   will-change: transform;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -234,13 +233,11 @@ const handleLogout = () => {
   background-clip: content-box;
 }
 
-/* Staggered delays for stat cards */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 
-/* Custom Scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }

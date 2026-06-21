@@ -1,61 +1,58 @@
 <template>
   <AdminLayout :username="username">
     <div class="space-y-3 md:space-y-8">
-      <!-- Header -->
-      <div class="overflow-hidden">
-        <h1 class="text-lg md:text-3xl font-bold text-white truncate">Financial Ledger 📈</h1>
-        <p class="text-white/60 text-[0.65rem] md:text-base truncate">Real-time transaction logs and revenue records.</p>
+      <div>
+        <h1 class="text-lg md:text-3xl font-bold text-white">Financial Ledger</h1>
+        <p class="text-white/60 text-xs md:text-base">Real-time transaction logs and revenue records.</p>
       </div>
 
       <!-- Daily Summary Card -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6">
-        <GlassCard customClass="p-2.5 md:p-6 border-l-4 border-l-emerald-500">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+        <GlassCard customClass="p-3 md:p-6 border-l-4 border-l-emerald-500">
           <div class="flex items-center justify-between gap-2">
             <div class="min-w-0 flex-1">
-              <p class="text-white/40 text-[0.55rem] md:text-xs font-black uppercase tracking-wider mb-0.5">Revenue Today</p>
-              <h3 class="text-base md:text-3xl font-black text-white truncate">₱{{ formatNumber(totalRevenueToday) }}</h3>
+              <p class="text-white/40 text-xs font-black uppercase tracking-wider mb-0.5">Revenue Today</p>
+              <h3 class="text-xl md:text-3xl font-black text-white">₱{{ formatNumber(totalRevenueToday) }}</h3>
             </div>
-            <div class="bg-emerald-500/20 p-1.5 md:p-3 rounded-lg shrink-0">
-              <TrendingUp class="w-3.5 h-3.5 md:w-6 md:h-6 text-emerald-400" />
+            <div class="bg-emerald-500/20 p-2 md:p-3 rounded-lg shrink-0">
+              <TrendingUp class="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />
             </div>
           </div>
         </GlassCard>
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="bg-white/5 p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-2.5 md:space-y-4">
-        <!-- Search + Export Row -->
+      <div class="bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-3 md:space-y-4">
         <div class="flex gap-2">
           <div class="relative flex-1 min-w-0">
-            <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
             <input 
               v-model="searchQuery"
               type="text" 
-              id="transaction-search"
               placeholder="Search..." 
-              class="w-full pl-8 pr-2 py-1.5 bg-black/30 border border-white/[0.08] rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500/50"
+              class="w-full pl-9 pr-3 py-2 bg-black/30 border border-white/[0.08] rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500/50"
             >
           </div>
           <div class="relative group shrink-0">
-            <button class="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[0.65rem] font-bold transition-all">
-              <Download class="w-3 h-3" /> Export
+            <button class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
+              <Download class="w-3.5 h-3.5" /> Export
             </button>
             <div class="absolute right-0 mt-2 w-40 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-              <button @click="exportData('csv')" class="w-full text-left px-3 py-2 text-[0.65rem] text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
-                <FileText class="w-3 h-3 text-emerald-400" /> CSV
+              <button @click="exportData('csv')" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
+                <FileText class="w-3.5 h-3.5 text-emerald-400" /> CSV
               </button>
-              <button @click="exportData('pdf')" class="w-full text-left px-3 py-2 text-[0.65rem] text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
-                <FileDown class="w-3 h-3 text-rose-400" /> PDF
+              <button @click="exportData('pdf')" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
+                <FileDown class="w-3.5 h-3.5 text-rose-400" /> PDF
               </button>
-              <button @click="exportData('word')" class="w-full text-left px-3 py-2 text-[0.65rem] text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
-                <FileCode class="w-3 h-3 text-blue-400" /> Word
+              <button @click="exportData('word')" class="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-white/10 flex items-center gap-2 transition-colors active:scale-[0.98] touch-manipulation">
+                <FileCode class="w-3.5 h-3.5 text-blue-400" /> Word
               </button>
             </div>
           </div>
         </div>
 
         <!-- Status Filter (Mobile) -->
-        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5 md:hidden">
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 md:hidden">
           <button
             v-for="opt in statusOptions"
             :key="opt.value"
@@ -66,11 +63,11 @@
           </button>
         </div>
 
-        <!-- Sort + Date (Mobile) -->
-        <div class="flex gap-2 md:hidden">
+        <!-- Sort (Mobile) -->
+        <div class="md:hidden">
           <select 
             v-model="sortBy" 
-            class="flex-1 min-w-0 bg-black/30 border border-white/[0.08] rounded-lg px-2 py-1.5 text-[0.65rem] text-white focus:outline-none focus:border-indigo-500/50"
+            class="w-full bg-black/30 border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50"
           >
             <option v-for="option in sortOptions" :key="option.value" :value="option.value">
               {{ option.label }}
@@ -116,31 +113,12 @@
                 <td class="px-6 py-4">
                   <strong class="text-violet-400 tracking-widest">{{ record.transaction_code }}</strong>
                 </td>
-                <td class="px-6 py-4 text-sm text-white/60">
-                  {{ formatDate(record.created_at) }}
-                </td>
+                <td class="px-6 py-4 text-sm text-white/60">{{ formatDate(record.created_at) }}</td>
                 <td class="px-6 py-4 text-sm">
-                  <div class="flex flex-col">
-                    <span class="text-white font-medium">{{ getCustomerDisplay(record) }}</span>
-                    <span v-if="record.user_id" class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Registered User</span>
-                    <span v-else-if="record.customer_alias" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Walk-in / {{ record.customer_name }}</span>
-                    <span v-else class="text-[10px] text-white/30 font-bold uppercase tracking-wider">Walk-in</span>
-                  </div>
+                  <span class="text-white font-medium">{{ getCustomerDisplay(record) }}</span>
                 </td>
-                <td class="px-6 py-4 text-white/80 max-w-xs">
-                  <div class="group/items relative inline-block cursor-help">
-                    <span class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white/70 group-hover/items:bg-indigo-500/20 group-hover/items:text-indigo-300 transition-colors">
-                      {{ record.items_summary.split(',').length }} Items
-                    </span>
-                    <div class="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover/items:opacity-100 group-hover/items:visible transition-all z-50">
-                      <p class="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2 border-b border-white/[0.08] pb-1">Items List</p>
-                      <ul class="space-y-1">
-                        <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-xs text-white/70 flex items-start gap-2">
-                          <span class="text-indigo-400">•</span> {{ item.trim() }}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+                <td class="px-6 py-4 text-white/80">
+                  <span class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white/70">{{ record.items_summary.split(',').length }} Items</span>
                 </td>
                 <td class="px-6 py-4">
                   <strong class="text-xl text-emerald-400">₱{{ formatNumber(record.total_amount) }}</strong>
@@ -148,7 +126,7 @@
               </tr>
               <tr v-if="filteredSales.length === 0">
                 <td colspan="5" class="px-6 py-24 text-center text-white/20 italic">
-                  {{ isLoading ? 'Loading financial data...' : 'No transactions found in ledger.' }}
+                  {{ isLoading ? 'Loading...' : 'No transactions found.' }}
                 </td>
               </tr>
             </tbody>
@@ -156,7 +134,7 @@
         </div>
 
         <!-- Mobile Cards -->
-        <div class="md:hidden p-2 space-y-2">
+        <div class="md:hidden p-2.5 space-y-2">
           <div v-if="filteredSales.length === 0" class="py-16 text-center text-white/20 italic text-xs">
             {{ isLoading ? 'Loading...' : 'No transactions found.' }}
           </div>
@@ -164,52 +142,48 @@
             v-for="record in paginatedSales"
             :key="'card-' + record.id"
             @click="toggleCard(record.id)"
-            class="mobile-card relative bg-white/[0.03] rounded-lg p-2.5 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden"
-            :class="{ 'is-expanded': expandedCards.has(record.id) }"
+            class="mobile-card relative bg-white/[0.03] rounded-xl p-3 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden"
           >
-            <!-- Row 1: Code + Revenue + Status -->
+            <!-- Row 1: Code + Revenue -->
             <div class="flex items-center justify-between gap-2 mb-1">
-              <span class="text-violet-400 text-[0.7rem] font-bold truncate min-w-0 flex-1">{{ record.transaction_code }}</span>
+              <span class="text-violet-400 text-xs font-bold truncate min-w-0 flex-1">{{ record.transaction_code }}</span>
               <span class="text-emerald-400 text-sm font-black shrink-0">₱{{ formatNumber(record.total_amount) }}</span>
             </div>
             <!-- Row 2: Status + Date -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                <span class="px-1.5 py-px rounded-full text-[0.5rem] font-bold uppercase shrink-0"
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <span class="px-2 py-0.5 rounded-full text-[0.65rem] font-bold uppercase"
                   :class="getStatusClass(record.status || 'completed')">
                   {{ record.status || 'Completed' }}
                 </span>
-                <span class="text-[0.5rem] text-white/30 truncate">{{ formatDateShort(record.created_at) }}</span>
+                <span class="text-[0.65rem] text-white/40 truncate">{{ formatDateShort(record.created_at) }}</span>
               </div>
-              <span class="text-white/20 text-xs shrink-0" :class="{ '!text-indigo-400': expandedCards.has(record.id) }">›</span>
+              <span class="text-white/30 text-sm shrink-0" :class="{ '!text-indigo-400': expandedCards.has(record.id) }">›</span>
             </div>
 
             <!-- Expanded Content -->
-            <div v-if="expandedCards.has(record.id)" class="mt-2 pt-2 border-t border-white/[0.08] space-y-1.5">
-              <!-- Customer -->
-              <div class="bg-indigo-500/10 rounded-lg p-1.5">
-                <span class="text-[0.5rem] font-bold uppercase text-white/40 block">Customer</span>
-                <p class="text-[0.7rem] text-indigo-300 font-semibold leading-tight">{{ getCustomerDisplay(record) }}</p>
-                <span v-if="record.user_id" class="text-[0.45rem] text-indigo-400 font-bold uppercase">Registered</span>
-                <span v-else-if="record.customer_alias" class="text-[0.45rem] text-emerald-400 font-bold uppercase">Walk-in</span>
-                <span v-else class="text-[0.45rem] text-white/30 font-bold uppercase">Walk-in</span>
+            <div v-if="expandedCards.has(record.id)" class="mt-2.5 pt-2.5 border-t border-white/[0.08] space-y-2">
+              <div class="bg-indigo-500/10 rounded-lg p-2">
+                <span class="text-[0.65rem] font-bold uppercase text-white/40 block">Customer</span>
+                <p class="text-xs text-indigo-300 font-semibold mt-0.5">{{ getCustomerDisplay(record) }}</p>
+                <span v-if="record.user_id" class="text-[0.6rem] text-indigo-400 font-bold uppercase">Registered</span>
+                <span v-else-if="record.customer_alias" class="text-[0.6rem] text-emerald-400 font-bold uppercase">Walk-in</span>
+                <span v-else class="text-[0.6rem] text-white/30 font-bold uppercase">Walk-in</span>
               </div>
-              <!-- Items -->
               <div>
-                <span class="text-[0.5rem] font-bold uppercase text-white/40 block">Items ({{ record.items_summary.split(',').length }})</span>
-                <ul class="mt-0.5 space-y-px">
-                  <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-[0.6rem] text-white/60 flex items-start gap-1 leading-tight">
-                    <span class="text-indigo-400 shrink-0 mt-px">•</span>
+                <span class="text-[0.65rem] font-bold uppercase text-white/40 block">Items ({{ record.items_summary.split(',').length }})</span>
+                <ul class="mt-1 space-y-0.5">
+                  <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-[0.7rem] text-white/60 flex items-start gap-1.5 leading-tight">
+                    <span class="text-indigo-400 shrink-0 mt-0.5">•</span>
                     <span class="break-all min-w-0">{{ item.trim() }}</span>
                   </li>
                 </ul>
               </div>
-              <!-- Actions -->
-              <div class="flex gap-1.5 pt-1.5 border-t border-white/[0.08]">
-                <button class="flex-1 px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[0.6rem] font-bold transition-colors active:scale-95">
+              <div class="flex gap-2 pt-2 border-t border-white/[0.08]">
+                <button class="flex-1 px-2 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors active:scale-95">
                   Edit
                 </button>
-                <button class="flex-1 px-2 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded text-[0.6rem] font-bold transition-colors border border-rose-500/30 active:scale-95">
+                <button class="flex-1 px-2 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 rounded-lg text-xs font-bold transition-colors border border-rose-500/30 active:scale-95">
                   Delete
                 </button>
               </div>
@@ -223,15 +197,15 @@
         <button 
           @click="prevPage" 
           :disabled="currentPage === 1"
-          class="px-3 py-1.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-lg text-[0.65rem] font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
+          class="px-3 py-1.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
         >
           ‹ Prev
         </button>
-        <span class="text-white/50 text-[0.65rem] font-bold">{{ currentPage }}/{{ totalPages }}</span>
+        <span class="text-white/50 text-xs font-bold">{{ currentPage }}/{{ totalPages }}</span>
         <button 
           @click="nextPage" 
           :disabled="currentPage === totalPages"
-          class="px-3 py-1.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-lg text-[0.65rem] font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
+          class="px-3 py-1.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all border border-white/[0.08] active:scale-95 touch-manipulation"
         >
           Next ›
         </button>
@@ -313,24 +287,13 @@ const formatNumber = (num) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
 const formatDateShort = (dateStr) => {
   if (!dateStr) return '-';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
 const getStatusClass = (status) => {
@@ -340,7 +303,6 @@ const getStatusClass = (status) => {
     'pending': 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
     'processing': 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
     'cancelled': 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
-    'refunded': 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
   };
   return classes[status?.toLowerCase()] || 'bg-white/10 text-white/60 border border-white/[0.08]';
 };
@@ -350,10 +312,7 @@ const fetchSales = () => {
   runHeavyTaskWithoutBlockingUI(async () => {
     try {
       const response = await axios.get('/api/admin/getHistory', {
-        params: {
-          start_date: startDate.value,
-          end_date: endDate.value
-        }
+        params: { start_date: startDate.value, end_date: endDate.value }
       });
       if (Array.isArray(response.data)) {
         localSales.value = response.data;
@@ -370,9 +329,7 @@ const filteredSales = computed(() => {
   let result = localSales.value;
   
   if (statusFilter.value !== 'all') {
-    result = result.filter(s => 
-      (s.status || 'completed').toLowerCase() === statusFilter.value
-    );
+    result = result.filter(s => (s.status || 'completed').toLowerCase() === statusFilter.value);
   }
   
   if (searchQuery.value) {
@@ -386,18 +343,12 @@ const filteredSales = computed(() => {
   
   result = [...result].sort((a, b) => {
     switch (sortBy.value) {
-      case 'newest':
-        return new Date(b.created_at) - new Date(a.created_at);
-      case 'oldest':
-        return new Date(a.created_at) - new Date(b.created_at);
-      case 'highest':
-        return parseFloat(b.total_amount) - parseFloat(a.total_amount);
-      case 'lowest':
-        return parseFloat(a.total_amount) - parseFloat(b.total_amount);
-      case 'alpha':
-        return (a.transaction_code || '').localeCompare(b.transaction_code || '');
-      default:
-        return 0;
+      case 'newest': return new Date(b.created_at) - new Date(a.created_at);
+      case 'oldest': return new Date(a.created_at) - new Date(b.created_at);
+      case 'highest': return parseFloat(b.total_amount) - parseFloat(a.total_amount);
+      case 'lowest': return parseFloat(a.total_amount) - parseFloat(b.total_amount);
+      case 'alpha': return (a.transaction_code || '').localeCompare(b.transaction_code || '');
+      default: return 0;
     }
   });
   
@@ -406,8 +357,7 @@ const filteredSales = computed(() => {
 
 const paginatedSales = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredSales.value.slice(start, end);
+  return filteredSales.value.slice(start, start + itemsPerPage);
 });
 
 const totalPages = computed(() => Math.ceil(filteredSales.value.length / itemsPerPage));
@@ -417,17 +367,10 @@ const goToPage = (page) => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-const prevPage = () => {
-  if (currentPage.value > 1) goToPage(currentPage.value - 1);
-};
+const prevPage = () => { if (currentPage.value > 1) goToPage(currentPage.value - 1); };
+const nextPage = () => { if (currentPage.value < totalPages.value) goToPage(currentPage.value + 1); };
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) goToPage(currentPage.value + 1);
-};
-
-watch([searchQuery, statusFilter, sortBy], () => {
-  currentPage.value = 1;
-});
+watch([searchQuery, statusFilter, sortBy], () => { currentPage.value = 1; });
 
 const exportData = (type) => {
   window.location.href = `/api/admin/getHistory?export=${type}&start_date=${startDate.value}&end_date=${endDate.value}`;
@@ -435,21 +378,12 @@ const exportData = (type) => {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .responsive-table-to-cards {
-    position: relative;
-  }
-}
-
-.mobile-card {
-  position: relative;
-  overflow: hidden;
-}
+.mobile-card { position: relative; overflow: hidden; }
 
 .status-filter-btn {
-  padding: 0.25rem 0.6rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
