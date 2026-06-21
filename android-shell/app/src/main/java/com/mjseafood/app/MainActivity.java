@@ -11,11 +11,14 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
+    private ProgressBar progressBar;
     private static final String SITE_URL = "https://talabahan-system-1.onrender.com";
+    private static final String CHROME_UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webview);
+        progressBar = findViewById(R.id.progress_bar);
         setupWebView();
         webView.loadUrl(SITE_URL);
     }
@@ -45,6 +49,7 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setUserAgentString(CHROME_UA);
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -60,8 +65,27 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                progressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                progressBar.setVisibility(View.GONE);
+
+                view.evaluateJavascript(
+                    "(function(){" +
+                    "var o=document.getElementById('boot-splash');" +
+                    "if(o){o.style.opacity='0';setTimeout(function(){o.remove()},400);}" +
+                    "var b=document.querySelector('[class*=loading],[class*=spinner],[id*=loading],[id*=spinner]');" +
+                    "if(b){b.style.display='none';}" +
+                    "var s=document.getElementById('boot-text');" +
+                    "if(s){s.textContent='';}" +
+                    "return 'ok';" +
+                    "})()", null
+                );
             }
         });
 
