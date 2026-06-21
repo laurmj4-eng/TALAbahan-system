@@ -3,6 +3,13 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import axios from 'axios';
 import '../css/app.css';
 import '../css/recaptcha.css';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+// Show progress bar on manual full page reloads (e.g., login, logout)
+window.addEventListener('beforeunload', () => {
+  NProgress.start();
+});
 
 // Configure Axios
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -64,6 +71,12 @@ function initInertia() {
   }
 
   createInertiaApp({
+    progress: {
+      delay: 50,
+      color: '#3b82f6',
+      includeCSS: true,
+      showSpinner: true,
+    },
     page: initialPage, // CRITICAL: Use 'page' property, not 'initialPage'
     resolve: (name) => {
       const pages = import.meta.glob('./Page/**/*.vue');
