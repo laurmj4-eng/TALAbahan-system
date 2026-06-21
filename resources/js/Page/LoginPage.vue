@@ -166,6 +166,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Full-screen Google Sign-In overlay (mobile) -->
+    <teleport to="body">
+      <div
+        v-if="showGoogleOverlay"
+        class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm"
+        @click.self="showGoogleOverlay = false; googleLoading = false;"
+      >
+        <button
+          @click="showGoogleOverlay = false; googleLoading = false;"
+          class="absolute top-5 right-5 text-white/60 hover:text-white p-2"
+        >
+          <X :size="24" />
+        </button>
+        <p class="text-white text-lg font-bold mb-6">Sign in with Google</p>
+        <div id="google-button-container" class="flex items-center justify-center"></div>
+        <p class="text-white/40 text-xs mt-6">Select your Google account to continue</p>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -445,7 +464,19 @@ onMounted(async () => {
   // Preload Firebase Auth and Google Identity Services in parallel on page load
   // so they are ready instantly when the user clicks "Sign in with Google"
   if (window.FIREBASE_CONFIG?.apiKey) {
-    ensureFirebaseAuth();
+    ensureFirebaseAuth().then(async (ok) => {
+      if (!ok) return;
+      try {
+        const fb = await getFirebaseModules();
+        const result = await fb.getRedirectResult(auth);
+        if (result && result.user) {
+          googleLoading.value = true;
+          verifyWithBackend(result.user.email, result.user.displayName, 'google');
+        }
+      } catch (err) {
+        console.error("Firebase redirect result error:", err);
+      }
+    });
   }
   if (window.GOOGLE_CLIENT_ID) {
     loadGIS();
@@ -525,22 +556,57 @@ const handleLogin = async () => {
   }
 };
 
-/**
- * Google Sign-In handler using Google Identity Services (GIS).
- * 
- * On mobile: GIS shows a native overlay/bottom-sheet for account selection
- * that stays on the same page — no navigation to another page.
- * 
- * On desktop: GIS shows an in-page popup/overlay as well.
- * 
- * The GIS flow returns an ID token which we pass to Firebase Auth
- * via signInWithCredential, then verify with our backend.
- */
+const isMobile = () => /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+const showGoogleOverlay = ref(false);
+
+function initGoogleButton() {
+  const clientId = window.GOOGLE_CLIENT_ID;
+  if (!clientId || !window.google?.accounts?.id) return;
+
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: async (response) => {
+      showGoogleOverlay.value = false;
+      if (!response.credential) {
+        googleLoading.value = false;
+        return;
+      }
+      try {
+        const fb = _firebaseModules || await getFirebaseModules();
+        if (!auth) await ensureFirebaseAuth();
+        const credential = fb.GoogleAuthProvider.credential(response.credential);
+        const result = await fb.signInWithCredential(auth, credential);
+        await verifyWithBackend(result.user.email, result.user.displayName, 'google');
+      } catch (err) {
+        console.error('Google sign-in error:', err);
+        error.value = 'Google login failed. Please try again.';
+        googleLoading.value = false;
+      }
+    },
+    auto_select: false,
+    cancel_on_tap_outside: true,
+    context: 'signin',
+  });
+
+  const container = document.getElementById('google-button-container');
+  if (container) {
+    container.innerHTML = '';
+    window.google.accounts.id.renderButton(container, {
+      type: 'standard',
+      size: 'large',
+      theme: 'outline',
+      text: 'signin_with',
+      shape: 'rectangular',
+      width: 280,
+    });
+  }
+}
+
 const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
-  // Ensure Firebase Auth is ready
   if (!auth) {
     const ok = await ensureFirebaseAuth();
     if (!ok) {
@@ -551,17 +617,27 @@ const handleGoogleLogin = async () => {
   }
 
   const fb = _firebaseModules || await getFirebaseModules();
-  const clientId = window.GOOGLE_CLIENT_ID;
 
-  // If Google Client ID is configured, use GIS for in-page overlay (best mobile UX)
+  if (isMobile()) {
+    const clientId = window.GOOGLE_CLIENT_ID;
+    if (clientId && await loadGIS()) {
+      if (auth.currentUser) {
+        await fb.signOut(auth);
+      }
+      showGoogleOverlay.value = true;
+      await nextTick();
+      setTimeout(() => initGoogleButton(), 100);
+      return;
+    }
+  }
+
+  const clientId = window.GOOGLE_CLIENT_ID;
   if (clientId && await loadGIS()) {
     try {
-      // Sign out any existing Firebase user first
       if (auth.currentUser) {
         await fb.signOut(auth);
       }
 
-      // Use GIS to show the in-page Google account chooser overlay
       const idToken = await new Promise((resolve, reject) => {
         window.google.accounts.id.initialize({
           client_id: clientId,
@@ -578,32 +654,24 @@ const handleGoogleLogin = async () => {
           ux_mode: 'popup',
         });
 
-        // Show the One Tap / account chooser overlay
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed()) {
-            // One Tap not displayed (e.g., user dismissed before, or cooldown)
-            // Fall back to the GIS button flow which opens a small popup
             reject(new Error('ONE_TAP_NOT_DISPLAYED'));
           } else if (notification.isDismissedMoment()) {
-            // User explicitly closed the overlay
             reject(new Error('USER_DISMISSED'));
           }
         });
       });
 
-      // Use the GIS ID token to create a Firebase credential and sign in
       const credential = fb.GoogleAuthProvider.credential(idToken);
       const result = await fb.signInWithCredential(auth, credential);
       await verifyWithBackend(result.user.email, result.user.displayName, 'google');
     } catch (err) {
       if (err.message === 'USER_DISMISSED') {
-        // User closed the overlay — just reset state, no error
         googleLoading.value = false;
         return;
       }
       if (err.message === 'ONE_TAP_NOT_DISPLAYED') {
-        // One Tap couldn't display, fall back to Firebase signInWithPopup
-        console.log('GIS One Tap not available, falling back to Firebase popup');
         await fallbackFirebasePopup(fb);
         return;
       }
@@ -612,12 +680,10 @@ const handleGoogleLogin = async () => {
       googleLoading.value = false;
     }
   } else {
-    // No Google Client ID configured or GIS failed to load — use Firebase popup
     await fallbackFirebasePopup(fb);
   }
 };
 
-/** Fallback: use Firebase signInWithPopup (opens new tab on mobile) */
 async function fallbackFirebasePopup(fb) {
   try {
     if (auth.currentUser) {
@@ -629,7 +695,6 @@ async function fallbackFirebasePopup(fb) {
     if (err.code === 'auth/popup-closed-by-user') {
       googleLoading.value = false;
     } else if (err.code === 'auth/popup-blocked') {
-      // Last resort: redirect flow
       try {
         await fb.signInWithRedirect(auth, provider);
       } catch (redirectErr) {

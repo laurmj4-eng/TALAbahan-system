@@ -48,22 +48,26 @@ class ActivityLogger implements FilterInterface
         $statusCode = $response->getStatusCode();
 
         // Save to Database
-        $logModel = new ActivityLogModel();
-        $logModel->insert([
-            'user_id'       => $userId,
-            'user_identity' => $identity,
-            'role'          => $role,
-            'event'         => $event,
-            'device'        => $device,
-            'location'      => $location,
-            'ip_address'    => $ip,
-            'status_code'   => $statusCode,
-        ]);
+        try {
+            $logModel = new ActivityLogModel();
+            $logModel->insert([
+                'user_id'       => $userId,
+                'user_identity' => $identity,
+                'role'          => $role,
+                'event'         => $event,
+                'device'        => $device,
+                'location'      => $location,
+                'ip_address'    => $ip,
+                'status_code'   => $statusCode,
+            ]);
 
-        // 6. Update User Last Active
-        if ($userId) {
-            $userModel = new \App\Models\UserModel();
-            $userModel->update($userId, ['last_active' => date('Y-m-d H:i:s')]);
+            // 6. Update User Last Active
+            if ($userId) {
+                $userModel = new \App\Models\UserModel();
+                $userModel->update($userId, ['last_active' => date('Y-m-d H:i:s')]);
+            }
+        } catch (\Exception $e) {
+            log_message('error', '[ActivityLogger] Failed to log activity: ' . $e->getMessage());
         }
     }
 
