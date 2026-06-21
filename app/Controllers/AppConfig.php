@@ -23,6 +23,7 @@ class AppConfig extends BaseController
                 'appId'             => env('FIREBASE_APP_ID'),
                 'measurementId'     => env('FIREBASE_MEASUREMENT_ID'),
             ],
+            'GOOGLE_CLIENT_ID'   => env('GOOGLE_CLIENT_ID'),
         ];
 
         $js = 'window.BASE_URL=' . json_encode($config['BASE_URL']) . ';'
@@ -30,7 +31,8 @@ class AppConfig extends BaseController
             . 'window.CSRF_HASH=' . json_encode($config['CSRF_HASH']) . ';'
             . 'window.RECAPTCHA_ENABLED=' . json_encode($config['RECAPTCHA_ENABLED']) . ';'
             . 'window.RECAPTCHA_SITE_KEY=' . json_encode($config['RECAPTCHA_SITE_KEY']) . ';'
-            . 'window.FIREBASE_CONFIG=' . json_encode($config['FIREBASE_CONFIG']) . ';';
+            . 'window.FIREBASE_CONFIG=' . json_encode($config['FIREBASE_CONFIG']) . ';'
+            . 'window.GOOGLE_CLIENT_ID=' . json_encode($config['GOOGLE_CLIENT_ID']) . ';';
 
         return $this->response
             ->setHeader('Content-Type', 'application/javascript; charset=utf-8')
