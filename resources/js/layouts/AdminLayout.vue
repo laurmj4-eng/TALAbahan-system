@@ -1,24 +1,21 @@
 <template>
   <div class="flex h-screen bg-[#0f172a] overflow-hidden w-full font-['Plus_Jakarta_Sans',sans-serif]">
-    <!-- Mobile Top Bar (compact for built-in nav phones) -->
-    <div class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-black/40 backdrop-blur-xl border-b border-white/[0.08] z-[50] flex items-center px-3 gap-3">
-      <button @click="isSidebarOpen = !isSidebarOpen" class="w-8 h-8 bg-violet-500/20 text-white rounded-lg flex items-center justify-center border border-violet-500/30 cursor-pointer active:scale-95 transition-all">
-        <Menu class="w-5 h-5" />
-      </button>
+    <!-- Mobile Top Bar -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-12 bg-black/40 backdrop-blur-xl border-b border-white/[0.08] z-[50] flex items-center px-3 gap-3">
       <div class="flex items-center gap-2">
-        <Gem class="text-[#a855f7] w-5 h-5" />
-        <h2 class="text-base font-bold text-white tracking-wide">Mj Pogi</h2>
+        <Gem class="text-[#a855f7] w-4 h-4" />
+        <h2 class="text-sm font-bold text-white tracking-wide">Mj Pogi</h2>
       </div>
     </div>
 
-    <!-- Sidebar Overlay -->
+    <!-- Sidebar Overlay (mobile) -->
     <div
       v-if="isSidebarOpen"
       @click="isSidebarOpen = false"
       class="fixed inset-0 z-[99998] bg-black/60 backdrop-blur-[4px] lg:hidden transition-all duration-300 touch-none"
     ></div>
 
-    <!-- Sidebar -->
+    <!-- Desktop Sidebar -->
     <aside
       :class="[
         'fixed inset-y-0 left-0 z-[99999] w-[260px] transition-all duration-400 cubic-bezier(0.16,1,0.3,1) lg:static lg:translate-x-0',
@@ -27,68 +24,86 @@
       class="bg-[#0f172a] border-r border-white/[0.08] flex flex-col min-h-screen"
     >
       <!-- Header -->
-      <div class="p-7 px-5 text-center border-b border-white/[0.08] bg-white/[0.02]">
-        <div class="flex items-center justify-center gap-3 mb-1.5">
+      <div class="p-5 px-5 text-center border-b border-white/[0.08] bg-white/[0.02]">
+        <div class="flex items-center justify-center gap-3 mb-1">
           <Gem class="text-[#a855f7] w-6 h-6 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-          <h2 class="m-0 text-[1.3rem] font-bold text-white tracking-wide">Mj Pogi</h2>
+          <h2 class="m-0 text-[1.2rem] font-bold text-white tracking-wide">Mj Pogi</h2>
         </div>
-        <small class="block text-violet-400 font-bold text-[0.75rem] tracking-widest uppercase">Superadmin</small>
+        <small class="block text-violet-400 font-bold text-[0.7rem] tracking-widest uppercase">Superadmin</small>
       </div>
       
       <!-- Menu -->
-      <nav class="flex-1 px-2 py-5 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-violet-500/20 scrollbar-track-transparent">
-        <div v-for="section in navSections" :key="section.title" class="mb-4">
-          <div class="px-4 pb-3 flex items-center gap-2 text-[0.7rem] font-bold tracking-[1.2px] text-slate-500 uppercase">
-            <component :is="section.icon" class="w-3.5 h-3.5" />
+      <nav class="flex-1 px-2 py-4 space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-violet-500/20 scrollbar-track-transparent">
+        <div v-for="section in navSections" :key="section.title" class="mb-3">
+          <div class="px-3 pb-2 flex items-center gap-2 text-[0.65rem] font-bold tracking-[1.2px] text-slate-500 uppercase">
+            <component :is="section.icon" class="w-3 h-3" />
             <span>{{ section.title }}</span>
           </div>
           
-          <ul class="space-y-1 list-none p-0 m-0">
+          <ul class="space-y-0.5 list-none p-0 m-0">
             <li v-for="item in section.items" :key="item.path">
               <Link
                 :href="item.path"
-                class="flex items-center gap-3 px-4 py-3 text-white/70 font-medium text-[0.9rem] rounded-xl border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
+                class="flex items-center gap-2.5 px-3 py-2.5 text-white/70 font-medium text-[0.85rem] rounded-xl border-l-4 border-transparent transition-all duration-300 hover:bg-white/5 hover:text-white group relative"
                 :class="{ 'bg-white/5 text-white font-semibold border-l-4 !border-indigo-500 shadow-lg': $page.url.startsWith(item.path) }"
               >
-                <component :is="item.icon" class="w-6 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7]" :class="{ 'text-violet-300': $page.url.startsWith(item.path) }" />
+                <component :is="item.icon" class="w-5 text-center transition-all group-hover:scale-110 group-hover:text-[#a855f7]" :class="{ 'text-violet-300': $page.url.startsWith(item.path) }" />
                 <span>{{ item.name }}</span>
               </Link>
             </li>
           </ul>
-          <div v-if="section.divider" class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-3 my-4"></div>
+          <div v-if="section.divider" class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-3 my-3"></div>
         </div>
       </nav>
 
       <!-- Footer -->
-      <div class="p-4 bg-black/20 border-t border-white/[0.08]">
-        <div class="flex items-center gap-3 p-3 bg-white/[0.03] rounded-xl mb-3 border border-white/[0.05]">
-          <div class="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-2xl text-[#a855f7] border border-violet-500/20">
+      <div class="p-3 bg-black/20 border-t border-white/[0.08]">
+        <div class="flex items-center gap-2.5 p-2.5 bg-white/[0.03] rounded-xl mb-2.5 border border-white/[0.05]">
+          <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center text-xl text-[#a855f7] border border-violet-500/20">
             <UserCircle />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="text-[0.9rem] text-white font-semibold truncate">{{ username }}</div>
-            <div class="text-[0.75rem] text-violet-400 font-medium">Admin</div>
+            <div class="text-[0.8rem] text-white font-semibold truncate">{{ username }}</div>
+            <div class="text-[0.7rem] text-violet-400 font-medium">Admin</div>
           </div>
         </div>
-        <button @click="handleLogout" class="flex items-center justify-center gap-2.5 w-full p-3 bg-rose-500/10 border border-rose-500/20 text-[#fca5a5] rounded-xl font-bold text-[0.9rem] hover:bg-rose-500/20 hover:text-white hover:border-rose-500/40 hover:-translate-y-0.5 transition-all shadow-lg active:scale-95 cursor-pointer">
+        <button @click="handleLogout" class="flex items-center justify-center gap-2 w-full p-2.5 bg-rose-500/10 border border-rose-500/20 text-[#fca5a5] rounded-xl font-bold text-[0.85rem] hover:bg-rose-500/20 hover:text-white hover:border-rose-500/40 transition-all active:scale-95 cursor-pointer">
           <LogOut class="w-4 h-4" />
-          <span>Logout System</span>
+          <span>Logout</span>
         </button>
       </div>
     </aside>
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-h-0 relative">
-      <!-- Background Gradient (Matching header.php) -->
+      <!-- Background Gradient -->
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
-      <!-- Page Content (pt-16 for compact mobile top bar, safe-area for gesture nav) -->
-      <main class="flex-1 overflow-y-auto pt-20 lg:pt-10 p-3 md:p-6 lg:p-10 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <!-- Page Content (pt-12 for mobile top bar, pb-16 for bottom nav) -->
+      <main class="flex-1 overflow-y-auto pt-14 pb-20 lg:pt-4 lg:pb-4 p-3 md:p-6 lg:p-8 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: max(env(safe-area-inset-bottom, 0px), 5rem);">
         <div class="space-y-4">
           <slot></slot>
         </div>
       </main>
     </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-black/60 backdrop-blur-xl border-t border-white/[0.08]" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <div class="flex items-center justify-around h-14">
+        <Link
+          v-for="item in bottomNavItems"
+          :key="item.path"
+          :href="item.path"
+          class="flex flex-col items-center justify-center gap-0.5 w-full h-full transition-all"
+          :class="$page.url.startsWith(item.path) ? 'text-violet-400' : 'text-white/50'"
+        >
+          <component :is="item.icon" class="w-5 h-5 transition-transform" :class="{ 'scale-110': $page.url.startsWith(item.path) }" />
+          <span class="text-[0.6rem] font-bold tracking-wide">{{ item.name }}</span>
+          <div v-if="$page.url.startsWith(item.path)" class="w-1 h-1 rounded-full bg-violet-400 -mt-0.5"></div>
+        </Link>
+      </div>
+    </nav>
+
     <Chatbot role="admin" />
   </div>
 </template>
@@ -117,12 +132,21 @@ import {
   History,
   MapPin,
   Ticket,
-  FileText
+  FileText,
+  Plus
 } from 'lucide-vue-next';
 import Chatbot from '../components/Chatbot.vue';
 
 const isSidebarOpen = ref(false);
 const username = ref(localStorage.getItem('username') || 'Admin');
+
+const bottomNavItems = [
+  { name: 'Home', path: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Products', path: '/admin/products', icon: Fish },
+  { name: 'POS', path: '/admin/pos', icon: Shell },
+  { name: 'Orders', path: '/admin/orders', icon: ClipboardList },
+  { name: 'More', path: '/admin/users', icon: Users },
+];
 
 const navSections = [
   {
@@ -211,7 +235,7 @@ const handleLogout = () => {
   overscroll-behavior-y: contain;
   backface-visibility: hidden;
   transform: translate3d(0,0,0);
-  will-change: transform; /* PERF FIX: 'scroll-position' is not a valid will-change value; corrected to 'transform' */
+  will-change: transform;
 }
 
 /* Custom Scrollbar */
