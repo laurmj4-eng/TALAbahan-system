@@ -83,7 +83,7 @@
       <div class="absolute inset-0 z-[-1] bg-gradient-to-br from-[#1e1b4b] via-[#3b0764] to-[#082f49] animate-[gradientBg_15s_ease_infinite] bg-[length:300%_300%]" style="contain: strict; will-change: background-position;"></div>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto pt-14 lg:pt-4 p-3 md:p-6 lg:p-8 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <main class="flex-1 overflow-y-auto pt-14 lg:pt-4 px-3 pb-4 md:px-6 lg:px-8 md:p-6 lg:p-8 relative smooth-scroll-container overflow-x-hidden" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <div class="space-y-4">
           <slot></slot>
         </div>

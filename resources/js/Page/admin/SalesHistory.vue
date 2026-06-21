@@ -22,7 +22,7 @@
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-3 md:space-y-4">
+      <div class="bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08] space-y-3">
         <div class="flex gap-2">
           <div class="relative flex-1 min-w-0">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -30,11 +30,11 @@
               v-model="searchQuery"
               type="text" 
               placeholder="Search..." 
-              class="w-full pl-9 pr-3 py-2 bg-black/30 border border-white/[0.08] rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500/50"
+              class="w-full pl-9 pr-3 py-2.5 bg-black/30 border border-white/[0.08] rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500/50"
             >
           </div>
           <div class="relative group shrink-0">
-            <button class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
+            <button class="flex items-center gap-1.5 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
               <Download class="w-3.5 h-3.5" /> Export
             </button>
             <div class="absolute right-0 mt-2 w-40 bg-gray-900 border border-white/[0.08] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Status Filter (Mobile) -->
-        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1 md:hidden">
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 md:hidden">
           <button
             v-for="opt in statusOptions"
             :key="opt.value"
@@ -95,7 +95,7 @@
       </div>
 
       <!-- Sales Cards / Table -->
-      <GlassCard customClass="overflow-hidden responsive-table-to-cards">
+      <GlassCard customClass="responsive-table-to-cards">
         <!-- Desktop Table -->
         <div class="overflow-x-auto hidden md:block">
           <table class="w-full text-left border-collapse">
@@ -134,7 +134,7 @@
         </div>
 
         <!-- Mobile Cards -->
-        <div class="md:hidden p-2.5 space-y-2">
+        <div class="md:hidden p-3 space-y-2.5">
           <div v-if="filteredSales.length === 0" class="py-16 text-center text-white/20 italic text-xs">
             {{ isLoading ? 'Loading...' : 'No transactions found.' }}
           </div>
@@ -142,40 +142,40 @@
             v-for="record in paginatedSales"
             :key="'card-' + record.id"
             @click="toggleCard(record.id)"
-            class="mobile-card relative bg-white/[0.03] rounded-xl p-3 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer overflow-hidden"
+            class="mobile-card relative bg-white/[0.03] rounded-xl p-3 border border-white/[0.08] transition-all duration-200 active:scale-[0.98] cursor-pointer"
           >
             <!-- Row 1: Code + Revenue -->
-            <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
               <span class="text-violet-400 text-xs font-bold truncate min-w-0 flex-1">{{ record.transaction_code }}</span>
-              <span class="text-emerald-400 text-sm font-black shrink-0">₱{{ formatNumber(record.total_amount) }}</span>
+              <span class="text-emerald-400 text-sm font-black shrink-0 pl-2">₱{{ formatNumber(record.total_amount) }}</span>
             </div>
             <!-- Row 2: Status + Date -->
-            <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center justify-between gap-2 mb-1">
               <div class="flex items-center gap-2 min-w-0 flex-1">
-                <span class="px-2 py-0.5 rounded-full text-[0.65rem] font-bold uppercase"
+                <span class="px-2 py-0.5 rounded-full text-[0.65rem] font-bold uppercase shrink-0"
                   :class="getStatusClass(record.status || 'completed')">
                   {{ record.status || 'Completed' }}
                 </span>
                 <span class="text-[0.65rem] text-white/40 truncate">{{ formatDateShort(record.created_at) }}</span>
               </div>
-              <span class="text-white/30 text-sm shrink-0" :class="{ '!text-indigo-400': expandedCards.has(record.id) }">›</span>
+              <span class="text-white/30 text-xs shrink-0" :class="{ '!text-indigo-400': expandedCards.has(record.id) }">›</span>
             </div>
 
             <!-- Expanded Content -->
-            <div v-if="expandedCards.has(record.id)" class="mt-2.5 pt-2.5 border-t border-white/[0.08] space-y-2">
-              <div class="bg-indigo-500/10 rounded-lg p-2">
-                <span class="text-[0.65rem] font-bold uppercase text-white/40 block">Customer</span>
-                <p class="text-xs text-indigo-300 font-semibold mt-0.5">{{ getCustomerDisplay(record) }}</p>
-                <span v-if="record.user_id" class="text-[0.6rem] text-indigo-400 font-bold uppercase">Registered</span>
-                <span v-else-if="record.customer_alias" class="text-[0.6rem] text-emerald-400 font-bold uppercase">Walk-in</span>
-                <span v-else class="text-[0.6rem] text-white/30 font-bold uppercase">Walk-in</span>
+            <div v-if="expandedCards.has(record.id)" class="mt-2.5 pt-2.5 border-t border-white/[0.08] space-y-2.5">
+              <div class="bg-indigo-500/10 rounded-lg p-2.5">
+                <span class="text-xs font-bold uppercase text-white/40 block mb-0.5">Customer</span>
+                <p class="text-xs text-indigo-300 font-semibold">{{ getCustomerDisplay(record) }}</p>
+                <span v-if="record.user_id" class="text-[0.65rem] text-indigo-400 font-bold uppercase">Registered</span>
+                <span v-else-if="record.customer_alias" class="text-[0.65rem] text-emerald-400 font-bold uppercase">Walk-in</span>
+                <span v-else class="text-[0.65rem] text-white/30 font-bold uppercase">Walk-in</span>
               </div>
               <div>
-                <span class="text-[0.65rem] font-bold uppercase text-white/40 block">Items ({{ record.items_summary.split(',').length }})</span>
-                <ul class="mt-1 space-y-0.5">
+                <span class="text-xs font-bold uppercase text-white/40 block mb-0.5">Items ({{ record.items_summary.split(',').length }})</span>
+                <ul class="space-y-0.5">
                   <li v-for="(item, idx) in record.items_summary.split(',')" :key="idx" class="text-[0.7rem] text-white/60 flex items-start gap-1.5 leading-tight">
                     <span class="text-indigo-400 shrink-0 mt-0.5">•</span>
-                    <span class="break-all min-w-0">{{ item.trim() }}</span>
+                    <span class="break-words min-w-0">{{ item.trim() }}</span>
                   </li>
                 </ul>
               </div>
@@ -381,7 +381,7 @@ const exportData = (type) => {
 .mobile-card { position: relative; overflow: hidden; }
 
 .status-filter-btn {
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 600;
