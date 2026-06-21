@@ -12,6 +12,11 @@ const RECAPTCHA_SCRIPT_URL =
 /** @type {Promise<void> | null} */
 let loadPromise = null;
 
+/** Reset cached load promise so the next renderWidget attempt re-loads the script. */
+export function resetLoadPromise() {
+  loadPromise = null;
+}
+
 /** @type {Array<() => void>} */
 const readyQueue = [];
 
@@ -94,6 +99,18 @@ export function loadRecaptchaV2Script() {
     };
 
     document.head.appendChild(script);
+
+    setTimeout(() => {
+      if (!window.grecaptcha?.render && loadPromise) {
+        loadPromise = null;
+        readyQueue.length = 0;
+        reject(
+          new Error(
+            'reCAPTCHA script loaded but failed to initialize. Please disable ad blockers and refresh.',
+          ),
+        );
+      }
+    }, 8000);
   });
 
   return loadPromise;
@@ -113,6 +130,8 @@ export async function whenRecaptchaReady(fn) {
     };
     if (window.grecaptcha?.ready) {
       window.grecaptcha.ready(run);
+    } else if (window.grecaptcha?.render) {
+      run();
     } else {
       readyQueue.push(run);
     }

@@ -1,5 +1,5 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { loadRecaptchaV2Script, whenRecaptchaReady } from './recaptchaLoader';
+import { loadRecaptchaV2Script, whenRecaptchaReady, resetLoadPromise } from './recaptchaLoader';
 import { getRecaptchaOriginDiagnostic, logRecaptchaOriginDiagnostic } from './recaptchaDiagnostics';
 
 /**
@@ -29,7 +29,7 @@ export function useRecaptcha(containerRef, options = {}) {
   // Always "normal" — compact + parent transforms break the image puzzle popup.
   const getSize = () => options.size ?? 'normal';
 
-  const renderWidget = async () => {
+  const renderWidget = async (attempt = 0) => {
     if (!enabled) {
       return;
     }
@@ -52,6 +52,11 @@ export function useRecaptcha(containerRef, options = {}) {
       await loadRecaptchaV2Script();
       scriptReady.value = true;
     } catch (err) {
+      if (attempt < 2) {
+        resetLoadPromise();
+        await new Promise((r) => setTimeout(r, 500));
+        return renderWidget(attempt + 1);
+      }
       recaptchaError.value = err.message;
       return;
     }
@@ -62,6 +67,10 @@ export function useRecaptcha(containerRef, options = {}) {
       }
 
       if (!window.grecaptcha?.render) {
+        if (attempt < 2) {
+          setTimeout(() => renderWidget(attempt + 1), 300);
+          return;
+        }
         recaptchaError.value = 'reCAPTCHA script did not initialize grecaptcha.render.';
         return;
       }
@@ -97,8 +106,13 @@ export function useRecaptcha(containerRef, options = {}) {
         }
       } catch (err) {
         console.error('[reCAPTCHA] render error:', err);
+        if (attempt < 2) {
+          destroyWidget();
+          setTimeout(() => renderWidget(attempt + 1), 300);
+          return;
+        }
         recaptchaError.value =
-          'Could not display reCAPTCHA. Confirm the key is reCAPTCHA v2 ("I\'m not a robot"), not v3 or Enterprise.';
+          'Could not display reCAPTCHA. Please check your internet connection and try again.';
       }
     });
   };
