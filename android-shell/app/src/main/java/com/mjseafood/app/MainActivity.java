@@ -1,10 +1,16 @@
 package com.mjseafood.app;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -14,12 +20,26 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import androidx.core.content.FileProvider;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
     private ProgressBar progressBar;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static final String SITE_URL = "https://talabahan-system-1.onrender.com";
+    private static final String VERSION_URL = "https://talabahan-system-1.onrender.com/version.json";
+    private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
     private static final String[] EXTERNAL_HOSTS = {
         "accounts.google.com",
         "google.com",
@@ -43,6 +63,87 @@ public class MainActivity extends Activity {
         progressBar = findViewById(R.id.progress_bar);
         setupWebView();
         webView.loadUrl(SITE_URL);
+
+        checkForUpdates();
+    }
+
+    private void checkForUpdates() {
+        new Thread(() -> {
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(VERSION_URL).openConnection();
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
+                conn.setRequestMethod("GET");
+
+                if (conn.getResponseCode() != 200) return;
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) sb.append(line);
+                reader.close();
+                conn.disconnect();
+
+                JSONObject json = new JSONObject(sb.toString());
+                int remoteVersion = json.getInt("versionCode");
+                String apkUrl = json.getString("apkUrl");
+
+                int currentVersion = BuildConfig.VERSION_CODE;
+                if (remoteVersion > currentVersion) {
+                    mainHandler.post(() -> downloadUpdate(apkUrl));
+                }
+            } catch (Exception ignored) {
+            }
+        }).start();
+    }
+
+    private void downloadUpdate(String apkUrl) {
+        Toast.makeText(this, "New update available. Downloading...", Toast.LENGTH_LONG).show();
+
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(apkUrl));
+        request.setTitle("TALAbahan Update");
+        request.setDescription("Downloading latest version...");
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "talabahan-update.apk");
+        request.setAllowedOverMetered(true);
+        request.setAllowedOverRoaming(true);
+
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        long downloadId = manager.enqueue(request);
+
+        new Thread(() -> {
+            DownloadManager.Query query = new DownloadManager.Query();
+            query.setFilterById(downloadId);
+
+            boolean downloading = true;
+            while (downloading) {
+                Cursor cursor = manager.query(query);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                    if (status == DownloadManager.STATUS_SUCCESSFUL || status == DownloadManager.STATUS_FAILED) {
+                        downloading = false;
+                    }
+                }
+                if (cursor != null) cursor.close();
+                if (downloading) {
+                    try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                }
+            }
+
+            File apkFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "talabahan-update.apk");
+            if (apkFile.exists()) {
+                mainHandler.post(() -> installApk(apkFile));
+            }
+        }).start();
+    }
+
+    private void installApk(File apkFile) {
+        Uri apkUri = FileProvider.getUriForFile(this, AUTHORITY, apkFile);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void setupWebView() {
