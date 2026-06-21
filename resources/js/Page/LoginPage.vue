@@ -7,7 +7,7 @@
     }"
   >
     <div class="login-content-container">
-      <div class="w-full max-w-[320px] px-3 md:px-0">
+      <div class="w-full max-w-[340px] md:max-w-[440px] px-3 md:px-0">
         <div class="auth-card" ref="cardRef" :style="{ transform: cardScale < 1 ? `scale(${cardScale})` : undefined, transformOrigin: 'top center' }">
 
           <!-- Logo -->
@@ -22,14 +22,14 @@
             />
           </div>
 
-          <h2 class="text-xl md:text-3xl font-black text-white mb-0 md:mb-1 tracking-tight">TALAbahan System</h2>
-          <p class="text-white/50 font-medium mb-3 md:mb-6 text-[10px] md:text-sm">Welcome back! Please login to your account.</p>
+          <h2 class="text-2xl md:text-4xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
+          <p class="text-white/50 font-medium mb-4 md:mb-8 text-[11px] md:text-base">Welcome back! Please login to your account.</p>
 
-          <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-2 md:space-y-4 text-left">
+          <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-3 md:space-y-6 text-left">
 
             <!-- Email Field -->
             <div class="relative">
-              <label for="email" class="block text-[10px] md:text-[11px] font-semibold text-white/90 mb-1 tracking-wide">Email Address</label>
+              <label for="email" class="block text-[11px] md:text-[13px] font-semibold text-white/90 mb-1.5 md:mb-2 tracking-wide">Email Address</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -53,7 +53,7 @@
 
             <!-- Password Field -->
             <div class="relative">
-              <label for="password" class="block text-[10px] md:text-[11px] font-semibold text-white/90 mb-1 tracking-wide">Password</label>
+              <label for="password" class="block text-[11px] md:text-[13px] font-semibold text-white/90 mb-1.5 md:mb-2 tracking-wide">Password</label>
               <div class="relative flex items-center">
                 <span
                   class="absolute left-3.5 text-white/50 transition-all duration-200"
@@ -84,11 +84,10 @@
             </div>
 
             <!-- Forgot Password -->
-            <div class="text-center pt-0">
+            <div class="text-center pt-1 md:pt-2">
               <a
                 href="/forgot-password"
-                class="text-white font-bold hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
-                style="font-size: 11px;"
+                class="text-white font-bold hover:text-blue-300 transition-colors underline-offset-4 hover:underline text-[11px] md:text-[13px]"
               >
                 Forgot Password?
               </a>
@@ -201,7 +200,7 @@
 /* ── Auth Card ─────────────────────────────────────────────── */
 .auth-card {
   width: 100%;
-  max-width: 320px;
+  max-width: 100%; /* Let Tailwind width classes control this */
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.25rem;
@@ -280,6 +279,10 @@
   p {
     margin-bottom: 0.5rem !important;
   }
+
+  input {
+    font-size: 16px !important;
+  }
 }
 
 @media (max-width: 380px) {
@@ -311,7 +314,7 @@ async function getFirebaseModules() {
 
 const windowObj = window;
 const loginInputClass =
-  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-3 bg-black/20 border border-white/15 text-[13px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
+  'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-4 bg-black/20 border border-white/15 text-[13px] md:text-[15px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
 
 const email = ref('');
 const password = ref('');
@@ -331,6 +334,11 @@ function recalcCardScale() {
   nextTick(() => {
     const card = cardRef.value;
     if (!card) return;
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      cardScale.value = 1;
+      return;
+    }
     const vh = window.visualViewport?.height || window.innerHeight;
     const cardH = card.getBoundingClientRect().height;
     const maxH = vh - 32;
@@ -400,22 +408,23 @@ onMounted(async () => {
     showRecaptcha.value = false;
   }
 
-  // Check for Google redirect result (lazy-load Firebase only if redirect params are in URL)
-  if (window.FIREBASE_CONFIG?.apiKey && window.location.href.includes('apiKey')) {
-    const ok = await ensureFirebaseAuth();
-    if (ok) {
-      const fb = await getFirebaseModules();
-      try {
-        const result = await fb.getRedirectResult(auth);
-        if (result) {
-          googleLoading.value = true;
-          verifyWithBackend(result.user.email, result.user.displayName, 'google');
+  // Preload Firebase Auth to ensure signInWithPopup isn't blocked by mobile browsers due to lazy-loading delays
+  if (window.FIREBASE_CONFIG?.apiKey) {
+    ensureFirebaseAuth().then(async (ok) => {
+      if (ok && window.location.href.includes('apiKey')) {
+        const fb = await getFirebaseModules();
+        try {
+          const result = await fb.getRedirectResult(auth);
+          if (result) {
+            googleLoading.value = true;
+            verifyWithBackend(result.user.email, result.user.displayName, 'google');
+          }
+        } catch (err) {
+          console.error("Firebase redirect error:", err);
+          error.value = "Google redirect failed. Please try again.";
         }
-      } catch (err) {
-        console.error("Firebase redirect error:", err);
-        error.value = "Google redirect failed. Please try again.";
       }
-    }
+    });
   }
 });
 
@@ -496,27 +505,25 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
-  // Lazy-init Firebase on first Google Sign-In click
-  const ok = await ensureFirebaseAuth();
-  if (!ok) {
-    error.value = 'Google Sign-In is not configured correctly.';
-    googleLoading.value = false;
-    return;
+  // Lazy-init Firebase on first Google Sign-In click, but skip if already preloaded
+  if (!auth) {
+    const ok = await ensureFirebaseAuth();
+    if (!ok) {
+      error.value = 'Google Sign-In is not configured correctly.';
+      googleLoading.value = false;
+      return;
+    }
   }
 
   try {
-    const fb = await getFirebaseModules();
+    // fb is loaded by getFirebaseModules and cached
+    const fb = _firebaseModules || await getFirebaseModules();
     const result = await fb.signInWithPopup(auth, provider);
     await verifyWithBackend(result.user.email, result.user.displayName, 'google');
   } catch (err) {
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-      try {
-        const fb = await getFirebaseModules();
-        await fb.signInWithRedirect(auth, provider);
-      } catch (redirectErr) {
-        error.value = 'Google login failed: ' + redirectErr.message;
-        googleLoading.value = false;
-      }
+      error.value = 'Please allow popups for this site to sign in with Google.';
+      googleLoading.value = false;
     } else {
       error.value = 'Google login failed: ' + err.message;
       googleLoading.value = false;
