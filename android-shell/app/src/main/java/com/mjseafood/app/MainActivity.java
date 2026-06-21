@@ -1,14 +1,11 @@
 package com.mjseafood.app;
 
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -26,9 +23,13 @@ import androidx.core.content.FileProvider;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -66,9 +67,10 @@ public class MainActivity extends Activity {
         progressBar = findViewById(R.id.progress_bar);
         setupWebView();
 
-        handleDeepLinkIntent(getIntent());
-
-        webView.loadUrl(SITE_URL);
+        if (!handleDeepLinkIntent(getIntent())) {
+            webView.loadUrl(SITE_URL);
+        }
+        
         checkForUpdates();
     }
 
@@ -79,8 +81,8 @@ public class MainActivity extends Activity {
         handleDeepLinkIntent(intent);
     }
 
-    private void handleDeepLinkIntent(Intent intent) {
-        if (intent == null || intent.getData() == null) return;
+    private boolean handleDeepLinkIntent(Intent intent) {
+        if (intent == null || intent.getData() == null) return false;
 
         Uri data = intent.getData();
         if ("talabahan".equals(data.getScheme()) && "auth".equals(data.getHost())) {
@@ -91,7 +93,9 @@ public class MainActivity extends Activity {
                 webView.loadUrl(SITE_URL);
             }
             intent.setData(null);
+            return true;
         }
+        return false;
     }
 
     private void checkForUpdates() {
@@ -121,6 +125,7 @@ public class MainActivity extends Activity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                
                 if (remoteVersion > currentVersion) {
                     mainHandler.post(() -> downloadUpdate(apkUrl));
                 }
@@ -132,50 +137,45 @@ public class MainActivity extends Activity {
     private void downloadUpdate(String apkUrl) {
         Toast.makeText(this, "New update available. Downloading...", Toast.LENGTH_LONG).show();
 
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(apkUrl));
-        request.setTitle("TALAbahan Update");
-        request.setDescription("Downloading latest version...");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "talabahan-update.apk");
-        request.setAllowedOverMetered(true);
-        request.setAllowedOverRoaming(true);
-
-        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        long downloadId = manager.enqueue(request);
-
         new Thread(() -> {
-            DownloadManager.Query query = new DownloadManager.Query();
-            query.setFilterById(downloadId);
+            try {
+                URL url = new URL(apkUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.connect();
 
-            boolean downloading = true;
-            while (downloading) {
-                Cursor cursor = manager.query(query);
-                if (cursor != null && cursor.moveToFirst()) {
-                    int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-                    if (status == DownloadManager.STATUS_SUCCESSFUL || status == DownloadManager.STATUS_FAILED) {
-                        downloading = false;
-                    }
-                }
-                if (cursor != null) cursor.close();
-                if (downloading) {
-                    try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-                }
-            }
+                File apkFile = new File(getCacheDir(), "talabahan-update.apk");
+                InputStream input = new BufferedInputStream(url.openStream());
+                OutputStream output = new FileOutputStream(apkFile);
 
-            File apkFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "talabahan-update.apk");
-            if (apkFile.exists()) {
+                byte[] data = new byte[1024];
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                input.close();
+
                 mainHandler.post(() -> installApk(apkFile));
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> Toast.makeText(MainActivity.this, "Update download failed.", Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
 
     private void installApk(File apkFile) {
-        Uri apkUri = FileProvider.getUriForFile(this, AUTHORITY, apkFile);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        try {
+            Uri apkUri = FileProvider.getUriForFile(this, AUTHORITY, apkFile);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupWebView() {
