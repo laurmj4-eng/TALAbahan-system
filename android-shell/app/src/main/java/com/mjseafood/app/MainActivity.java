@@ -191,24 +191,37 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setUserAgentString(settings.getUserAgentString() + " TALAbahanAndroidApp");
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
-        cookieManager.setAcceptThirdPartyCookies(webView, true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(webView, true);
+        }
+        cookieManager.setAcceptFileSchemeCookies();
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (isExternalAuthUrl(url)) {
-                    String mobileAuthRedirect = MOBILE_AUTH_URL + "?redirect_uri=" + Uri.encode(DEEP_LINK_SCHEME);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mobileAuthRedirect));
-                    startActivity(intent);
+                    String redirectParam = Uri.encode(DEEP_LINK_SCHEME);
+                    String separator = url.contains("?") ? "&" : "?";
+                    String authUrl = url + separator + "redirect_uri=" + redirectParam;
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
+                    intent.setPackage("com.android.chrome");
+                    try {
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        intent.setPackage(null);
+                        startActivity(intent);
+                    }
                     return true;
                 }
                 if (url.startsWith(BASE_URL)) {
                     if (!url.contains("auth_mode=mobile")) {
-                        String separator = url.contains("?") ? "&" : "?";
-                        url = url + separator + "auth_mode=mobile";
+                        String sep = url.contains("?") ? "&" : "?";
+                        url = url + sep + "auth_mode=mobile";
                     }
                     return false;
                 }
