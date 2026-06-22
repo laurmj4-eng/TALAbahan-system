@@ -198,7 +198,7 @@ public class MainActivity extends Activity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setAcceptThirdPartyCookies(webView, true);
         }
-        cookieManager.setAcceptFileSchemeCookies();
+        cookieManager.setAcceptFileSchemeCookies(true);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
