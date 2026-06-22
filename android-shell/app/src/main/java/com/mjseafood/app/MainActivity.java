@@ -86,12 +86,14 @@ public class MainActivity extends Activity {
 
         Uri data = intent.getData();
         if ("talabahan".equals(data.getScheme()) && "auth".equals(data.getHost())) {
-            String redirectTo = data.getQueryParameter("redirect");
-            if (redirectTo != null && !redirectTo.isEmpty()) {
-                webView.loadUrl(redirectTo);
-            } else {
-                webView.loadUrl(SITE_URL);
+            String query = data.getEncodedQuery();
+            String callbackUrl = BASE_URL + "/auth/mobile-callback";
+            
+            if (query != null && !query.isEmpty()) {
+                callbackUrl += "?" + query;
             }
+            
+            webView.loadUrl(callbackUrl);
             intent.setData(null);
             return true;
         }
