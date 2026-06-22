@@ -89,8 +89,7 @@
             getAuth,
             GoogleAuthProvider,
             signInWithRedirect,
-            getRedirectResult,
-            onAuthStateChanged
+            getRedirectResult
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const statusEl = document.getElementById('status');
@@ -120,33 +119,17 @@
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            // Track whether we've already handled the user to prevent double-fire
-            let handled = false;
-
-            // Step 1: Check if we're returning from a Google redirect
             getRedirectResult(auth).then((result) => {
                 if (result && result.user) {
-                    // We just returned from Google redirect — we have the user
-                    handled = true;
                     handleSuccess(result.user);
+                } else {
+                    auth.signOut().then(() => {
+                        signInWithRedirect(auth, provider);
+                    });
                 }
             }).catch((error) => {
-                console.error('getRedirectResult error:', error);
+                console.error('Google auth error:', error);
                 showError('Authentication failed: ' + (error.message || 'Unknown error'));
-            });
-
-            // Step 2: Listen for auth state changes as a fallback
-            onAuthStateChanged(auth, (user) => {
-                if (handled) return;
-
-                if (user) {
-                    handled = true;
-                    handleSuccess(user);
-                } else {
-                    handled = true;
-                    statusEl.textContent = 'Opening Google Sign-In...';
-                    signInWithRedirect(auth, provider);
-                }
             });
         }
     </script>
