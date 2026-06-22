@@ -1,158 +1,147 @@
-# Fix Android WebView Google Sign-In Flow
+# Fix Google Sign-In: Account Picker Skipped
 
-## Goal
+## The Bug
 
-Eliminate extra clicks and automate the deep link return so that Google Sign-In requires **ONE tap** in the app, automatically opens Chrome for Google auth, and automatically returns to the app after authentication.
+When Chrome opens `mobile_login.php`, it skips the Google account picker and immediately sends the user back to the app. The user wants to see the Google account picker to choose which Gmail to use.
 
----
+### Root Cause
 
-## Architecture
+`mobile_login.php` uses `onAuthStateChanged(auth, callback)`. If the user was previously signed in via Firebase in Chrome, this fires **immediately** with the cached user — before `signInWithRedirect` is ever called. The code then calls `handleSuccess(user)` which fires the `talabahan://auth` deep link, sending the user straight back to the app without ever showing Google.
 
-An Android WebView app (package `com.mjseafood.app`) wrapping a CodeIgniter 4 web app hosted at `https://talabahan-system-1.onrender.com`. Firebase project: `sefood-d603d`.
-
-Google blocks OAuth inside Android WebViews (`Error 403: disallowed_useragent`), so the Google auth flow MUST happen in Chrome (the device's default browser). After auth completes, a custom scheme deep link (`talabahan://auth`) brings the user back to the app automatically.
-
----
-
-## Desired Flow (ONE click total)
-
-1. User taps "Sign in with Google" in the app's WebView (LoginPage.vue)
-2. `shouldOverrideUrlLoading` detects the Google/Firebase URL → opens Chrome with `/auth/mobile-login`
-3. Chrome loads `mobile_login.php` → **immediately auto-redirects to Google OAuth** (no button, no user interaction)
-4. Google account picker shows in Chrome → user picks their Gmail
-5. Google authenticates → redirects to Firebase auth handler → Firebase redirects back to `mobile_login.php`
-6. `mobile_login.php` gets the user → **immediately fires `talabahan://auth?redirect=<encoded callback URL>` deep link**
-7. Android catches the deep link → loads `/auth/mobile-callback?email=...&name=...`
-8. Server creates/returns user session → returns HTML that sets localStorage and redirects to dashboard
-9. User is logged in — automatic, seamless, no extra clicks
-
----
-
-## Current Broken Flow (3+ clicks)
-
-1. Tap "Sign in with Google" in WebView
-2. WebView navigates to `/auth/mobile-login`
-3. `shouldOverrideUrlLoading` opens Chrome with `/auth/mobile-login`
-4. Chrome shows `mobile_login.php` with ANOTHER "Sign in with Google" button — **user must click again (click 2)**
-5. `mobile_login.php` uses `signInWithPopup` (imported from Firebase) which tries to open a popup — this doesn't work when the page was opened via an intent
-6. After popup fails or user picks account, there's a "click to go back to app" message — **user must click again (click 3)**
-7. `getRedirectResult(auth)` returns null → "Sign-in cancelled"
-
----
-
-## The Three Files That Need Fixing
-
-### File 1: `app/Views/mobile_login.php`
-
-**Problem:** This page shows a "Sign in with Google" button and uses `signInWithPopup`. It should:
-
-- Remove the button entirely
-- On page load, immediately check if we're returning from a Google redirect (check `getRedirectResult` or `onAuthStateChanged`)
-- If NOT returning from redirect → immediately call `signInWithRedirect(auth, provider)` (no user interaction)
-- If returning from redirect → get the user and immediately fire the deep link
-- The deep link format: `window.location.href = 'talabahan://auth?redirect=' + encodeURIComponent(callbackUrl)` where `callbackUrl = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name`
-
-Current code (WRONG):
-
-```php
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase-auth.js";
-// Has a button, uses signInWithPopup, shows "Sign-in cancelled" on getRedirectResult returning null
+**Current buggy logic in `mobile_login.php`:**
+```javascript
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        handleSuccess(user);  // ← FIRES IMMEDIATELY WITH CACHED USER
+    } else {
+        signInWithRedirect(auth, provider);  // ← NEVER REACHED
+    }
+});
 ```
 
-Should be:
+### The Fix
 
-```php
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "firebase-auth.js";
-// NO button, auto-redirects on first visit, handles redirect return
-// Show spinner "Authenticating..." while in progress
-```
-
-### File 2: `android-shell/app/src/main/java/com/mjseafood/app/MainActivity.java`
-
-**`shouldOverrideUrlLoading`** must:
-
-- Intercept `talabahan://` URLs → fire Android Intent
-- Intercept Google/Firebase URLs (`accounts.google.com`, `sefood-d603d.firebaseapp.com`) → open Chrome with `/auth/mobile-login?auth_mode=mobile` (NOT the original Google URL)
-- Allow all other `BASE_URL` URLs through normally (appending `auth_mode=mobile`)
-
-**`handleDeepLinkIntent`** must:
-
-- Catch `talabahan://auth?redirect=<encoded URL>`
-- Extract the `redirect` query parameter
-- Load that URL directly in the WebView (it's the `/auth/mobile-callback?email=...&name=...` URL)
-
-### File 3: `app/Controllers/Auth.php` — `mobileCallback()`
-
-This is working correctly — receives `email` and `name` query params, creates/finds user in DB, sets session, returns HTML that writes localStorage and redirects to the appropriate dashboard. **No changes needed here.**
+**Only trust `getRedirectResult`** — it returns the user ONLY when returning from a Google redirect. On first visit it returns null, which means we should `signOut()` then `signInWithRedirect`. Remove the `onAuthStateChanged` listener entirely.
 
 ---
 
-## Server-Side Callback Endpoint
+## Only File to Edit
 
-`GET /auth/mobile-callback?email=<email>&name=<name>` — Already implemented in `Auth::mobileCallback()`. Creates user if not exists, sets session, returns:
+### `app/Views/mobile_login.php` — replace JavaScript logic (lines 86–151)
+
+Replace the entire `<script type="module">` block with:
 
 ```html
-<script>
-localStorage.setItem("isLoggedIn", "true");
-localStorage.setItem("userRole", "customer");
-localStorage.setItem("username", "...");
-window.location.href = "/customer/dashboard";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithRedirect,
+        getRedirectResult
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const statusEl = document.getElementById('status');
+    const loadingState = document.getElementById('loading-state');
+    const errorContainer = document.getElementById('error-container');
+    const errorMsg = document.getElementById('error-msg');
+
+    function showError(msg) {
+        loadingState.classList.add('hidden');
+        errorContainer.classList.remove('hidden');
+        errorMsg.textContent = msg;
+    }
+
+    function handleSuccess(user) {
+        statusEl.textContent = 'Redirecting back to app...';
+        const email = encodeURIComponent(user.email);
+        const name = encodeURIComponent(user.displayName || '');
+        const callbackUrl = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name;
+        window.location.href = 'talabahan://auth?redirect=' + encodeURIComponent(callbackUrl);
+    }
+
+    if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
+        showError('Firebase is not configured. Please contact support.');
+    } else {
+        const app = initializeApp(window.FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                handleSuccess(result.user);
+            } else {
+                auth.signOut().then(() => {
+                    signInWithRedirect(auth, provider);
+                });
+            }
+        }).catch((error) => {
+            console.error('Google auth error:', error);
+            showError('Authentication failed: ' + (error.message || 'Unknown error'));
+        });
+    }
 </script>
 ```
 
+### Key Changes
+1. **Removed `onAuthStateChanged`** — it fires immediately with cached user, skipping Google
+2. **Removed `onAuthStateChanged` import** — no longer needed
+3. **Only use `getRedirectResult`** — returns user ONLY when returning from a Google redirect
+4. **Always `signOut()` then `signInWithRedirect()` on first visit** — forces Google to show the account picker every time
+
 ---
 
-## Routes (already configured)
+## No Changes Needed in These Files
 
-```php
-$routes->get('auth/mobile-login', 'Auth::mobileLogin');     // Serves mobile_login.php
-$routes->get('auth/mobile-callback', 'Auth::mobileCallback'); // Handles OAuth callback
+| File | Why it's fine |
+|------|---------------|
+| `android-shell/.../MainActivity.java` | `shouldOverrideUrlLoading` correctly opens Chrome for Google URLs. `handleDeepLinkIntent` correctly extracts `redirect` param. |
+| `app/Controllers/Auth.php::mobileCallback()` | Receives email/name, creates user, sets session, returns HTML with localStorage + redirect. |
+| `resources/js/Page/LoginPage.vue` | Detects `TALAbahanAndroidApp` user agent, redirects to `/auth/mobile-login`. |
+| `android-shell/app/src/main/AndroidManifest.xml` | Deep link intent filter for `talabahan://auth` is correct. |
+| `app/Config/Routes.php` | Routes for `/auth/mobile-login` and `/auth/mobile-callback` are correct. |
+
+---
+
+## Complete Flow After Fix
+
+```
+1. User taps "Sign in with Google" in app (WebView - LoginPage.vue)
+2. WebView navigates to /auth/mobile-login?auth_mode=mobile
+3. shouldOverrideUrlLoading opens Chrome with /auth/mobile-login
+4. Chrome loads mobile_login.php
+5. getRedirectResult returns null (first visit)
+6. signOut() clears any cached session
+7. signInWithRedirect() → Chrome redirects to Google
+8. Google account picker shows (prompt: 'select_account')
+9. User picks Gmail → Google authenticates
+10. Google → Firebase auth handler → back to Chrome's mobile_login.php
+11. getRedirectResult returns the user
+12. handleSuccess fires deep link: talabahan://auth?redirect=<encoded callback URL>
+13. Android catches deep link → loads /auth/mobile-callback?email=...&name=...
+14. Server creates/returns user → HTML sets localStorage → redirects to dashboard
+15. User is logged in
 ```
 
 ---
 
-## Firebase Config (from `app-config.js`)
+## Firebase Config Reference
 
 ```js
 window.FIREBASE_CONFIG = {
     apiKey: "...",
     authDomain: "sefood-d603d.firebaseapp.com",
     projectId: "sefood-d603d",
-    // ...
 };
 window.GOOGLE_CLIENT_ID = "220178423865-...";
 window.BASE_URL = "https://talabahan-system-1.onrender.com/";
 ```
 
----
+## Constraints
 
-## Android Deep Link Intent Filter (AndroidManifest.xml)
-
-```xml
-<intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="talabahan" android:host="auth" />
-</intent-filter>
-```
-
----
-
-## Critical Constraints
-
-1. **Google blocks OAuth in Android WebViews** — auth MUST happen in Chrome
-2. **Firebase `signInWithRedirect` stores state in session storage** — the entire redirect flow must happen within the same browser context (Chrome)
-3. **`getRedirectResult` only works once** — after consuming, it returns null
-4. **`onAuthStateChanged` fires automatically after redirect** — use it alongside `getRedirectResult` as a fallback
-5. The `LoginPage.vue` already detects the Android app via user agent (`TALAbahanAndroidApp`) and redirects to `/auth/mobile-login` — this works, no changes needed
-6. **OAuth consent screen must be in "Testing" mode** with the test user email added — this is a Google Cloud Console config, not a code issue
-
----
-
-## What to Fix
-
-1. Rewrite `mobile_login.php` to auto-redirect (no button) and properly handle the redirect return
-2. Verify `shouldOverrideUrlLoading` correctly opens Chrome for Google URLs
-3. Verify `handleDeepLinkIntent` properly extracts and follows the `redirect` parameter
-4. Make the entire flow seamless — one tap in the app → automatic Google sign-in in Chrome → automatic return to app → logged in
+1. Google blocks OAuth in Android WebViews — auth MUST happen in Chrome
+2. `getRedirectResult` only works once — returns the user only when returning from a redirect
+3. `onAuthStateChanged` is dangerous — fires immediately with cached users, bypassing Google
+4. OAuth consent screen must be "Testing" mode in Google Cloud Console
+5. `prompt: 'select_account'` forces Google to show the account picker even with one account
