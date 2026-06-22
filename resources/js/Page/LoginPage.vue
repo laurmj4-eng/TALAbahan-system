@@ -607,6 +607,11 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
+  if (navigator.userAgent.includes('TALAbahanAndroidApp')) {
+    window.location.href = window.BASE_URL + 'auth/mobile-login?auth_mode=mobile';
+    return;
+  }
+
   if (!auth) {
     const ok = await ensureFirebaseAuth();
     if (!ok) {

@@ -91,9 +91,7 @@
                     // hasTriggered is not true (First time opening the page)
                     // We FORCE a new login and clear any old cached Firebase sessions
                     localStorage.setItem('mobileLoginTriggered', 'true');
-                    auth.signOut().then(() => {
-                        signInWithRedirect(auth, provider);
-                    });
+                    signInWithRedirect(auth, provider);
                 }
             });
         }

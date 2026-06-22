@@ -43,6 +43,21 @@ public class MainActivity extends Activity {
     private static final String VERSION_URL = BASE_URL + "/version.json";
     private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
     private static final String DEEP_LINK_SCHEME = "talabahan://auth";
+    private static final String[] EXTERNAL_AUTH_HOSTS = {
+        "accounts.google.com",
+        "google.com/oauth",
+        "sefood-d603d.firebaseapp.com"
+    };
+
+    private boolean isExternalAuthUrl(String url) {
+        String lower = url.toLowerCase();
+        for (String host : EXTERNAL_AUTH_HOSTS) {
+            if (lower.contains(host)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,7 +204,14 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " TALAbahanAndroidApp");
+
+        String ua = settings.getUserAgentString();
+        if (ua.contains("wv")) {
+            String chromeUA = WebSettings.getDefaultUserAgent(MainActivity.this);
+            settings.setUserAgentString(chromeUA + " TALAbahanAndroidApp");
+        } else {
+            settings.setUserAgentString(ua + " TALAbahanAndroidApp");
+        }
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -205,6 +227,18 @@ public class MainActivity extends Activity {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                    return true;
+                }
+                if (isExternalAuthUrl(url)) {
+                    String mobileLoginUrl = BASE_URL + "/auth/mobile-login?auth_mode=mobile";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mobileLoginUrl));
+                    intent.setPackage("com.android.chrome");
+                    try {
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        intent.setPackage(null);
+                        startActivity(intent);
+                    }
                     return true;
                 }
                 if (url.startsWith(BASE_URL)) {
