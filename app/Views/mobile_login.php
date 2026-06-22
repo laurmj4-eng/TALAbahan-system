@@ -79,7 +79,7 @@
         <!-- Error container (hidden by default) -->
         <div id="error-container" class="hidden">
             <div id="error-msg" class="error-box"></div>
-            <button class="retry-btn" onclick="window.location.reload()">Try Again</button>
+            <button class="retry-btn" onclick="retrySignIn()">Try Again</button>
         </div>
     </div>
 
@@ -89,13 +89,20 @@
             getAuth,
             GoogleAuthProvider,
             signInWithRedirect,
-            getRedirectResult
+            getRedirectResult,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const statusEl = document.getElementById('status');
         const loadingState = document.getElementById('loading-state');
         const errorContainer = document.getElementById('error-container');
         const errorMsg = document.getElementById('error-msg');
+
+        window.retrySignIn = function() {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('redirected');
+            window.location.href = newUrl.toString();
+        };
 
         function showError(msg) {
             loadingState.classList.add('hidden');
@@ -119,18 +126,49 @@
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            getRedirectResult(auth).then((result) => {
-                if (result && result.user) {
-                    handleSuccess(result.user);
-                } else {
-                    auth.signOut().then(() => {
-                        signInWithRedirect(auth, provider);
-                    });
-                }
-            }).catch((error) => {
-                console.error('Google auth error:', error);
-                showError('Authentication failed: ' + (error.message || 'Unknown error'));
-            });
+            const urlParams = new URLSearchParams(window.location.search);
+            const isRedirected = urlParams.has('redirected');
+
+            if (!isRedirected) {
+                // First visit: clear cache, append ?redirected=1, and go to Google
+                auth.signOut().then(() => {
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('redirected', '1');
+                    window.history.replaceState(null, '', newUrl.toString());
+                    signInWithRedirect(auth, provider);
+                });
+            } else {
+                // Returning visit: capture user
+                let handled = false;
+
+                // 1. Check direct redirect result
+                getRedirectResult(auth).then((result) => {
+                    if (result && result.user) {
+                        handled = true;
+                        handleSuccess(result.user);
+                    }
+                }).catch((error) => {
+                    console.error('Google auth error:', error);
+                    showError('Authentication failed: ' + (error.message || 'Unknown error'));
+                });
+
+                // 2. Also check auth state since getRedirectResult can return null 
+                // if third-party cookies are blocked by Chrome on Android.
+                onAuthStateChanged(auth, (user) => {
+                    if (handled) return;
+                    if (user) {
+                        handled = true;
+                        handleSuccess(user);
+                    }
+                });
+
+                // Fail-safe timeout if user cancelled or flow breaks
+                setTimeout(() => {
+                    if (!handled) {
+                        showError("Sign-in timed out or was cancelled. Please try again.");
+                    }
+                }, 15000);
+            }
         }
     </script>
 </body>
