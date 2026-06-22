@@ -41,15 +41,8 @@ public class MainActivity extends Activity {
     private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
     private static final String SITE_URL = BASE_URL + "/?auth_mode=mobile";
     private static final String VERSION_URL = BASE_URL + "/version.json";
-    private static final String MOBILE_AUTH_URL = BASE_URL + "/auth/mobile-login";
     private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
     private static final String DEEP_LINK_SCHEME = "talabahan://auth";
-    private static final String[] EXTERNAL_AUTH_HOSTS = {
-        "accounts.google.com",
-        "google.com",
-        "googleapis.com",
-        "gstatic.com"
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +79,19 @@ public class MainActivity extends Activity {
 
         Uri data = intent.getData();
         if ("talabahan".equals(data.getScheme()) && "auth".equals(data.getHost())) {
-            String query = data.getEncodedQuery();
-            String callbackUrl = BASE_URL + "/auth/mobile-callback";
-            
-            if (query != null && !query.isEmpty()) {
-                callbackUrl += "?" + query;
+            String redirectUrl = data.getQueryParameter("redirect");
+
+            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+                webView.loadUrl(redirectUrl);
+            } else {
+                String rawQuery = data.getEncodedQuery();
+                String callbackUrl = BASE_URL + "/auth/mobile-callback";
+                if (rawQuery != null && !rawQuery.isEmpty()) {
+                    callbackUrl += "?" + rawQuery;
+                }
+                webView.loadUrl(callbackUrl);
             }
-            
-            webView.loadUrl(callbackUrl);
+
             intent.setData(null);
             return true;
         }
@@ -203,19 +201,10 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (isExternalAuthUrl(url)) {
-                    String redirectParam = Uri.encode(DEEP_LINK_SCHEME);
-                    String separator = url.contains("?") ? "&" : "?";
-                    String authUrl = url + separator + "redirect_uri=" + redirectParam;
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-                    intent.setPackage("com.android.chrome");
-                    try {
-                        startActivity(intent);
-                    } catch (android.content.ActivityNotFoundException e) {
-                        intent.setPackage(null);
-                        startActivity(intent);
-                    }
+                if (url.startsWith("talabahan://")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                     return true;
                 }
                 if (url.startsWith(BASE_URL)) {
@@ -225,7 +214,7 @@ public class MainActivity extends Activity {
                     }
                     return false;
                 }
-                return true;
+                return false;
             }
 
             @Override
@@ -255,16 +244,6 @@ public class MainActivity extends Activity {
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-    }
-
-    private boolean isExternalAuthUrl(String url) {
-        String lower = url.toLowerCase();
-        for (String host : EXTERNAL_AUTH_HOSTS) {
-            if (lower.contains(host)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
