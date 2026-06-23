@@ -255,8 +255,8 @@ class Auth extends BaseController
                     ');
                 }
 
-                // Called from Chrome (after Google auth). Return HTML with intent:// to auto-return to app.
-                $intentPath = rtrim(str_replace(['https://', 'http://'], '', base_url('auth/mobile-callback?email=' . urlencode($email) . '&name=' . urlencode($name))), '/');
+                // Called from Chrome (after Google auth). Return HTML with talabahan:// deep link.
+                $deepLinkData = 'talabahan://auth?redirect=' . urlencode(base_url('auth/mobile-callback?email=' . urlencode($email) . '&name=' . urlencode($name)));
                 return $this->response->setBody('
                     <!DOCTYPE html>
                     <html lang="en">
@@ -268,23 +268,24 @@ class Auth extends BaseController
                         .c{max-width:360px;width:100%}
                         .icon{width:56px;height:56px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
                         h1{font-size:1.25rem;margin-bottom:8px}
-                        p{color:rgba(255,255,255,.7);font-size:.875rem;line-height:1.5}
-                        .btn{margin-top:24px;padding:12px 28px;background:#3b82f6;color:white;border:none;border-radius:10px;font-weight:600;font-size:.875rem;cursor:pointer;transition:background .15s;display:inline-block;text-decoration:none}
+                        p{color:rgba(255,255,255,.7);font-size:.875rem;line-height:1.5;margin-bottom:24px}
+                        .btn{display:block;width:100%;padding:14px 24px;background:#3b82f6;color:white;border:none;border-radius:12px;font-weight:600;font-size:1rem;cursor:pointer;transition:background .15s;text-decoration:none}
                         .btn:hover{background:#2563eb}
+                        .btn-secondary{margin-top:12px;display:block;width:100%;padding:12px 24px;background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);border-radius:12px;font-weight:500;font-size:.875rem;cursor:pointer;transition:background .15s;text-decoration:none}
+                        .btn-secondary:hover{background:rgba(255,255,255,.05);color:white}
                     </style>
                     </head><body>
                     <div class="c">
                         <div class="icon">✓</div>
                         <h1>Signed in as ' . htmlspecialchars($user['username']) . '</h1>
-                        <p>Returning to the app...</p>
-                        <a class="btn" href="intent://' . $intentPath . '#Intent;scheme=https;package=com.mjseafood.app;S.browser_fallback_url=' . urlencode($fallbackUrl) .';end">Open TALAbahan</a>
+                        <p>Tap the button below to return to TALAbahan.</p>
+                        <a class="btn" href="' . $deepLinkData . '">Return to App</a>
+                        <a class="btn-secondary" href="' . $fallbackUrl . '">Continue on Web</a>
                     </div>
                     <script>
                         localStorage.setItem("isLoggedIn","true");
                         localStorage.setItem("userRole","' . $role . '");
                         localStorage.setItem("username","' . $user['username'] . '");
-                        window.location.href = "intent://' . $intentPath . '#Intent;scheme=https;package=com.mjseafood.app;S.browser_fallback_url=' . urlencode($fallbackUrl) .';end";
-                        setTimeout(function(){window.location.href="' . $fallbackUrl . '"},3000);
                     </script>
                     </body></html>
                 ');

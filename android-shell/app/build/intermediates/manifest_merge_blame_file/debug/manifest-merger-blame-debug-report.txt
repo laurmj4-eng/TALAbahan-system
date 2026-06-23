@@ -1,0 +1,106 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.mjseafood.app"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:4:5-66
+11-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+12-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:5:5-82
+12-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:5:22-80
+13
+14    <permission
+14-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+15        android:name="com.mjseafood.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+15-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+16        android:protectionLevel="signature" />
+16-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+17
+18    <uses-permission android:name="com.mjseafood.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+18-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+18-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+19
+20    <application
+20-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:7:5-41:19
+21        android:allowBackup="true"
+21-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:8:9-35
+22        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+22-->[androidx.core:core:1.12.0] C:\Users\emili\.gradle\caches\transforms-3\607cf35389df9fd10a870358cd084cdc\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+23        android:debuggable="true"
+24        android:extractNativeLibs="false"
+25        android:icon="@mipmap/ic_launcher"
+25-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:9:9-43
+26        android:label="TALAbahan"
+26-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:10:9-34
+27        android:roundIcon="@mipmap/ic_launcher_round"
+27-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:11:9-54
+28        android:supportsRtl="true"
+28-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:12:9-35
+29        android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" >
+29-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:13:9-77
+30        <activity
+30-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:15:9-30:20
+31            android:name="com.mjseafood.app.MainActivity"
+31-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:16:13-41
+32            android:exported="true" >
+32-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:17:13-36
+33            <intent-filter>
+33-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:18:13-21:29
+34                <action android:name="android.intent.action.MAIN" />
+34-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:19:17-69
+34-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:19:25-66
+35
+36                <category android:name="android.intent.category.LAUNCHER" />
+36-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:20:17-77
+36-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:20:27-74
+37            </intent-filter>
+38
+39            <!-- Custom Deep Link Filter to catch Google Sign-In redirect from Chrome -->
+40            <intent-filter>
+40-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:24:13-29:29
+41                <action android:name="android.intent.action.VIEW" />
+41-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:25:17-69
+41-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:25:25-66
+42
+43                <category android:name="android.intent.category.DEFAULT" />
+43-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:26:17-76
+43-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:26:27-73
+44                <category android:name="android.intent.category.BROWSABLE" />
+44-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:27:17-78
+44-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:27:27-75
+45
+46                <data
+46-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:28:17-72
+47                    android:host="auth"
+47-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:28:50-69
+48                    android:scheme="talabahan" />
+48-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:28:23-49
+49            </intent-filter>
+50        </activity>
+51
+52        <provider
+52-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:32:9-40:20
+53            android:name="androidx.core.content.FileProvider"
+53-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:33:13-62
+54            android:authorities="com.mjseafood.app.fileprovider"
+54-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:34:13-65
+55            android:exported="false"
+55-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:35:13-37
+56            android:grantUriPermissions="true" >
+56-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:36:13-47
+57            <meta-data
+57-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:37:13-39:54
+58                android:name="android.support.FILE_PROVIDER_PATHS"
+58-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:38:17-67
+59                android:resource="@xml/file_paths" />
+59-->C:\xampp\htdocs\TALAbahan-system\android-shell\app\src\main\AndroidManifest.xml:39:17-51
+60        </provider>
+61    </application>
+62
+63</manifest>
