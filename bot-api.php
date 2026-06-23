@@ -5,7 +5,7 @@
  * 
  * Instructions:
  * 1. Re-upload this file to your InfinityFree root directory.
- * 2. Ensure your .env has SECRET_TOKEN=mj_pogi_secret_2024_xtreme
+ * 2. Ensure your .env has SECRET_TOKEN set to a strong random value
  */
 
 header('Access-Control-Allow-Origin: *');
@@ -40,7 +40,13 @@ if (file_exists('.env')) {
 }
 
 // 3. Security Check
-$secretToken = $_ENV['SECRET_TOKEN'] ?? 'mj_pogi_secret_2024_xtreme';
+$secretToken = $_ENV['SECRET_TOKEN'] ?? null;
+
+if ($secretToken === null) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server configuration error: SECRET_TOKEN not set.']);
+    exit;
+}
 $providedToken = $_SERVER['HTTP_AUTHORIZATION'] ?? $_GET['token'] ?? '';
 
 // Handle Bearer prefix if present
@@ -106,5 +112,5 @@ try {
     }
 } catch (\Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed.', 'message' => $e->getMessage()]);
+    echo json_encode(['error' => 'Database connection failed.']);
 }

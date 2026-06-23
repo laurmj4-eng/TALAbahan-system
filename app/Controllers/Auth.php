@@ -166,7 +166,7 @@ class Auth extends BaseController
             log_message('error', '[Auth::verify] ' . $e->getMessage());
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'System Error: ' . $e->getMessage(),
+                'message' => 'An unexpected error occurred. Please try again later.',
                 'token'   => csrf_hash()
             ])->setStatusCode(500);
         }
@@ -233,16 +233,58 @@ class Auth extends BaseController
                 session_write_close();
 
                 $role = strtolower($user['role']);
-                $redirectUrl = base_url($this->_getRedirectUrl($role));
-                
-                // Return simple HTML page that sets localStorage and redirects to avoid Inertia layout flashing issues on reload
+                $fallbackUrl = base_url($this->_getRedirectUrl($role));
+                $appReturn = $this->request->getGet('app_return');
+
+                if (!$appReturn) {
+                    // Called from app WebView (via intent:// return). Redirect directly to dashboard.
+                    return $this->response->setBody('
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head><meta charset="UTF-8"><title>Redirecting...</title>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>body{background:#0f172a;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:1rem}p{font-size:.9375rem;color:rgba(255,255,255,.8)}</style>
+                        </head><body><p>Sign-in successful. Opening dashboard...</p>
+                        <script>
+                            localStorage.setItem("isLoggedIn","true");
+                            localStorage.setItem("userRole","' . $role . '");
+                            localStorage.setItem("username","' . $user['username'] . '");
+                            window.location.href = "' . $fallbackUrl . '";
+                        </script>
+                        </body></html>
+                    ');
+                }
+
+                // Called from Chrome (after Google auth). Return HTML with intent:// to auto-return to app.
+                $intentPath = rtrim(str_replace(['https://', 'http://'], '', base_url('auth/mobile-callback?email=' . urlencode($email) . '&name=' . urlencode($name))), '/');
                 return $this->response->setBody('
-                    <html><head><title>Logging in...</title></head><body>
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head><meta charset="UTF-8"><title>Sign in successful!</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        *{box-sizing:border-box;margin:0;padding:0}
+                        body{background:#0f172a;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:1rem}
+                        .c{max-width:360px;width:100%}
+                        .icon{width:56px;height:56px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+                        h1{font-size:1.25rem;margin-bottom:8px}
+                        p{color:rgba(255,255,255,.7);font-size:.875rem;line-height:1.5}
+                        .btn{margin-top:24px;padding:12px 28px;background:#3b82f6;color:white;border:none;border-radius:10px;font-weight:600;font-size:.875rem;cursor:pointer;transition:background .15s;display:inline-block;text-decoration:none}
+                        .btn:hover{background:#2563eb}
+                    </style>
+                    </head><body>
+                    <div class="c">
+                        <div class="icon">✓</div>
+                        <h1>Signed in as ' . htmlspecialchars($user['username']) . '</h1>
+                        <p>Returning to the app...</p>
+                        <a class="btn" href="intent://' . $intentPath . '#Intent;scheme=https;package=com.mjseafood.app;S.browser_fallback_url=' . urlencode($fallbackUrl) .';end">Open TALAbahan</a>
+                    </div>
                     <script>
-                        localStorage.setItem("isLoggedIn", "true");
-                        localStorage.setItem("userRole", "' . $role . '");
-                        localStorage.setItem("username", "' . $user['username'] . '");
-                        window.location.href = "' . $redirectUrl . '";
+                        localStorage.setItem("isLoggedIn","true");
+                        localStorage.setItem("userRole","' . $role . '");
+                        localStorage.setItem("username","' . $user['username'] . '");
+                        window.location.href = "intent://' . $intentPath . '#Intent;scheme=https;package=com.mjseafood.app;S.browser_fallback_url=' . urlencode($fallbackUrl) .';end";
+                        setTimeout(function(){window.location.href="' . $fallbackUrl . '"},3000);
                     </script>
                     </body></html>
                 ');
@@ -252,7 +294,7 @@ class Auth extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', '[Auth::mobileCallback] ' . $e->getMessage());
-            return redirect()->to('/login')->with('error', 'System Error: ' . $e->getMessage());
+            return redirect()->to('/login')->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
 
@@ -317,7 +359,7 @@ class Auth extends BaseController
         } catch (\Exception $e) {
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'System Error: ' . $e->getMessage(),
+                'message' => 'An unexpected error occurred. Please try again later.',
                 'token'   => csrf_hash()
             ])->setStatusCode(500);
         }

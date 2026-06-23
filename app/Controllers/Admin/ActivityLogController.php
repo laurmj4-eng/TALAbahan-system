@@ -56,15 +56,23 @@ class ActivityLogController extends BaseController
                        ->groupBy('user_identity')
                        ->getCompiledSelect();
 
+        $page  = (int) ($this->request->getGet('page') ?? 1);
+        $limit = (int) ($this->request->getGet('limit') ?? 20);
         $logs = $logModel->select('activity_logs.*, users.last_active, users.username as user_name')
                          ->join("($subQuery) as latest_logs", "latest_logs.max_id = activity_logs.id")
                          ->join('users', 'users.id = activity_logs.user_id', 'left')
                          ->orderBy('activity_logs.created_at', 'DESC')
-                         ->findAll();
+                         ->paginate($limit, 'default', $page);
 
         return $this->response->setJSON([
             'status' => 'success',
             'data'   => $logs,
+            'pager'  => [
+                'total'    => $logModel->pager->getTotal(),
+                'perPage'  => $logModel->pager->getPerPage(),
+                'current'  => $logModel->pager->getCurrentPage(),
+                'lastPage' => $logModel->pager->getPageCount(),
+            ],
             'token'  => csrf_hash()
         ]);
     }

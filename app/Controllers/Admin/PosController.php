@@ -3,21 +3,19 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Controllers\Traits\PosOperationsTrait;
 use App\Models\ProductModel;
 use App\Models\SalesModel;
-use App\Models\OrderModel;
 
 class PosController extends BaseController
 {
+    use PosOperationsTrait;
+
     public function index()
     {
-        if (session()->get('role') !== 'admin') {
-            return redirect()->to('/login');
-        }
-
         $productModel = new ProductModel();
         $userModel = new \App\Models\UserModel();
-        
+
         $data = [
             'title'     => 'TALAbahan Terminal',
             'username'  => session()->get('username'),
@@ -28,93 +26,14 @@ class PosController extends BaseController
         return inertia('admin/Pos', $data);
     }
 
-    // 1. Get products for the POS screen
-    public function getProducts()
-    {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
-        }
-
-        $model = new ProductModel();
-        return $this->response->setJSON([
-            'status'  => 'success',
-            'message' => 'Products fetched.',
-            'data'    => $model->findAll(),
-            'token'   => csrf_hash(),
-        ]);
-    }
-
-    // 2. Process checkout — writes to orders, order_items, AND sales_history
-    public function checkout()
-    {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
-        }
-
-        // Try to get data from POST first (FormData), then fall back to JSON
-        $itemsRaw = $this->request->getPost('items');
-        if ($itemsRaw) {
-            $items = json_decode($itemsRaw, true);
-            $customerName = $this->request->getPost('customer_name');
-            $customerAlias = $this->request->getPost('customer_alias');
-            $userId = $this->request->getPost('user_id');
-            $voucherCode = $this->request->getPost('voucher_code');
-            $payload = [
-                'items' => $items,
-                'customer_name' => $customerName,
-                'customer_alias' => $customerAlias,
-                'user_id' => $userId,
-                'voucher_code' => $voucherCode
-            ];
-        } else {
-            $payload = $this->request->getJSON(true);
-        }
-
-        if (!$payload || empty($payload['items'])) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Cart is empty.', 'token' => csrf_hash()])->setStatusCode(400);
-        }
-
-        $orderModel = new OrderModel();
-        $payload['moved_by'] = (int) (session()->get('user_id') ?? 0);
-        $result     = $orderModel->createFromCheckout($payload);
-        if (! $result['ok']) {
-            return $this->response->setJSON([
-                'status'  => 'error',
-                'message' => $result['message'],
-                'token'   => csrf_hash(),
-            ])->setStatusCode(400);
-        }
-
-        return $this->response->setJSON([
-            'status'  => 'success', 
-            'message' => 'Payment of ₱' . number_format((float) $result['total_amount'], 2)
-                . ' processed! (TXN: ' . $result['transaction_code'] . ')',
-            'data'    => [
-                'transaction_code' => $result['transaction_code'],
-                'total_amount'     => (float) $result['total_amount'],
-                'discount'         => (float) ($result['discount'] ?? 0),
-                'customer'         => $result['customer'] ?? 'Walk-in Customer',
-                'items'            => $result['items'] ?? [],
-                'date'             => $result['date'] ?? date('Y-m-d H:i:s'),
-            ],
-            'token'   => csrf_hash(),
-        ]);
-    }
-
-    // 3. Fetch Sales History for the Dashboard
     public function getHistory()
     {
-        if (session()->get('role') !== 'admin') {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Access denied', 'token' => csrf_hash()])->setStatusCode(403);
-        }
-
         $startDate = $this->request->getGet('start_date');
         $endDate   = $this->request->getGet('end_date');
         $export    = $this->request->getGet('export');
 
         try {
             $salesModel = new SalesModel();
-            // Join with orders to get customer details
             $query = $salesModel->db->table('sales_history s')
                 ->select('s.*, o.customer_name, o.customer_alias, o.user_id')
                 ->join('orders o', 'o.transaction_code = s.transaction_code', 'left')
@@ -138,7 +57,7 @@ class PosController extends BaseController
             if ($export === 'pdf') {
                 return $this->exportToPDF($history);
             }
-            
+
             return $this->response->setJSON($history ?? []);
         } catch (\Exception $e) {
             log_message('error', 'getHistory error: ' . $e->getMessage());
@@ -216,15 +135,13 @@ class PosController extends BaseController
 
     private function exportToPDF(array $data)
     {
-        // Check if Dompdf is available
         if (!class_exists('\Dompdf\Dompdf')) {
-            // Fallback to a simple HTML print view if dompdf is not loaded
             echo "<script>window.print();</script>";
-            return $this->exportToWord($data); // Or just fail gracefully
+            return $this->exportToWord($data);
         }
 
         $dompdf = new \Dompdf\Dompdf();
-        
+
         $html = "<html><head><style>
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -259,7 +176,7 @@ class PosController extends BaseController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-        
+
         $filename = 'sales_report_' . date('Ymd_His') . '.pdf';
         $dompdf->stream($filename, ["Attachment" => true]);
         exit;

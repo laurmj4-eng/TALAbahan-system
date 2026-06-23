@@ -77,3 +77,15 @@ defined('EXIT_USER_INPUT')     || define('EXIT_USER_INPUT', 7);     // invalid u
 defined('EXIT_DATABASE')       || define('EXIT_DATABASE', 8);       // database error
 defined('EXIT__AUTO_MIN')      || define('EXIT__AUTO_MIN', 9);      // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125);    // highest automatically-assigned error code
+
+/*
+ | --------------------------------------------------------------------------
+ | Business Logic Constants
+ | --------------------------------------------------------------------------
+ | Centralized configuration values to avoid magic numbers scattered
+ | throughout the codebase.
+ */
+defined('LOW_STOCK_THRESHOLD')   || define('LOW_STOCK_THRESHOLD', 10);
+defined('PAGINATION_PER_PAGE')   || define('PAGINATION_PER_PAGE', 15);
+defined('LOG_PAGINATION_PER_PAGE') || define('LOG_PAGINATION_PER_PAGE', 20);
+defined('CHATBOT_DAILY_LIMIT')   || define('CHATBOT_DAILY_LIMIT', 25);

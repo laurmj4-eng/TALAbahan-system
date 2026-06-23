@@ -56,7 +56,7 @@ class AdminController extends BaseController
             // Get low stock count
             try {
                 $data['cards']['low_stock_count'] = (int) $productModel
-                    ->where('current_stock <=', 5)
+                    ->where('current_stock <=', LOW_STOCK_THRESHOLD)
                     ->countAllResults();
             } catch (\Exception $e) {
                 log_message('error', 'Low stock count error: ' . $e->getMessage());
@@ -139,9 +139,18 @@ class AdminController extends BaseController
         }
 
         $userModel = new UserModel();
+        $page  = (int) ($this->request->getGet('page') ?? 1);
+        $limit = (int) ($this->request->getGet('limit') ?? 15);
+        $users = $userModel->paginate($limit, 'default', $page);
         return $this->response->setJSON([
             'status' => 'success',
-            'data'   => $userModel->findAll(),
+            'data'   => $users,
+            'pager'  => [
+                'total'    => $userModel->pager->getTotal(),
+                'perPage'  => $userModel->pager->getPerPage(),
+                'current'  => $userModel->pager->getCurrentPage(),
+                'lastPage' => $userModel->pager->getPageCount(),
+            ],
             'token'  => csrf_hash()
         ]);
     }
