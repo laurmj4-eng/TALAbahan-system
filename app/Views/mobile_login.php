@@ -156,7 +156,9 @@
 
                 const email = encodeURIComponent(result.user.email);
                 const name = encodeURIComponent(result.user.displayName || '');
-                window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name + '&app_return=1';
+                const isInApp = navigator.userAgent.includes('TALAbahanAndroidApp');
+                const appReturn = isInApp ? '' : '&app_return=1';
+                window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name + appReturn;
             } catch (error) {
                 console.error('Google auth error:', error);
                 setLoading(false);
@@ -170,7 +172,9 @@
                 if (error.code === 'auth/credential-already-in-use') {
                     const email = error.customData?.email;
                     if (email) {
-                        window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + encodeURIComponent(email) + '&app_return=1';
+                        const isInApp = navigator.userAgent.includes('TALAbahanAndroidApp');
+                        const appReturn = isInApp ? '' : '&app_return=1';
+                        window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + encodeURIComponent(email) + appReturn;
                         return;
                     }
                 }

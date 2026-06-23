@@ -607,11 +607,6 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true;
   error.value = '';
 
-  if (navigator.userAgent.includes('TALAbahanAndroidApp')) {
-    window.location.href = window.BASE_URL + 'auth/mobile-login?auth_mode=mobile';
-    return;
-  }
-
   if (!auth) {
     const ok = await ensureFirebaseAuth();
     if (!ok) {
@@ -634,6 +629,10 @@ const handleGoogleLogin = async () => {
     if (err.code === 'auth/popup-closed-by-user') {
       googleLoading.value = false;
     } else if (err.code === 'auth/popup-blocked') {
+      if (navigator.userAgent.includes('TALAbahanAndroidApp')) {
+        window.location.href = window.BASE_URL + 'auth/mobile-login?auth_mode=mobile';
+        return;
+      }
       try {
         await fb.signInWithRedirect(auth, provider);
       } catch (redirectErr) {
