@@ -5,7 +5,7 @@ echo "==> Composer (production)"
 composer install --no-dev --optimize-autoloader --no-interaction
 
 echo "==> Node / Vite (using vite.config.js)"
-npm ci
+npm ci --omit=dev
 npm run build
 
 echo "==> Remove Vite hot file (must NOT exist in production)"

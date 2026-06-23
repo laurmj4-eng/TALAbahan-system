@@ -26,12 +26,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev \
     libzip-dev \
     curl \
-    && docker-php-ext-install intl zip mysqli pdo_mysql \
+    && docker-php-ext-install intl zip mysqli pdo_mysql pcntl \
     && a2enmod rewrite headers deflate expires \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2dissite 000-default 2>/dev/null || true \
     && rm -f /etc/apache2/sites-available/000-default.conf
+
+RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf && a2enconf servername
 
 RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
 <VirtualHost *:8080>
