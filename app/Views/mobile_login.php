@@ -82,8 +82,7 @@
         import {
             getAuth,
             GoogleAuthProvider,
-            signInWithRedirect,
-            getRedirectResult
+            signInWithPopup
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const statusEl = document.getElementById('status');
@@ -125,19 +124,18 @@
 
                 await auth.signOut();
 
-                const result = await getRedirectResult(auth);
-                if (result && result.user) {
-                    handleSuccess(result.user);
-                    return;
-                }
-
-                await signInWithRedirect(auth, provider);
+                const result = await signInWithPopup(auth, provider);
+                handleSuccess(result.user);
             } catch (error) {
                 console.error('Google auth error:', error);
+                if (error.code === 'auth/popup-blocked') {
+                    showError('Popup was blocked. Please allow popups for this site, then tap Try Again.');
+                    return;
+                }
                 if (error.code === 'auth/credential-already-in-use') {
                     const email = error.customData?.email;
                     if (email) {
-                        window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + encodeURIComponent(email);
+                        window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + encodeURIComponent(email) + '&app_return=1';
                         return;
                     }
                 }
