@@ -3,9 +3,7 @@ package com.mjseafood.app;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -18,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Message;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -63,15 +60,29 @@ public class MainActivity extends Activity {
     private Handler backgroundHandler;
     private ValueCallback<Uri[]> fileUploadCallback;
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
-    private AlertDialog popupDialog;
 
     private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
     private static final String SITE_URL = BASE_URL + "/?auth_mode=mobile";
     private static final String VERSION_URL = BASE_URL + "/version.json";
     private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
-    private static final String DEEP_LINK_SCHEME = "talabahan:";
+    private static final String DEEP_LINK_SCHEME = "talabahan://auth";
+    private static final String[] EXTERNAL_AUTH_HOSTS = {
+        "accounts.google.com",
+        "google.com/oauth",
+        "sefood-d603d.firebaseapp.com"
+    };
     private static final long PAGE_LOAD_TIMEOUT_MS = 30000;
     private static final String APP_CACHE_DIR = "updates";
+
+    private boolean isExternalAuthUrl(String url) {
+        String lower = url.toLowerCase();
+        for (String host : EXTERNAL_AUTH_HOSTS) {
+            if (lower.contains(host)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private boolean isConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -283,10 +294,13 @@ public class MainActivity extends Activity {
             settings.setSafeBrowsingEnabled(true);
         }
 
-        // Remove "wv" indicator so Firebase Auth doesn't throw disallowed_useragent
-        String defaultUA = WebSettings.getDefaultUserAgent(MainActivity.this);
-        String cleanUA = defaultUA.replace("; wv", "").replace("Version/4.0 ", "");
-        settings.setUserAgentString(cleanUA + " TALAbahanAndroidApp");
+        String ua = settings.getUserAgentString();
+        if (ua.contains("wv")) {
+            String chromeUA = WebSettings.getDefaultUserAgent(MainActivity.this);
+            settings.setUserAgentString(chromeUA + " TALAbahanAndroidApp");
+        } else {
+            settings.setUserAgentString(ua + " TALAbahanAndroidApp");
+        }
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
@@ -310,12 +324,25 @@ public class MainActivity extends Activity {
 
             private boolean shouldOverrideUrl(WebView view, String url) {
                 if (url.startsWith("intent://")) {
+                    // Consume intent:// URLs — the callback HTML has a JS fallback timer
                     return true;
                 }
                 if (url.startsWith("talabahan://")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                    return true;
+                }
+                if (isExternalAuthUrl(url)) {
+                    String mobileLoginUrl = BASE_URL + "/auth/mobile-login?auth_mode=mobile";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mobileLoginUrl));
+                    intent.setPackage("com.android.chrome");
+                    try {
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        intent.setPackage(null);
+                        startActivity(intent);
+                    }
                     return true;
                 }
                 if (url.startsWith(BASE_URL)) {
@@ -457,53 +484,6 @@ public class MainActivity extends Activity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     request.grant(request.getResources());
                 }
-            }
-
-            @Override
-            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-                final WebView popup = new WebView(MainActivity.this);
-                WebSettings popupSettings = popup.getSettings();
-                popupSettings.setJavaScriptEnabled(true);
-                popupSettings.setDomStorageEnabled(true);
-                popupSettings.setAllowFileAccess(false);
-                popupSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-                String defaultUA = WebSettings.getDefaultUserAgent(MainActivity.this);
-                popupSettings.setUserAgentString(defaultUA.replace("; wv", "").replace("Version/4.0 ", "") + " TALAbahanAndroidApp");
-
-                popup.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                        return false;
-                    }
-                    @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        return false;
-                    }
-                });
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setView(popup);
-                builder.setCancelable(true);
-                builder.setOnDismissListener(dialog -> {
-                    if (popup != null) {
-                        popup.destroy();
-                    }
-                });
-                popupDialog = builder.show();
-
-                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-                transport.setWebView(popup);
-                resultMsg.sendToTarget();
-                return true;
-            }
-
-            @Override
-            public void onCloseWindow(WebView window) {
-                if (popupDialog != null && popupDialog.isShowing()) {
-                    popupDialog.dismiss();
-                    popupDialog = null;
-                }
-                super.onCloseWindow(window);
             }
         });
 
