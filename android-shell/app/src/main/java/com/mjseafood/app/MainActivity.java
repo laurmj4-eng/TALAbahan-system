@@ -62,6 +62,9 @@ public class MainActivity extends Activity {
     private Handler backgroundHandler;
     private ValueCallback<Uri[]> fileUploadCallback;
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1003;
+    private GeolocationPermissions.Callback pendingGeolocationCallback;
+    private String pendingGeolocationOrigin;
     private AlertDialog popupDialog;
 
     private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
@@ -269,6 +272,7 @@ public class MainActivity extends Activity {
     private void setupWebView() {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        settings.setGeolocationEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(false);
@@ -461,6 +465,24 @@ public class MainActivity extends Activity {
             }
 
             @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    callback.invoke(origin, true, false);
+                    return;
+                }
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    callback.invoke(origin, true, false);
+                } else {
+                    pendingGeolocationCallback = callback;
+                    pendingGeolocationOrigin = origin;
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            LOCATION_PERMISSION_REQUEST_CODE);
+                }
+            }
+
+            @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
                 WebView popup = new WebView(MainActivity.this);
                 WebSettings popupSettings = popup.getSettings();
@@ -535,6 +557,18 @@ public class MainActivity extends Activity {
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && pendingGeolocationCallback != null) {
+            boolean granted = grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            pendingGeolocationCallback.invoke(pendingGeolocationOrigin, granted, false);
+            pendingGeolocationCallback = null;
+            pendingGeolocationOrigin = null;
+        }
     }
 
     @Override
