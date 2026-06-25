@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -70,6 +71,7 @@ public class MainActivity extends Activity {
     private GeolocationPermissions.Callback pendingGeolocationCallback;
     private String pendingGeolocationOrigin;
     private AlertDialog popupDialog;
+    private boolean locationRequestPending = false;
 
     private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
     private static final String SITE_URL = BASE_URL + "/?auth_mode=mobile";
@@ -597,9 +599,73 @@ public class MainActivity extends Activity {
                         return "{\"error\": \"JSON error\"}";
                     }
                 }
-                return "{\"error\": \"No location found. Try moving outdoors.\"}";
+
+                // No cached location — request a fresh GPS fix asynchronously
+                mainHandler.post(() -> requestFreshLocation());
+                return "{\"pending\": true}";
             }
         }, "AndroidBridge");
+    }
+
+    private void requestFreshLocation() {
+        if (locationRequestPending) return;
+        locationRequestPending = true;
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (lm == null) {
+            locationRequestPending = false;
+            mainHandler.post(() -> webView.evaluateJavascript(
+                "if(window._onNativeLocationError)_onNativeLocationError('Location service not available')", null));
+            return;
+        }
+
+        LocationListener listener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                if (!locationRequestPending) return;
+                locationRequestPending = false;
+                lm.removeUpdates(this);
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("lat", location.getLatitude());
+                    json.put("lng", location.getLongitude());
+                    json.put("accuracy", location.getAccuracy());
+                    String result = json.toString();
+                    mainHandler.post(() -> webView.evaluateJavascript(
+                        "if(window._onNativeLocation)_onNativeLocation(" + result + ")", null));
+                } catch (Exception ignored) {}
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            @Override
+            public void onProviderEnabled(String provider) {}
+
+            @Override
+            public void onProviderDisabled(String provider) {}
+        };
+
+        try {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER, listener, Looper.getMainLooper());
+
+                mainHandler.postDelayed(() -> {
+                    if (locationRequestPending) {
+                        locationRequestPending = false;
+                        lm.removeUpdates(listener);
+                        webView.evaluateJavascript(
+                            "if(window._onNativeLocationError)_onNativeLocationError('GPS timed out. Try again.')", null);
+                    }
+                }, 20000);
+            } else {
+                locationRequestPending = false;
+            }
+        } catch (Exception e) {
+            locationRequestPending = false;
+        }
+    }
     }
 
     @Override

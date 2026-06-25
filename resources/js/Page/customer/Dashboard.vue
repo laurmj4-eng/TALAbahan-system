@@ -840,6 +840,18 @@ const prevStep = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
+window._onNativeLocation = (data) => {
+  if (isDetectingLocation.value) {
+    onLocationSuccess(data.lat, data.lng);
+  }
+};
+
+window._onNativeLocationError = (msg) => {
+  if (isDetectingLocation.value) {
+    onLocationError(msg);
+  }
+};
+
 const onLocationSuccess = async (latitude, longitude) => {
   coords.value = { lat: latitude, lng: longitude };
 
@@ -918,8 +930,9 @@ const getLocation = () => {
     try {
       const result = window.AndroidBridge.getCurrentLocation();
       const data = JSON.parse(result);
-      if (data.error) {
-        // Fall back to WebView geolocation
+      if (data.pending) {
+        locationError.value = 'Getting GPS fix...';
+      } else if (data.error) {
         fallbackGetLocation();
       } else {
         onLocationSuccess(data.lat, data.lng);
