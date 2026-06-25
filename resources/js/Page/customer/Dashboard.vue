@@ -569,6 +569,8 @@ const paymentMethod = ref('COD');
 const voucherCode = ref('');
 const isDetectingLocation = ref(false);
 const locationError = ref('');
+const locationServicesOff = ref(false);
+const pendingLocationRetry = ref(false);
 const fullAddress = ref('');
 const isFetchingQuote = ref(false);
 const isPlacingOrder = ref(false);
@@ -846,6 +848,7 @@ const getLocation = () => {
 
   isDetectingLocation.value = true;
   locationError.value = '';
+  locationServicesOff.value = false;
 
   const options = {
     enableHighAccuracy: true,
@@ -919,7 +922,14 @@ const getLocation = () => {
         msg = "Please allow location access in your browser settings.";
         break;
       case error.POSITION_UNAVAILABLE:
-        msg = "Location information is unavailable.";
+        if (window.AndroidBridge && !window.AndroidBridge.isLocationEnabled()) {
+          locationServicesOff.value = true;
+          pendingLocationRetry.value = true;
+          msg = "Location is turned off. Opening settings...";
+          setTimeout(() => window.AndroidBridge.openLocationSettings(), 1500);
+        } else {
+          msg = "Location information is unavailable. Make sure you're outdoors or have a clear sky view.";
+        }
         break;
       case error.TIMEOUT:
         msg = "Location request timed out. Please try again.";
@@ -928,6 +938,12 @@ const getLocation = () => {
     locationError.value = msg;
     isDetectingLocation.value = false;
   }, options);
+};
+
+const openLocationSettings = () => {
+  if (window.AndroidBridge) {
+    window.AndroidBridge.openLocationSettings();
+  }
 };
 
 const updateLocationFromCoords = async (lat, lng) => {
@@ -1070,7 +1086,19 @@ onMounted(() => {
   
   window.addEventListener('open-customer-cart', openCart);
 
-
+  // Auto-retry location after returning from Android Location settings
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'visible' && pendingLocationRetry.value) {
+      pendingLocationRetry.value = false;
+      if (window.AndroidBridge && !window.AndroidBridge.isLocationEnabled()) {
+        locationError.value = "Location is still turned off. Please enable location in your device settings, then tap \"Detect Current Location\" again.";
+        isDetectingLocation.value = false;
+      } else {
+        getLocation();
+      }
+    }
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   // Load saved cart if any
   const savedCart = JSON.parse(localStorage.getItem('cartItems') || '[]');

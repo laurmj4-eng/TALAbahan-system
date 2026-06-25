@@ -9,9 +9,11 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.provider.Settings;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -537,6 +539,27 @@ public class MainActivity extends Activity {
             @JavascriptInterface
             public boolean isConnected() {
                 return MainActivity.this.isConnected();
+            }
+
+            @JavascriptInterface
+            public boolean isLocationEnabled() {
+                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (lm == null) return false;
+                try {
+                    return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                            || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            @JavascriptInterface
+            public void openLocationSettings() {
+                mainHandler.post(() -> {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                });
             }
         }, "AndroidBridge");
     }
