@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
@@ -560,6 +561,43 @@ public class MainActivity extends Activity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 });
+            }
+
+            @JavascriptInterface
+            public String getCurrentLocation() {
+                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (lm == null) return "{\"error\": \"Location service not available\"}";
+
+                Location location = null;
+                try {
+                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location == null) {
+                            location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        }
+                        if (location == null) {
+                            location = lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                        }
+                    } else {
+                        return "{\"error\": \"Location permission not granted\"}";
+                    }
+                } catch (Exception e) {
+                    return "{\"error\": \"" + e.getMessage().replace("\"", "\\\"") + "\"}";
+                }
+
+                if (location != null) {
+                    try {
+                        JSONObject json = new JSONObject();
+                        json.put("lat", location.getLatitude());
+                        json.put("lng", location.getLongitude());
+                        json.put("accuracy", location.getAccuracy());
+                        return json.toString();
+                    } catch (Exception e) {
+                        return "{\"error\": \"JSON error\"}";
+                    }
+                }
+                return "{\"error\": \"No location found. Try moving outdoors.\"}";
             }
         }, "AndroidBridge");
     }

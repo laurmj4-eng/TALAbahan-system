@@ -840,104 +840,130 @@ const prevStep = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
-const getLocation = () => {
-  if (!navigator.geolocation) {
-    locationError.value = "Geolocation is not supported by your browser.";
-    return;
+const onLocationSuccess = async (latitude, longitude) => {
+  coords.value = { lat: latitude, lng: longitude };
+
+  try {
+    if (typeof L !== 'undefined') {
+      if (!leafletMap) {
+        leafletMap = L.map('checkout-map', {
+          zoomControl: true,
+          dragging: true,
+          touchZoom: true
+        }).setView([latitude, longitude], 16);
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(leafletMap);
+        
+        isMapInitialized.value = true;
+      } else {
+        leafletMap.setView([latitude, longitude], 16);
+      }
+
+      if (mapMarker) {
+        mapMarker.setLatLng([latitude, longitude]);
+      } else {
+        mapMarker = L.marker([latitude, longitude], { draggable: true }).addTo(leafletMap);
+        
+        mapMarker.on('dragend', (event) => {
+          const marker = event.target;
+          const position = marker.getLatLng();
+          updateLocationFromCoords(position.lat, position.lng);
+        });
+      }
+
+      leafletMap.on('click', (event) => {
+        const { lat, lng } = event.latlng;
+        mapMarker.setLatLng([lat, lng]);
+        updateLocationFromCoords(lat, lng);
+      });
+
+      setTimeout(() => leafletMap.invalidateSize(), 200);
+    }
+  } catch (err) {
+    console.error('Map initialization error:', err);
   }
 
+  try {
+    await updateLocationFromCoords(latitude, longitude);
+  } catch (error) {
+    locationError.value = "Failed to detect location details. Please try again.";
+  } finally {
+    isDetectingLocation.value = false;
+  }
+};
+
+const onLocationError = (msg) => {
+  locationError.value = msg;
+  isDetectingLocation.value = false;
+};
+
+const getLocation = () => {
   isDetectingLocation.value = true;
   locationError.value = '';
   locationServicesOff.value = false;
 
-  const options = {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-  };
+  // Use native Android location API if available (more reliable than WebView geolocation)
+  if (window.AndroidBridge) {
+    if (!window.AndroidBridge.isLocationEnabled()) {
+      locationServicesOff.value = true;
+      pendingLocationRetry.value = true;
+      onLocationError("Location is turned off. Opening settings...");
+      setTimeout(() => window.AndroidBridge.openLocationSettings(), 1500);
+      return;
+    }
 
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const { latitude, longitude } = position.coords;
-    coords.value = { lat: latitude, lng: longitude };
-
-    // Initialize or update Leaflet Map
     try {
-      if (typeof L !== 'undefined') {
-        if (!leafletMap) {
-          leafletMap = L.map('checkout-map', {
-            zoomControl: true,
-            dragging: true,
-            touchZoom: true
-          }).setView([latitude, longitude], 16);
-          
-          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          }).addTo(leafletMap);
-          
-          isMapInitialized.value = true;
-        } else {
-          leafletMap.setView([latitude, longitude], 16);
-        }
-
-        // Add or move marker
-        if (mapMarker) {
-          mapMarker.setLatLng([latitude, longitude]);
-        } else {
-          mapMarker = L.marker([latitude, longitude], { draggable: true }).addTo(leafletMap);
-          
-          // Handle marker drag
-          mapMarker.on('dragend', (event) => {
-            const marker = event.target;
-            const position = marker.getLatLng();
-            updateLocationFromCoords(position.lat, position.lng);
-          });
-        }
-
-        // Handle map click
-        leafletMap.on('click', (event) => {
-          const { lat, lng } = event.latlng;
-          mapMarker.setLatLng([lat, lng]);
-          updateLocationFromCoords(lat, lng);
-        });
-
-        // Ensure map renders correctly
-        setTimeout(() => leafletMap.invalidateSize(), 200);
+      const result = window.AndroidBridge.getCurrentLocation();
+      const data = JSON.parse(result);
+      if (data.error) {
+        // Fall back to WebView geolocation
+        fallbackGetLocation();
+      } else {
+        onLocationSuccess(data.lat, data.lng);
       }
-    } catch (err) {
-      console.error('Map initialization error:', err);
+    } catch (e) {
+      fallbackGetLocation();
     }
+  } else {
+    fallbackGetLocation();
+  }
+};
 
-    try {
-      await updateLocationFromCoords(latitude, longitude);
-    } catch (error) {
-      locationError.value = "Failed to detect location details. Please try again.";
-    } finally {
-      isDetectingLocation.value = false;
-    }
-  }, (error) => {
-    let msg = "Location detection failed.";
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        msg = "Please allow location access in your browser settings.";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        if (window.AndroidBridge && !window.AndroidBridge.isLocationEnabled()) {
-          locationServicesOff.value = true;
-          pendingLocationRetry.value = true;
-          msg = "Location is turned off. Opening settings...";
-          setTimeout(() => window.AndroidBridge.openLocationSettings(), 1500);
-        } else {
-          msg = "Location information is unavailable. Make sure you're outdoors or have a clear sky view.";
-        }
-        break;
-      case error.TIMEOUT:
-        msg = "Location request timed out. Please try again.";
-        break;
-    }
-    locationError.value = msg;
-    isDetectingLocation.value = false;
-  }, options);
+const fallbackGetLocation = () => {
+  if (!navigator.geolocation) {
+    onLocationError("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => onLocationSuccess(position.coords.latitude, position.coords.longitude),
+    (error) => {
+      let msg = "Location detection failed.";
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          msg = "Please allow location access in your browser settings.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          if (window.AndroidBridge && !window.AndroidBridge.isLocationEnabled()) {
+            locationServicesOff.value = true;
+            pendingLocationRetry.value = true;
+            msg = "Location is turned off. Opening settings...";
+            setTimeout(() => window.AndroidBridge.openLocationSettings(), 1500);
+          } else {
+            msg = "Location information is unavailable. Make sure you're outdoors or have a clear sky view.";
+          }
+          break;
+        case error.TIMEOUT:
+          msg = "Location request timed out. Please try again.";
+          break;
+      }
+      onLocationError(msg);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
 };
 
 const openLocationSettings = () => {
