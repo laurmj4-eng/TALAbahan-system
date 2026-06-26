@@ -91,8 +91,11 @@
 
         <div id="error-container" class="hidden">
             <div id="error-msg" class="error-box"></div>
-            <button class="google-btn" style="margin-top:16px;" onclick="retrySignIn()">
-                <span>Try Again</span>
+            <button class="google-btn" style="margin-top:16px;" id="retryBtn">
+                <span id="retryBtnText">Try Again</span>
+            </button>
+            <button class="google-btn" style="margin-top:8px;background:transparent;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);font-weight:500;font-size:0.875rem;" id="altSignInBtn">
+                <span id="altBtnText">Use Alternative Sign-In</span>
             </button>
         </div>
     </div>
@@ -102,6 +105,7 @@
         import {
             getAuth,
             GoogleAuthProvider,
+            signInWithPopup,
             signInWithRedirect,
             getRedirectResult
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -113,6 +117,13 @@
         const initialState = document.getElementById('initial-state');
         const errorContainer = document.getElementById('error-container');
         const errorMsg = document.getElementById('error-msg');
+        const retryBtn = document.getElementById('retryBtn');
+        const retryBtnText = document.getElementById('retryBtnText');
+        const altSignInBtn = document.getElementById('altSignInBtn');
+        const altBtnText = document.getElementById('altBtnText');
+
+        let auth, provider;
+        let usingAlternative = false;
 
         function setLoading(loading) {
             btn.disabled = loading;
@@ -125,18 +136,23 @@
             statusEl.classList.remove('hidden');
         }
 
-        window.retrySignIn = function() {
+        function showInitial() {
             errorContainer.classList.add('hidden');
             initialState.classList.remove('hidden');
             statusEl.classList.add('hidden');
             btnText.textContent = 'Sign in with Google';
             setLoading(false);
-        };
+        }
 
-        function showError(msg) {
+        function showError(msg, showAlt) {
             initialState.classList.add('hidden');
             errorContainer.classList.remove('hidden');
             errorMsg.textContent = msg;
+            if (showAlt) {
+                altSignInBtn.classList.remove('hidden');
+            } else {
+                altSignInBtn.classList.add('hidden');
+            }
         }
 
         function onSignInSuccess(user) {
@@ -147,15 +163,68 @@
             window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name + appReturn;
         }
 
+        async function tryPopup() {
+            setLoading(true);
+            setStatus('Opening Google sign-in popup...');
+            try {
+                await auth.signOut();
+                const result = await signInWithPopup(auth, provider);
+                setStatus('Sign-in successful! Redirecting...');
+                onSignInSuccess(result.user);
+            } catch (error) {
+                console.error('Popup error:', error);
+                setLoading(false);
+                statusEl.classList.add('hidden');
+
+                if (error.code === 'auth/popup-blocked') {
+                    showError('Popup was blocked by your browser. Tap "Use Alternative Sign-In" below to continue.', true);
+                    retryBtnText.textContent = 'Try Popup Again';
+                    usingAlternative = false;
+                    return;
+                }
+                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                    showError('Sign-in popup was closed. Tap "Try Again" or use the alternative method.', true);
+                    retryBtnText.textContent = 'Try Again';
+                    usingAlternative = false;
+                    return;
+                }
+                if (error.code === 'auth/credential-already-in-use') {
+                    const email = error.customData?.email;
+                    if (email) {
+                        const isInApp = navigator.userAgent.includes('TALAbahanAndroidApp');
+                        const appReturn = isInApp ? '' : '&app_return=1';
+                        window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + encodeURIComponent(email) + appReturn;
+                        return;
+                    }
+                }
+                showError('Sign-in failed: ' + (error.message || 'Please try again.'), true);
+                retryBtnText.textContent = 'Try Popup Again';
+                usingAlternative = false;
+            }
+        }
+
+        function tryRedirect() {
+            setLoading(true);
+            altSignInBtn.classList.add('hidden');
+            setStatus('Redirecting to Google sign-in...');
+            signInWithRedirect(auth, provider).catch(function(error) {
+                console.error('Redirect error:', error);
+                setLoading(false);
+                statusEl.classList.add('hidden');
+                showError('Failed to start alternative sign-in: ' + (error.message || 'Please try again.'), true);
+            });
+        }
+
         async function init() {
             if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
                 showError('Firebase is not configured. Please contact support.');
+                altSignInBtn.classList.add('hidden');
                 return;
             }
 
             const app = initializeApp(window.FIREBASE_CONFIG);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
+            auth = getAuth(app);
+            provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
@@ -172,11 +241,9 @@
             } catch (error) {
                 console.error('Redirect result error:', error);
                 if (error.code === 'auth/missing-initial-state') {
-                    showError('Sign-in was interrupted. Tap "Try Again" to restart.');
-                    return;
-                }
-                if (error.code === 'auth/cancelled-popup-request') {
-                    showError('Sign-in was cancelled. Tap "Try Again" to restart.');
+                    showError('Previous sign-in was interrupted. Try the popup method instead.', true);
+                    retryBtnText.textContent = 'Try Popup';
+                    usingAlternative = false;
                     return;
                 }
                 if (error.code === 'auth/credential-already-in-use') {
@@ -188,21 +255,23 @@
                         return;
                     }
                 }
-                showError('Sign-in failed: ' + (error.message || 'Please try again.'));
-                return;
             }
 
-            btn.addEventListener('click', async () => {
-                setLoading(true);
-                setStatus('Redirecting to Google sign-in...');
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (error) {
-                    console.error('Redirect error:', error);
-                    setLoading(false);
-                    statusEl.classList.add('hidden');
-                    showError('Failed to start sign-in: ' + (error.message || 'Please try again.'));
+            btn.addEventListener('click', tryPopup);
+
+            retryBtn.addEventListener('click', function() {
+                showInitial();
+                if (usingAlternative) {
+                    tryRedirect();
+                } else {
+                    tryPopup();
                 }
+            });
+
+            altSignInBtn.addEventListener('click', function() {
+                usingAlternative = true;
+                retryBtnText.textContent = 'Try Alternative Again';
+                tryRedirect();
             });
         }
 
