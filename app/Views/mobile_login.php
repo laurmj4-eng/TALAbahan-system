@@ -170,6 +170,7 @@
                 await auth.signOut();
                 const result = await signInWithPopup(auth, provider);
                 setStatus('Sign-in successful! Redirecting...');
+                await new Promise(function(r) { setTimeout(r, 2000); });
                 onSignInSuccess(result.user);
             } catch (error) {
                 console.error('Popup error:', error);
