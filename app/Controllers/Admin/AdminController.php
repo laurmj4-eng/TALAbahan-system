@@ -122,9 +122,10 @@ class AdminController extends BaseController
         $userModel = new UserModel();
         $data = [
             'title' => 'Database Management',
-            'users' => $userModel->findAll(),
+            'users' => $userModel->paginate(15),
             'username' => session()->get('username')
         ];
+        $data['pager'] = $userModel->pager;
 
         return inertia('admin/Users', $data);
     }

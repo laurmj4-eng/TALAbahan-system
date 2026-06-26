@@ -74,6 +74,7 @@ class Dashboard extends BaseController
                 ->whereIn('status', [OrderModel::STATUS_PENDING, OrderModel::STATUS_PROCESSING])
                 ->where('created_at <', $yesterday)
                 ->orderBy('created_at', 'ASC')
+                ->limit(20)
                 ->findAll();
             
             $data['cards']['stale_orders_count'] = count($data['stale_orders']);

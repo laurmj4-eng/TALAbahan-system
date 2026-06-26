@@ -405,7 +405,7 @@ class Orders extends BaseController
             $orderModel->where('status', OrderModel::STATUS_CANCELLED);
         }
 
-        return $orderModel->orderBy('created_at', 'DESC')->findAll();
+        return $orderModel->orderBy('created_at', 'DESC')->limit(50)->findAll();
     }
 
     private function simulateGcashPayment($amount, $refCode)

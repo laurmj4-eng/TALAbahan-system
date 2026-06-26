@@ -89,6 +89,7 @@ class ActivityLogController extends BaseController
 
         $logs = $logModel->where('user_id', $userId)
                          ->orderBy('created_at', 'DESC')
+                         ->limit(50)
                          ->findAll();
 
         $data = [
@@ -121,6 +122,7 @@ class ActivityLogController extends BaseController
 
         $logs = $logModel->where('user_id', $userId)
                          ->orderBy('created_at', 'DESC')
+                         ->limit(50)
                          ->findAll();
 
         return $this->response->setJSON([

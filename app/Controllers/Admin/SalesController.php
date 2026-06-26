@@ -19,6 +19,7 @@ class SalesController extends BaseController
             ->select('s.*, o.customer_name, o.customer_alias, o.user_id')
             ->join('orders o', 'o.transaction_code = s.transaction_code', 'left')
             ->orderBy('s.created_at', 'DESC')
+            ->limit(100)
             ->get()
             ->getResultArray();
 

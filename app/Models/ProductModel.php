@@ -32,7 +32,7 @@ class ProductModel extends Model
     // Custom method to get items with profit calculation
     public function getDailyInventory()
     {
-        $products = $this->findAll();
+        $products = $this->orderBy('name', 'ASC')->findAll(1000);
         foreach ($products as &$p) {
             $p['potential_profit'] = ($p['selling_price'] - $p['cost_price']) * $p['current_stock'];
             $p['sold_qty'] = $p['initial_stock'] - $p['current_stock'] - $p['wastage_qty'];

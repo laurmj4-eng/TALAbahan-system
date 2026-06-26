@@ -18,8 +18,8 @@ class PosController extends BaseController
         $data = [
             'title'     => 'TALAbahan Terminal (Staff)',
             'username'  => session()->get('username'),
-            'products'  => $productModel->findAll(),
-            'customers' => $userModel->where('role', 'customer')->findAll(),
+            'products'  => $productModel->orderBy('name', 'ASC')->findAll(500),
+            'customers' => $userModel->where('role', 'customer')->orderBy('username', 'ASC')->findAll(200),
         ];
 
         return inertia('staff/Pos', $data);
