@@ -609,8 +609,24 @@ const handleGoogleLogin = async () => {
 
   // In Android WebView, skip Firebase popup and open external browser via native bridge
   if (navigator.userAgent.includes('TALAbahanAndroidApp')) {
+    const url = window.BASE_URL + 'auth/mobile-login?auth_mode=mobile';
+    let opened = false;
     if (window.AndroidBridge && window.AndroidBridge.openInBrowser) {
-      window.AndroidBridge.openInBrowser(window.BASE_URL + 'auth/mobile-login?auth_mode=mobile');
+      try {
+        window.AndroidBridge.openInBrowser(url);
+        opened = true;
+      } catch (e) {
+        console.error('AndroidBridge.openInBrowser failed:', e);
+      }
+    }
+    if (!opened) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      opened = true;
     }
     googleLoading.value = false;
     return;
