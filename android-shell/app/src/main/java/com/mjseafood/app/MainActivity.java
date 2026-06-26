@@ -339,6 +339,7 @@ public class MainActivity extends Activity {
                         chromeLoadingOverlay.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                         startActivity(intent);
                         return true;
                     }
@@ -558,6 +559,7 @@ public class MainActivity extends Activity {
                         chromeLoadingOverlay.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                         startActivity(intent);
                     } catch (Exception e) {
                         e.printStackTrace();
