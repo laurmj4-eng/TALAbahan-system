@@ -347,6 +347,7 @@ function loadGIS() {
 }
 
 const windowObj = window;
+let _googleSignInFocusHandler = null;
 const loginInputClass =
   'w-full rounded-xl pl-10 pr-4 py-2.5 md:pl-12 md:pr-5 md:py-4 bg-black/20 border border-white/15 text-[13px] md:text-[15px] font-bold text-white placeholder-white/40 shadow-[0_4px_16px_rgba(0,0,0,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-200 focus:outline-none focus:border-blue-400 focus:bg-black/25 focus:shadow-[0_0_0_1px_rgba(59,130,246,0.3),inset_0_1px_3px_rgba(0,0,0,0.25)]';
 
@@ -491,6 +492,16 @@ onMounted(async () => {
     showRecaptcha.value = false;
   }
 
+  // Detect interrupted Google sign-in from a previous attempt
+  const inProgress = localStorage.getItem('googleSignInInProgress');
+  if (inProgress) {
+    const elapsed = Date.now() - parseInt(inProgress, 10);
+    localStorage.removeItem('googleSignInInProgress');
+    if (elapsed < 120000 && !localStorage.getItem('isLoggedIn')) {
+      error.value = 'Previous sign-in was cancelled or interrupted. Please try again.';
+    }
+  }
+
   // Preload Firebase Auth and Google Identity Services in parallel on page load
   // so they are ready instantly when the user clicks "Sign in with Google"
   if (window.FIREBASE_CONFIG?.apiKey) {
@@ -534,6 +545,10 @@ watch(showRecaptcha, async (newVal) => {
 });
 
 onBeforeUnmount(() => {
+  if (_googleSignInFocusHandler) {
+    window.removeEventListener('focus', _googleSignInFocusHandler);
+    _googleSignInFocusHandler = null;
+  }
   if (_resizeObserver) { _resizeObserver.disconnect(); _resizeObserver = null; }
   if (_viewportHandler) {
     window.visualViewport?.removeEventListener('resize', _viewportHandler);
@@ -609,6 +624,8 @@ const handleGoogleLogin = async () => {
 
   // In Android WebView, skip Firebase popup and open external browser via native bridge
   if (navigator.userAgent.includes('TALAbahanAndroidApp')) {
+    localStorage.setItem('googleSignInInProgress', Date.now().toString());
+
     const url = window.BASE_URL + 'auth/mobile-login?auth_mode=mobile';
     let opened = false;
     if (window.AndroidBridge && window.AndroidBridge.openInBrowser) {
@@ -629,6 +646,29 @@ const handleGoogleLogin = async () => {
       opened = true;
     }
     googleLoading.value = false;
+
+    setTimeout(() => {
+      const handler = () => {
+        setTimeout(() => {
+          const val = localStorage.getItem('googleSignInInProgress');
+          if (val) {
+            const elapsed = Date.now() - parseInt(val, 10);
+            localStorage.removeItem('googleSignInInProgress');
+            if (elapsed < 120000 && !localStorage.getItem('isLoggedIn')) {
+              error.value = 'Sign-in was cancelled or interrupted. Please try again.';
+            }
+          }
+          window.removeEventListener('focus', handler);
+          _googleSignInFocusHandler = null;
+        }, 1500);
+      };
+      _googleSignInFocusHandler = handler;
+      window.addEventListener('focus', handler);
+      setTimeout(() => {
+        window.removeEventListener('focus', handler);
+        _googleSignInFocusHandler = null;
+      }, 120000);
+    }, 100);
     return;
   }
 
@@ -699,6 +739,7 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
 };
 
 const handleSuccessfulLogin = (data) => {
+  localStorage.removeItem('googleSignInInProgress');
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
   localStorage.setItem('username', data.username || '');

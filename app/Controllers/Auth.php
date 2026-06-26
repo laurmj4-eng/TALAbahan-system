@@ -246,6 +246,7 @@ class Auth extends BaseController
                         <style>body{background:#0f172a;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:1rem}p{font-size:.9375rem;color:rgba(255,255,255,.8)}</style>
                         </head><body><p>Sign-in successful. Opening dashboard...</p>
                         <script>
+                            localStorage.removeItem("googleSignInInProgress");
                             localStorage.setItem("isLoggedIn","true");
                             localStorage.setItem("userRole","' . $role . '");
                             localStorage.setItem("username","' . $user['username'] . '");
