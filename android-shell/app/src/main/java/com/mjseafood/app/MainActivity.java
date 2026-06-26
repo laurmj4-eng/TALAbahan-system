@@ -547,6 +547,15 @@ public class MainActivity extends Activity {
 
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
+            public void openInBrowser(String url) {
+                mainHandler.post(() -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                });
+            }
+
+            @JavascriptInterface
             public boolean isConnected() {
                 return MainActivity.this.isConnected();
             }

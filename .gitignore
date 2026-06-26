@@ -47,6 +47,13 @@ composer.phar
 *.swp
 *.swo
 
+# Android Shell build artifacts
+android-shell/.gradle/
+android-shell/app/build/
+android-shell/app/release/
+*.apk
+*.aab
+
 # OS Files
 .DS_Store
 Thumbs.db
