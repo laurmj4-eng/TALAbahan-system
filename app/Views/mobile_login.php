@@ -102,7 +102,8 @@
         import {
             getAuth,
             GoogleAuthProvider,
-            signInWithPopup
+            signInWithRedirect,
+            getRedirectResult
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const btn = document.getElementById('signInBtn');
@@ -119,6 +120,11 @@
             btnSpinner.style.display = loading ? 'block' : 'none';
         }
 
+        function setStatus(msg) {
+            statusEl.textContent = msg;
+            statusEl.classList.remove('hidden');
+        }
+
         window.retrySignIn = function() {
             errorContainer.classList.add('hidden');
             initialState.classList.remove('hidden');
@@ -133,40 +139,44 @@
             errorMsg.textContent = msg;
         }
 
-        async function doGoogleSignIn() {
+        function onSignInSuccess(user) {
+            const email = encodeURIComponent(user.email);
+            const name = encodeURIComponent(user.displayName || '');
+            const isInApp = navigator.userAgent.includes('TALAbahanAndroidApp');
+            const appReturn = isInApp ? '' : '&app_return=1';
+            window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name + appReturn;
+        }
+
+        async function init() {
             if (!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey) {
                 showError('Firebase is not configured. Please contact support.');
                 return;
             }
 
-            setLoading(true);
-            statusEl.textContent = 'Opening Google sign-in...';
-            statusEl.classList.remove('hidden');
+            const app = initializeApp(window.FIREBASE_CONFIG);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                const app = initializeApp(window.FIREBASE_CONFIG);
-                const auth = getAuth(app);
-                const provider = new GoogleAuthProvider();
-                provider.setCustomParameters({ prompt: 'select_account' });
-
                 await auth.signOut();
+            } catch (_) {}
 
-                const result = await signInWithPopup(auth, provider);
-                statusEl.textContent = 'Sign-in successful! Redirecting...';
-
-                const email = encodeURIComponent(result.user.email);
-                const name = encodeURIComponent(result.user.displayName || '');
-                const isInApp = navigator.userAgent.includes('TALAbahanAndroidApp');
-                const appReturn = isInApp ? '' : '&app_return=1';
-                window.location.href = window.BASE_URL + 'auth/mobile-callback?email=' + email + '&name=' + name + appReturn;
+            try {
+                const result = await getRedirectResult(auth);
+                if (result) {
+                    setStatus('Sign-in successful! Redirecting...');
+                    onSignInSuccess(result.user);
+                    return;
+                }
             } catch (error) {
-                console.error('Google auth error:', error);
-                setLoading(false);
-                statusEl.classList.add('hidden');
-
-                if (error.code === 'auth/popup-blocked') {
-                    showError('Popup was blocked. Tap the button again to allow it.');
-                    btnText.textContent = 'Sign in with Google';
+                console.error('Redirect result error:', error);
+                if (error.code === 'auth/missing-initial-state') {
+                    showError('Sign-in was interrupted. Tap "Try Again" to restart.');
+                    return;
+                }
+                if (error.code === 'auth/cancelled-popup-request') {
+                    showError('Sign-in was cancelled. Tap "Try Again" to restart.');
                     return;
                 }
                 if (error.code === 'auth/credential-already-in-use') {
@@ -179,10 +189,24 @@
                     }
                 }
                 showError('Sign-in failed: ' + (error.message || 'Please try again.'));
+                return;
             }
+
+            btn.addEventListener('click', async () => {
+                setLoading(true);
+                setStatus('Redirecting to Google sign-in...');
+                try {
+                    await signInWithRedirect(auth, provider);
+                } catch (error) {
+                    console.error('Redirect error:', error);
+                    setLoading(false);
+                    statusEl.classList.add('hidden');
+                    showError('Failed to start sign-in: ' + (error.message || 'Please try again.'));
+                }
+            });
         }
 
-        btn.addEventListener('click', doGoogleSignIn);
+        init();
     </script>
 </body>
 </html>

@@ -255,7 +255,9 @@ class Auth extends BaseController
                     ');
                 }
 
-                // Called from Chrome (after Google auth). Return HTML with talabahan:// deep link.
+                // Called from Chrome (after Google auth). Auto-redirect to app via deep link.
+                // Appears briefly as a confirmation page; if the deep link fails,
+                // the user can tap "Continue on Web" as fallback.
                 $deepLinkData = 'talabahan://auth?redirect=' . urlencode(base_url('auth/mobile-callback?email=' . urlencode($email) . '&name=' . urlencode($name)));
                 return $this->response->setBody('
                     <!DOCTYPE html>
@@ -269,6 +271,8 @@ class Auth extends BaseController
                         .icon{width:56px;height:56px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
                         h1{font-size:1.25rem;margin-bottom:8px}
                         p{color:rgba(255,255,255,.7);font-size:.875rem;line-height:1.5;margin-bottom:24px}
+                        .spinner{border:3px solid rgba(255,255,255,.15);width:22px;height:22px;border-radius:50%;border-left-color:#22c55e;animation:spin .8s linear infinite;margin:0 auto 12px}
+                        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
                         .btn{display:block;width:100%;padding:14px 24px;background:#3b82f6;color:white;border:none;border-radius:12px;font-weight:600;font-size:1rem;cursor:pointer;transition:background .15s;text-decoration:none}
                         .btn:hover{background:#2563eb}
                         .btn-secondary{margin-top:12px;display:block;width:100%;padding:12px 24px;background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);border-radius:12px;font-weight:500;font-size:.875rem;cursor:pointer;transition:background .15s;text-decoration:none}
@@ -278,14 +282,37 @@ class Auth extends BaseController
                     <div class="c">
                         <div class="icon">✓</div>
                         <h1>Signed in as ' . htmlspecialchars($user['username']) . '</h1>
-                        <p>Tap the button below to return to TALAbahan.</p>
-                        <a class="btn" href="' . $deepLinkData . '">Return to App</a>
-                        <a class="btn-secondary" href="' . $fallbackUrl . '">Continue on Web</a>
+                        <p id="autoMsg">Returning to app...</p>
+                        <div class="spinner" id="autoSpinner"></div>
+                        <a class="btn-secondary" id="webFallback" href="' . $fallbackUrl . '" style="display:none">Continue on Web</a>
                     </div>
                     <script>
                         localStorage.setItem("isLoggedIn","true");
                         localStorage.setItem("userRole","' . $role . '");
                         localStorage.setItem("username","' . $user['username'] . '");
+                        var dl = "' . $deepLinkData . '";
+                        var tryApp = function () {
+                            var msg = document.getElementById("autoMsg");
+                            var spn = document.getElementById("autoSpinner");
+                            var fallback = document.getElementById("webFallback");
+                            msg.textContent = "Opening app...";
+                            var started = false;
+                            var handleVisibility = function () {
+                                if (document.hidden || document.webkitHidden) {
+                                    document.removeEventListener("visibilitychange", handleVisibility);
+                                    document.removeEventListener("webkitvisibilitychange", handleVisibility);
+                                }
+                            };
+                            document.addEventListener("visibilitychange", handleVisibility);
+                            document.addEventListener("webkitvisibilitychange", handleVisibility);
+                            var timer = setTimeout(function () {
+                                msg.textContent = "Could not open app automatically.";
+                                spn.style.display = "none";
+                                fallback.style.display = "block";
+                            }, 3000);
+                            window.location.href = dl;
+                        };
+                        setTimeout(tryApp, 400);
                     </script>
                     </body></html>
                 ');
