@@ -237,23 +237,9 @@ class Auth extends BaseController
                 $appReturn = $this->request->getGet('app_return');
 
                 if (!$appReturn) {
-                    // Called from app WebView (via intent:// return). Redirect directly to dashboard.
-                    return $this->response->setBody('
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head><meta charset="UTF-8"><title>Redirecting...</title>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <style>body{background:#0f172a;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:1rem}p{font-size:.9375rem;color:rgba(255,255,255,.8)}</style>
-                        </head><body><p>Sign-in successful. Opening dashboard...</p>
-                        <script>
-                            localStorage.removeItem("googleSignInInProgress");
-                            localStorage.setItem("isLoggedIn","true");
-                            localStorage.setItem("userRole","' . $role . '");
-                            localStorage.setItem("username","' . $user['username'] . '");
-                            window.location.href = "' . $fallbackUrl . '";
-                        </script>
-                        </body></html>
-                    ');
+                    // Called from app WebView (via deep link return). 302 redirect skips
+                    // the intermediate HTML+JS page, going straight to the dashboard.
+                    return redirect()->to($fallbackUrl);
                 }
 
                 // Called from Chrome (after Google auth). Return HTML with talabahan:// deep link.
