@@ -279,7 +279,7 @@ class Auth extends BaseController
                         <div class="icon">✓</div>
                         <h1>Signed in as ' . htmlspecialchars($user['username']) . '</h1>
                         <p>Tap the button below to return to TALAbahan.</p>
-                        <button class="btn" onclick="var dl=this.getAttribute('data-href');window.location.href=dl;setTimeout(function(){window.close()},500);" data-href="' . $deepLinkData . '">Return to App</button>
+                        <button class="btn" onclick="var dl=this.getAttribute(\'data-href\');window.location.href=dl;setTimeout(function(){window.close()},500);" data-href="' . $deepLinkData . '">Return to App</button>
                         <a class="btn-secondary" href="' . $fallbackUrl . '">Continue on Web</a>
                     </div>
                     <script>
