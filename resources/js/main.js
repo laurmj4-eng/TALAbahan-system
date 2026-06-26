@@ -6,6 +6,10 @@ import '../css/recaptcha.css';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
+const style = document.createElement('style');
+style.textContent = '#nprogress .bar{height:4px!important;box-shadow:0 0 10px #22d3ee,0 0 20px #22d3ee}';
+document.head.appendChild(style);
+
 // Show progress bar on manual full page reloads (e.g., login, logout)
 window.addEventListener('beforeunload', () => {
   NProgress.start();
@@ -72,10 +76,8 @@ function initInertia() {
 
   createInertiaApp({
     progress: {
-      delay: 50,
-      color: '#3b82f6',
+      color: '#22d3ee',
       includeCSS: true,
-      showSpinner: true,
     },
     page: initialPage, // CRITICAL: Use 'page' property, not 'initialPage'
     resolve: (name) => {
