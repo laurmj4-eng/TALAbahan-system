@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private ProgressBar progressBar;
+    private View chromeLoadingOverlay;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread backgroundThread;
     private Handler backgroundHandler;
@@ -103,6 +104,7 @@ public class MainActivity extends Activity {
 
         webView = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progress_bar);
+        chromeLoadingOverlay = findViewById(R.id.chromeLoadingOverlay);
         setupWebView();
 
         backgroundThread = new HandlerThread("BackgroundWork");
@@ -176,6 +178,7 @@ public class MainActivity extends Activity {
                 webView.loadUrl(callbackUrl);
             }
 
+            chromeLoadingOverlay.setVisibility(View.GONE);
             intent.setData(null);
             return true;
         }
@@ -183,6 +186,7 @@ public class MainActivity extends Activity {
         // Handle HTTPS callback URL from intent:// (Chrome opens app after Google auth)
         if (urlStr.startsWith(BASE_URL + "/auth/mobile-callback")) {
             webView.loadUrl(urlStr);
+            chromeLoadingOverlay.setVisibility(View.GONE);
             intent.setData(null);
             return true;
         }
@@ -332,6 +336,7 @@ public class MainActivity extends Activity {
                 if (url.startsWith(BASE_URL)) {
                     // Open mobile Google sign-in in external browser (popup doesn't work in WebView)
                     if (url.contains("/auth/mobile-login")) {
+                        chromeLoadingOverlay.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
@@ -550,6 +555,7 @@ public class MainActivity extends Activity {
             public void openInBrowser(String url) {
                 mainHandler.post(() -> {
                     try {
+                        chromeLoadingOverlay.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
@@ -733,6 +739,9 @@ public class MainActivity extends Activity {
         if (webView != null) {
             webView.onResume();
             CookieManager.getInstance().flush();
+        }
+        if (chromeLoadingOverlay != null) {
+            chromeLoadingOverlay.setVisibility(View.GONE);
         }
     }
 

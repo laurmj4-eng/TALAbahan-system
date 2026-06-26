@@ -21,4 +21,41 @@
         android:progressBackgroundTint="#020617"
         android:visibility="gone" />
 
+    <FrameLayout
+        android:id="@+id/chromeLoadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#CC0F172A"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp">
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminate="true"
+                android:indeterminateTint="#22d3ee" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Opening Chrome to verify&#10;your account... Please wait."
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:fontFamily="sans-serif-medium"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+    </FrameLayout>
+
 </FrameLayout>
