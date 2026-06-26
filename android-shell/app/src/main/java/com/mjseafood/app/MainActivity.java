@@ -330,6 +330,13 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 if (url.startsWith(BASE_URL)) {
+                    // Open mobile Google sign-in in external browser (popup doesn't work in WebView)
+                    if (url.contains("/auth/mobile-login")) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        return true;
+                    }
                     if (!url.contains("auth_mode=mobile")) {
                         String sep = url.contains("?") ? "&" : "?";
                         url = url + sep + "auth_mode=mobile";
