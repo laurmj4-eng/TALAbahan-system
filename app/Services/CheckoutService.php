@@ -388,6 +388,12 @@ class CheckoutService
                 $username . ' just bought ' . $itemCount . ' items. Check your dashboard ledger.',
                 ['order_id' => (string) $orderId, 'type' => 'new_order']
             );
+            $fcm->sendToTrustedAdminsAndPersist(
+                'new_order',
+                'New Order #' . $transactionCode,
+                $username . ' just bought ' . $itemCount . ' items. Check your dashboard ledger.',
+                ['order_id' => (string) $orderId, 'type' => 'new_order']
+            );
         } catch (\Exception $e) {
             log_message('error', '[CheckoutService] Failed to send new-order push: ' . $e->getMessage());
         }

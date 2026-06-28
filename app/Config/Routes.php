@@ -79,6 +79,7 @@ $routes->group('api', ['filter' => 'apiAuth'], function($routes) {
     $routes->post('notifications/mark-read/(:num)', '\App\Controllers\FcmController::markRead/$1');
     $routes->post('notifications/mark-all-read', '\App\Controllers\FcmController::markAllRead');
     $routes->post('fcm/send', '\App\Controllers\FcmController::sendNotification');
+    $routes->post('admin/fcm/toggle-trusted', '\App\Controllers\FcmController::toggleTrustedDevice');
 });
 
 // Keep existing routes for now but they should eventually be migrated to api group

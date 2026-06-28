@@ -200,6 +200,38 @@ class FcmController extends BaseController
         ]);
     }
 
+    public function toggleTrustedDevice()
+    {
+        $json = $this->request->getJSON(true);
+        if (!$json || empty($json['token'])) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Missing FCM token.',
+            ])->setStatusCode(400);
+        }
+
+        $token   = trim($json['token']);
+        $trusted = !empty($json['trusted']);
+
+        $tokenModel = new FcmTokenModel();
+        $updated = $tokenModel->setTrustedStatus($token, $trusted);
+
+        if (!$updated) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Token not found or could not be updated.',
+            ])->setStatusCode(404);
+        }
+
+        log_message('info', '[FCM] Trusted status set to ' . ($trusted ? '1' : '0') . ' for token: ' . substr($token, 0, 20) . '...');
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => 'Trusted device status updated.',
+            'trusted' => $trusted,
+        ]);
+    }
+
     public function sendOrderStatusPush(int $orderId, string $newStatus): void
     {
         try {

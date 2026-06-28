@@ -139,6 +139,38 @@
         </div>
       </div>
 
+      <!-- Trusted Device Toggle -->
+      <div v-if="isAndroidApp()" class="glass-card p-4 md:p-6 rounded-xl md:rounded-2xl border border-white/[0.08]">
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <h3 class="font-bold text-sm md:text-lg text-white flex items-center gap-2">
+              <Smartphone class="w-4 h-4 md:w-5 md:h-5 text-indigo-400 shrink-0" />
+              <span>Trusted Device Alerts</span>
+            </h3>
+            <p class="text-[0.7rem] md:text-sm text-white/50 mt-1 leading-relaxed">
+              When enabled, this hardware device will securely receive push notifications for new orders and critical updates — even when your session is logged out.
+            </p>
+          </div>
+          <button
+            @click="toggleTrusted"
+            :disabled="toggling"
+            :class="[
+              trustedDevice ? 'bg-indigo-500' : 'bg-white/[0.08]',
+              toggling ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105'
+            ]"
+            class="relative w-12 h-7 md:w-14 md:h-8 rounded-full transition-all duration-300 shrink-0 border border-white/[0.1]"
+          >
+            <span
+              :class="[
+                trustedDevice ? 'translate-x-6 md:translate-x-7' : 'translate-x-1',
+                toggling ? 'animate-pulse' : ''
+              ]"
+              class="absolute top-0.5 md:top-1 left-0.5 w-5 h-5 md:w-6 md:h-6 bg-white rounded-full shadow-lg transition-all duration-300"
+            ></span>
+          </button>
+        </div>
+      </div>
+
       <!-- Activity Feed -->
       <div class="space-y-3 md:space-y-6">
         <div class="flex items-center gap-2 md:gap-3">
@@ -180,10 +212,11 @@ import Chart from 'chart.js/auto';
 import { 
   Printer, Coins, PieChart, Percent, ShoppingCart, 
   AlertTriangle, Trophy, Zap, Activity, Ghost,
-  Fish, FileText, Users, Boxes, LineChart
+  Fish, FileText, Users, Boxes, LineChart, Smartphone
 } from 'lucide-vue-next';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import GlassCard from '../../components/GlassCard.vue';
+import { useFcmToken } from '../../composables/useFcmToken.js';
 
 const username = ref('Admin');
 const serverTime = ref('');
@@ -198,7 +231,26 @@ const cards = ref({
 const topProducts = ref([]);
 const activities = ref([]);
 const chartCanvas = ref(null);
+const trustedDevice = ref(false);
+const toggling = ref(false);
 let chartInstance = null;
+
+const { isAndroidApp, getFcmToken, toggleTrustedDevice } = useFcmToken();
+
+const toggleTrusted = async () => {
+  if (toggling.value) return;
+  toggling.value = true;
+  const newState = !trustedDevice.value;
+  const ok = await toggleTrustedDevice(newState);
+  if (ok) {
+    trustedDevice.value = newState;
+    const token = getFcmToken();
+    if (token) {
+      localStorage.setItem('trustedDeviceToken', newState ? token : '');
+    }
+  }
+  toggling.value = false;
+};
 
 const quickActions = [
   { name: 'Seafood POS', path: '/admin/pos', icon: ShoppingCart, color: 'text-violet-400' },
@@ -318,6 +370,10 @@ let interval;
 onMounted(() => {
   fetchData();
   interval = setInterval(fetchData, 30000);
+
+  if (isAndroidApp()) {
+    trustedDevice.value = localStorage.getItem('trustedDeviceToken') === getFcmToken();
+  }
 });
 
 onUnmounted(() => {
@@ -327,7 +383,7 @@ onUnmounted(() => {
 
 <style scoped>
 @media print {
-  :deep(aside), :deep(header), button, .Zap, .Zap + h3, .grid-cols-5 {
+  :deep(aside), :deep(header), button:not(.trusted-toggle), .Zap, .Zap + h3, .grid-cols-5 {
     display: none !important;
   }
   

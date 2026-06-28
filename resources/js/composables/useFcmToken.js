@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export function useFcmToken() {
   const TOKEN_ENDPOINT = '/api/fcm/register';
+  const TRUSTED_ENDPOINT = '/api/admin/fcm/toggle-trusted';
   let registerAttempts = 0;
   const MAX_ATTEMPTS = 20;
   const RETRY_DELAY_MS = 3000;
@@ -65,5 +66,34 @@ export function useFcmToken() {
     });
   }
 
-  return { isAndroidApp, getFcmToken, registerFcmToken, registerFcmTokenWithRetry };
+  async function toggleTrustedDevice(trusted) {
+    const token = getFcmToken();
+    if (!token) {
+      console.warn('[FCM] Cannot toggle trusted status: no token');
+      return false;
+    }
+
+    try {
+      const response = await axios.post(TRUSTED_ENDPOINT, { token, trusted });
+      if (response.data?.status === 'success') {
+        console.log('[FCM] Trusted device status:', trusted);
+        return true;
+      }
+      console.warn('[FCM] Toggle trusted response:', response.data);
+      return false;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      console.warn('[FCM] Toggle trusted failed:', msg);
+      return false;
+    }
+  }
+
+  function getTrustedStatus() {
+    const token = getFcmToken();
+    if (!token) return false;
+    const stored = localStorage.getItem('trustedDeviceToken');
+    return stored === token;
+  }
+
+  return { isAndroidApp, getFcmToken, registerFcmToken, registerFcmTokenWithRetry, toggleTrustedDevice, getTrustedStatus };
 }

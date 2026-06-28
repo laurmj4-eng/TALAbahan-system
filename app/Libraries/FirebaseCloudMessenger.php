@@ -175,6 +175,62 @@ class FirebaseCloudMessenger
         return ['success' => true, 'results' => $results, 'notified_users' => $seenUserIds];
     }
 
+    public function sendToTrustedAdmins(string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getActiveTrustedDeviceTokens();
+
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No trusted admin devices.'];
+        }
+
+        $results = [];
+        foreach ($tokens as $row) {
+            $results[] = $this->sendToDevice($row['token'], $title, $body, $data);
+        }
+
+        return ['success' => true, 'results' => $results];
+    }
+
+    public function sendToTrustedAdminsAndPersist(string $type, string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getActiveTrustedDeviceTokens();
+
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No trusted admin devices.'];
+        }
+
+        $notificationModel = new NotificationModel();
+        $results = [];
+        $seenUserIds = [];
+
+        foreach ($tokens as $row) {
+            $uid = $row['user_id'] !== null ? (int) $row['user_id'] : null;
+            if ($uid !== null && !in_array($uid, $seenUserIds, true)) {
+                $notificationModel->insert([
+                    'user_id' => $uid,
+                    'type'    => $type,
+                    'title'   => $title,
+                    'body'    => $body,
+                    'data'    => !empty($data) ? json_encode($data) : null,
+                ]);
+                $seenUserIds[] = $uid;
+            } elseif ($uid === null) {
+                $notificationModel->insert([
+                    'user_id' => null,
+                    'type'    => $type,
+                    'title'   => $title,
+                    'body'    => $body,
+                    'data'    => !empty($data) ? json_encode($data) : null,
+                ]);
+            }
+            $results[] = $this->sendToDevice($row['token'], $title, $body, $data);
+        }
+
+        return ['success' => true, 'results' => $results, 'notified_users' => $seenUserIds];
+    }
+
     public function sendToUserAndPersist(int $userId, string $type, string $title, string $body, array $data = []): array
     {
         $notificationModel = new NotificationModel();

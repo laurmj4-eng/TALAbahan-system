@@ -17,6 +17,7 @@ class FcmTokenModel extends Model
         'platform',
         'device_model',
         'is_active',
+        'is_trusted_admin_device',
     ];
 
     public function getActiveTokensByUser(int $userId): array
@@ -53,5 +54,32 @@ class FcmTokenModel extends Model
             ->where('users.role', $role)
             ->where('fcm_device_tokens.is_active', 1)
             ->findAll();
+    }
+
+    public function getActiveTrustedDeviceTokens(): array
+    {
+        return $this->where('is_trusted_admin_device', 1)
+            ->where('is_active', 1)
+            ->findAll();
+    }
+
+    public function setTrustedStatus(string $token, bool $trusted): bool
+    {
+        return (bool) $this->where('token', $token)
+            ->set(['is_trusted_admin_device' => $trusted ? 1 : 0])
+            ->update();
+    }
+
+    public function getTrustedStatus(string $token): ?bool
+    {
+        $row = $this->select('is_trusted_admin_device')
+            ->where('token', $token)
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        return (bool) $row['is_trusted_admin_device'];
     }
 }
