@@ -17,7 +17,8 @@ export function usePullToRefresh() {
 
   function onTouchStart(e) {
     if (refreshing.value) return
-    if (window.scrollY !== 0) return
+    const scrollContainer = document.querySelector('.smooth-scroll-container') || document.documentElement
+    if (scrollContainer.scrollTop > 0) return
 
     const touch = e.changedTouches[0]
     startY = touch.clientY
