@@ -43,11 +43,10 @@ android {
         }
     }
 
-    configurations.all {
-        resolutionStrategy {
-            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-        }
-    }
+}
+
+configurations.all {
+    exclude module: 'kotlin-stdlib-jdk8'
 }
 
 dependencies {
