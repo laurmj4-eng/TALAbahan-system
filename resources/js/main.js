@@ -6,7 +6,7 @@ import '../css/recaptcha.css';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import { useFcmToken } from './composables/useFcmToken.js';
-import PullToRefreshOverlay from './Components/PullToRefreshOverlay.vue';
+import PullToRefreshOverlay from './components/PullToRefreshOverlay.vue';
 
 const style = document.createElement('style');
 style.textContent = '#nprogress .bar{height:4px!important;box-shadow:0 0 10px #22d3ee,0 0 20px #22d3ee}';
