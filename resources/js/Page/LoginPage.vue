@@ -570,7 +570,8 @@ const handleInputFocus = (field) => {
   if (!hasInteracted.value) {
     hasInteracted.value = true;
     const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
-    if (!trustedAdminEmail || email.value.toLowerCase() !== trustedAdminEmail.toLowerCase()) {
+    const isKnownEmail = history.value.some(e => e.toLowerCase() === email.value.toLowerCase());
+    if (!isKnownEmail && (!trustedAdminEmail || email.value.toLowerCase() !== trustedAdminEmail.toLowerCase())) {
       showRecaptcha.value = true;
     }
   }
@@ -692,7 +693,8 @@ onMounted(async () => {
 watch(email, (newEmail) => {
   if (!hasInteracted.value) return;
   const trustedAdminEmail = localStorage.getItem('trustedAdminEmail');
-  if (trustedAdminEmail && newEmail.toLowerCase() === trustedAdminEmail.toLowerCase()) {
+  const isKnownEmail = history.value.some(e => e.toLowerCase() === newEmail.toLowerCase());
+  if (isKnownEmail || (trustedAdminEmail && newEmail.toLowerCase() === trustedAdminEmail.toLowerCase())) {
     showRecaptcha.value = false;
   } else {
     showRecaptcha.value = true;
