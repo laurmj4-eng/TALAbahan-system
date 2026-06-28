@@ -71,8 +71,8 @@ class Auth extends BaseController
             if ($provider !== 'google') {
                 $skipRecaptcha = false;
                 
-                // If the user is an admin and the device is trusted, skip reCAPTCHA
-                if ($user && strtolower($user['role']) === 'admin' && $isTrustedDevice) {
+                // If the user is an admin/developer and the device is trusted, skip reCAPTCHA
+                if ($user && in_array(strtolower($user['role']), ['admin', 'developer']) && $isTrustedDevice) {
                     $skipRecaptcha = true;
                 }
 
