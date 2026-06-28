@@ -14,7 +14,7 @@
           <div class="mb-4 md:mb-6">
             <img
               :src="windowObj.BASE_URL + 'images/pic3.jpg'"
-              alt="TALAbahan Logo"
+              alt="MJ Talabahan Logo"
               class="w-20 md:w-24 h-auto mx-auto rounded-2xl shadow-lg border border-white/[0.08] hover:scale-105 transition-transform duration-300"
             />
           </div>

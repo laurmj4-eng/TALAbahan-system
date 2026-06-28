@@ -257,7 +257,7 @@ const allModelsExhausted = computed(() => {
 const historyKey = computed(() => `mj_chat_history_${props.role}`);
 const messages = ref([]);
 
-const chatbotTitle = computed(() => props.role === 'admin' ? 'MJ Assistant' : 'TALAbahan Assistant');
+const chatbotTitle = computed(() => props.role === 'admin' ? 'MJ Assistant' : 'MJ Talabahan Assistant');
 
 const resetCountdown = ref('');
 const updateCountdown = () => {
@@ -526,7 +526,7 @@ onMounted(() => {
   if (messages.value.length === 0) {
     const greeting = props.role === 'admin' 
       ? 'Hello! I am Mj. How can I help you today? ✨' 
-      : 'Welcome to TALAbahan! 🌊 I am your seafood assistant. How can I help you find the freshest catch today? 🦀';
+      : 'Welcome to MJ Talabahan! 🌊 I am your seafood assistant. How can I help you find the freshest catch today? 🦀';
     
     messages.value.push({
       role: 'assistant',

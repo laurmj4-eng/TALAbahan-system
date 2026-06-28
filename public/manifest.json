@@ -1,7 +1,7 @@
 {
-  "short_name": "TALAbahan",
-  "name": "TALAbahan",
-  "description": "TALAbahan Seafood System — POS, orders, inventory, and AI chatbot.",
+  "short_name": "MJ Talabahan",
+  "name": "MJ Talabahan",
+  "description": "MJ Talabahan Seafood System — POS, orders, inventory, and AI chatbot.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

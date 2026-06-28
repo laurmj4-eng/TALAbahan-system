@@ -16,7 +16,7 @@ class PosController extends BaseController
         $userModel = new \App\Models\UserModel();
 
         $data = [
-            'title'     => 'TALAbahan Terminal (Staff)',
+            'title'     => 'MJ Talabahan Terminal (Staff)',
             'username'  => session()->get('username'),
             'products'  => $productModel->orderBy('name', 'ASC')->findAll(500),
             'customers' => $userModel->where('role', 'customer')->orderBy('username', 'ASC')->findAll(200),

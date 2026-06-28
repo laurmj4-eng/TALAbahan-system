@@ -10,7 +10,7 @@
       <div class="p-8 px-4 text-center animate-slide-in-top">
         <div class="flex items-center justify-center gap-2 mb-1">
           <Gem class="text-cyan-400 w-5 h-5 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-          <h2 class="text-lg font-black tracking-tight m-0">TALAbahan</h2>
+          <h2 class="text-lg font-black tracking-tight m-0">MJ Talabahan</h2>
         </div>
         <small class="text-cyan-400/80 font-black tracking-[0.3em] text-[0.65rem] uppercase">Customer</small>
       </div>

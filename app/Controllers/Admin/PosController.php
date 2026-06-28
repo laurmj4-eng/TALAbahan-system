@@ -17,7 +17,7 @@ class PosController extends BaseController
         $userModel = new \App\Models\UserModel();
 
         $data = [
-            'title'     => 'TALAbahan Terminal',
+            'title'     => 'MJ Talabahan Terminal',
             'username'  => session()->get('username'),
             'products'  => $productModel->orderBy('name', 'ASC')->findAll(500),
             'customers' => $userModel->where('role', 'customer')->orderBy('username', 'ASC')->findAll(200),
@@ -170,7 +170,7 @@ class PosController extends BaseController
         }
 
         $html .= "</tbody></table>";
-        $html .= "<div class='footer'>TALAbahan System - Financial Ledger</div>";
+        $html .= "<div class='footer'>MJ Talabahan System - Financial Ledger</div>";
         $html .= "</body></html>";
 
         $dompdf->loadHtml($html);

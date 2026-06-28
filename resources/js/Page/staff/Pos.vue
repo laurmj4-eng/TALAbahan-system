@@ -1,7 +1,7 @@
 <template>
   <StaffLayout :username="username">
     <div class="space-y-6 md:space-y-8 pb-10">
-      <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">TALAbahan Terminal</h2>
+      <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">MJ Talabahan Terminal</h2>
       
       <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
         <!-- Products Grid -->

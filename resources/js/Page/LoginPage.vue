@@ -14,7 +14,7 @@
           <div class="mb-2 md:mb-4">
             <img
               :src="windowObj.BASE_URL + 'images/pic3.jpg'"
-              alt="TALAbahan Logo"
+              alt="MJ Talabahan Logo"
               width="96"
               height="96"
               style="aspect-ratio: 1 / 1;"
@@ -22,7 +22,7 @@
             />
           </div>
 
-          <h2 class="text-2xl md:text-4xl font-black text-white mb-1 md:mb-2 tracking-tight">TALAbahan System</h2>
+          <h2 class="text-2xl md:text-4xl font-black text-white mb-1 md:mb-2 tracking-tight">MJ Talabahan System</h2>
           <p class="text-white/50 font-medium mb-4 md:mb-8 text-[11px] md:text-base">Welcome back! Please login to your account.</p>
 
           <form @submit.prevent="handleLogin" @mouseenter="handleInputFocus('form')" @touchstart="handleInputFocus('form')" class="space-y-3 md:space-y-6 text-left">

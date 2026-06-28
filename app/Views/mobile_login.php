@@ -79,7 +79,7 @@
     <div class="container">
         <div id="initial-state">
             <div style="width:64px;height:64px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:30px">🐟</div>
-            <div class="heading">TALAbahan Seafood</div>
+            <div class="heading">MJ Talabahan Seafood</div>
             <div class="sub">Sign in with your Google account</div>
             <button class="google-btn" id="signInBtn">
                 <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3c-2.5 6.9-9.1 12-17.3 12-9.9 0-18-8.1-18-18s8.1-18 18-18c4.6 0 8.8 1.7 12 4.6l5.7-5.7C32.7 0 28.6-2 24-2 10.7-2 0 9.6 0 22s10.7 24 24 24c11.4 0 21.3-7.9 23.6-18.7.3-1.5.4-3 .4-4.5 0-1.5-.2-3-.4-4.5z"/><path fill="#FF3D00" d="M4.4 13.5l6.6 4.8C13.1 14 17.9 11 24 11c3.1 0 5.9 1.1 8.1 2.9l6.1-6.1C34.6 4.1 29.6 2 24 2 16.3 2 9.5 6.5 5.9 13.1l-1.5.4z"/><path fill="#4CAF50" d="M24 44c5.7 0 10.9-2.1 14.8-5.6l-6.8-5.5c-2.1 1.5-4.8 2.4-8 2.4-6.2 0-11.4-4.2-13.3-9.9l-6.6 5.1C7.5 38.3 15.1 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-1.2 3.3-3.5 6.1-6.6 7.8.1 0 6.7 5.4 6.7 5.4 4.9-4.5 8.2-11.1 8.2-19.5 0-1.5-.1-2.9-.3-4.3z"/></svg>

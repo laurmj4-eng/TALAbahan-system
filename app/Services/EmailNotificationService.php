@@ -21,7 +21,7 @@ class EmailNotificationService
     protected function setupEmailConfig(): void
     {
         $this->config->fromEmail = env('email.fromEmail', 'no-reply@talabahan-system.com');
-        $this->config->fromName = env('email.fromName', 'TALAbahan System');
+        $this->config->fromName = env('email.fromName', 'MJ Talabahan System');
         $this->config->protocol = env('email.protocol', 'mail');
         $this->config->SMTPHost = env('email.SMTPHost', '');
         $this->config->SMTPUser = env('email.SMTPUser', '');
@@ -113,7 +113,7 @@ class EmailNotificationService
                     </div>
                     
                     <p>We will notify you when your order is shipped.</p>
-                    <p>Best regards,<br>TALAbahan System Team</p>
+                    <p>Best regards,<br>MJ Talabahan System Team</p>
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>
@@ -163,7 +163,7 @@ class EmailNotificationService
         <body>
             <div class='container'>
                 <div class='header'>
-                    <div style='font-size: 24px; font-weight: bold; letter-spacing: 2px;'>TALAbahan</div>
+                    <div style='font-size: 24px; font-weight: bold; letter-spacing: 2px;'>MJ Talabahan</div>
                     <div class='status-badge' style='background: {$color};'>{$newStatus} {$emoji}</div>
                 </div>
                 <div class='content'>
@@ -177,7 +177,7 @@ class EmailNotificationService
                     <a href='https://mjtalabahan.page.gd/customer/dashboard' class='btn'>View Order Details</a>
                 </div>
                 <div class='footer'>
-                    <p>&copy; " . date('Y') . " TALAbahan Seafood & Grill. All rights reserved.</p>
+                    <p>&copy; " . date('Y') . " MJ Talabahan Seafood & Grill. All rights reserved.</p>
                     <p>This is an automated message, please do not reply.</p>
                 </div>
             </div>
@@ -218,7 +218,7 @@ class EmailNotificationService
                     </div>
                     
                     <p>Please restock soon!</p>
-                    <p>Best regards,<br>TALAbahan System Team</p>
+                    <p>Best regards,<br>MJ Talabahan System Team</p>
                 </div>
                 <div class="footer">
                     <p>This is an automated email. Please do not reply.</p>

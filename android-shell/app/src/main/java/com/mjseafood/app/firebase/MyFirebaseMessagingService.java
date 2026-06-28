@@ -42,18 +42,18 @@ public class MyFirebaseMessagingService extends com.google.firebase.messaging.Fi
 
         if (message.getData().size() > 0) {
             title = message.getData().get("title");
-            if (title == null) title = "TALAbahan";
+            if (title == null) title = "MJ Talabahan";
             body = message.getData().get("body");
             if (body == null) body = "";
             orderId = message.getData().get("order_id");
             notificationType = message.getData().get("type");
         } else if (message.getNotification() != null) {
             title = message.getNotification().getTitle();
-            if (title == null) title = "TALAbahan";
+            if (title == null) title = "MJ Talabahan";
             body = message.getNotification().getBody();
             if (body == null) body = "";
         } else {
-            title = "TALAbahan";
+            title = "MJ Talabahan";
             body = "";
         }
 

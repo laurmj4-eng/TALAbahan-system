@@ -58,7 +58,7 @@ if (!function_exists('vite_css')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TALAbahan System</title>
+    <title>MJ Talabahan System</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     
     <!-- Leaflet: loaded dynamically by pages that need maps (not globally) -->

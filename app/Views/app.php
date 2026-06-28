@@ -83,13 +83,13 @@ if (!function_exists('vite_css')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TALAbahan System</title>
+    <title>MJ Talabahan System</title>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
     <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TALAbahan">
+    <meta name="apple-mobile-web-app-title" content="MJ Talabahan">
     <link rel="apple-touch-icon" href="<?= base_url('images/seafood.png') ?>">
     
     <!-- Leaflet: loaded dynamically by pages that need maps (not globally) -->
@@ -119,7 +119,7 @@ if (!function_exists('vite_css')) {
         </svg>
       </div>
       <h2 style="color:#f1f5f9;font-size:20px;font-weight:700;margin:0 0 12px;letter-spacing:-.3px">No Internet Connection</h2>
-      <p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 28px;max-width:300px">TALAbahan requires an active internet connection to process transactions. Please check your mobile data or Wi-Fi.</p>
+      <p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 28px;max-width:300px">MJ Talabahan requires an active internet connection to process transactions. Please check your mobile data or Wi-Fi.</p>
       <button onclick="location.reload()" style="background:#ef4444;color:#fff;border:none;border-radius:12px;padding:14px 36px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:transform .15s,background .15s" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform='scale(1)'">Retry Connection</button>
     </div>
     <style>
