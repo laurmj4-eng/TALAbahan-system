@@ -26,6 +26,11 @@ class UserModel extends Model
 
     protected $returnType = 'array';
 
+    public function getUsersByRole(string $role): array
+    {
+        return $this->where('role', $role)->findAll();
+    }
+
     protected $validationRules = [
         'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username]',
         'email'    => 'required|valid_email|max_length[100]|is_unique[users.email]',

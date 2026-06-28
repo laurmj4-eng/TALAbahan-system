@@ -15,6 +15,7 @@ use App\Models\ProductPaymentConstraintModel;
 use App\Models\CodComplianceModel;
 use App\Models\UserModel;
 use App\Models\OrderStatusHistoryModel;
+use App\Libraries\FirebaseCloudMessenger;
 use Config\AppConfig;
 use App\Controllers\FcmController;
 use Exception;
@@ -262,7 +263,11 @@ class CheckoutService
                 $paymentRef = $paymentResult['transaction_id'] ?? null;
             }
 
+            $orderUser = $this->userModel->where('username', $username)->first();
+            $orderUserId = $orderUser ? (int) $orderUser['id'] : null;
+
             $orderId = $this->orderModel->insert([
+                'user_id' => $orderUserId,
                 'transaction_code' => $transactionCode,
                 'customer_name' => $quoteData['receiver_name'],
                 'total_amount' => (float)$quoteData['final_total'],
@@ -361,16 +366,40 @@ class CheckoutService
     
     protected function sendNewOrderPush(int $orderId, string $username, string $transactionCode): void
     {
-        $user = $this->userModel->where('username', $username)->first();
-        if (!$user || empty($user['id'])) {
-            return;
+        $items = $this->orderItemModel->where('order_id', $orderId)->findAll();
+        $itemCount = 0;
+        foreach ($items as $item) {
+            $itemCount += (int) ($item['quantity'] ?? 0);
         }
 
         try {
-            $fcm = new FcmController();
-            $fcm->sendOrderStatusPush($orderId, 'Pending');
+            $fcm = new FirebaseCloudMessenger();
+            $fcm->sendToRoleAndPersist(
+                'admin',
+                'new_order',
+                'New Order #' . $transactionCode,
+                $username . ' just bought ' . $itemCount . ' items. Check your dashboard ledger.',
+                ['order_id' => (string) $orderId, 'type' => 'new_order']
+            );
+            $fcm->sendToRoleAndPersist(
+                'staff',
+                'new_order',
+                'New Order #' . $transactionCode,
+                $username . ' just bought ' . $itemCount . ' items. Check your dashboard ledger.',
+                ['order_id' => (string) $orderId, 'type' => 'new_order']
+            );
         } catch (\Exception $e) {
             log_message('error', '[CheckoutService] Failed to send new-order push: ' . $e->getMessage());
+        }
+
+        $user = $this->userModel->where('username', $username)->first();
+        if ($user && !empty($user['id'])) {
+            try {
+                $fcmCtrl = new FcmController();
+                $fcmCtrl->sendOrderStatusPush($orderId, 'Pending');
+            } catch (\Exception $e) {
+                log_message('error', '[CheckoutService] Failed to send customer order confirmation push: ' . $e->getMessage());
+            }
         }
     }
 

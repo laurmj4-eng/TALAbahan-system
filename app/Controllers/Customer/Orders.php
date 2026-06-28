@@ -3,6 +3,7 @@
 namespace App\Controllers\Customer;
 
 use App\Controllers\BaseController;
+use App\Controllers\FcmController;
 use App\Models\OrderModel;
 use App\Models\OrderItemModel;
 use App\Models\OrderReviewModel;
@@ -198,6 +199,14 @@ class Orders extends BaseController
         }
 
         $db->transCommit();
+
+        try {
+            $fcm = new FcmController();
+            $fcm->sendOrderStatusPush($orderId, 'Cancelled');
+        } catch (\Throwable $e) {
+            log_message('error', '[Customer/Orders] Failed to send cancellation push: ' . $e->getMessage());
+        }
+
         return $this->response->setJSON(['status' => 'success', 'message' => 'Order cancelled successfully.']);
     }
 

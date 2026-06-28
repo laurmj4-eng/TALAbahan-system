@@ -128,6 +128,53 @@ class FirebaseCloudMessenger
         return ['success' => true, 'results' => $results];
     }
 
+    public function sendToRole(string $role, string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getActiveTokensByRole($role);
+
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No active device tokens for role: ' . $role];
+        }
+
+        $results = [];
+        foreach ($tokens as $row) {
+            $results[] = $this->sendToDevice($row['token'], $title, $body, $data);
+        }
+
+        return ['success' => true, 'results' => $results];
+    }
+
+    public function sendToRoleAndPersist(string $role, string $type, string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getActiveTokensByRole($role);
+
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No active device tokens for role: ' . $role];
+        }
+
+        $notificationModel = new NotificationModel();
+        $results = [];
+        $seenUserIds = [];
+
+        foreach ($tokens as $row) {
+            if (!in_array($row['user_id'], $seenUserIds, true)) {
+                $notificationModel->insert([
+                    'user_id' => $row['user_id'],
+                    'type'    => $type,
+                    'title'   => $title,
+                    'body'    => $body,
+                    'data'    => !empty($data) ? json_encode($data) : null,
+                ]);
+                $seenUserIds[] = (int) $row['user_id'];
+            }
+            $results[] = $this->sendToDevice($row['token'], $title, $body, $data);
+        }
+
+        return ['success' => true, 'results' => $results, 'notified_users' => $seenUserIds];
+    }
+
     public function sendToUserAndPersist(int $userId, string $type, string $title, string $body, array $data = []): array
     {
         $notificationModel = new NotificationModel();

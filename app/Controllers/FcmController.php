@@ -206,26 +206,38 @@ class FcmController extends BaseController
             $orderModel = new OrderModel();
             $order = $orderModel->find($orderId);
 
-            if (!$order || empty($order['user_id'])) {
+            if (!$order) {
                 return;
             }
 
-            $statusLabels = [
-                'Pending'    => 'Order Placed',
-                'Processing' => 'Being Prepared',
-                'Shipped'    => 'On the Way',
-                'Completed'  => 'Delivered',
-                'Cancelled'  => 'Cancelled',
-                'Refunded'   => 'Refunded',
+            $userId = !empty($order['user_id']) ? (int) $order['user_id'] : 0;
+
+            if ($userId <= 0 && !empty($order['customer_name'])) {
+                $userModel = new UserModel();
+                $user = $userModel->where('username', $order['customer_name'])->first();
+                $userId = $user ? (int) $user['id'] : 0;
+            }
+
+            if ($userId <= 0) {
+                return;
+            }
+
+            $statusMessages = [
+                'Pending'    => ['title' => 'Order Confirmed',                    'body' => 'Your order has been placed and is awaiting confirmation.'],
+                'Processing' => ['title' => 'Preparing Your Order',               'body' => 'Your order is now being prepared!'],
+                'Shipped'    => ['title' => 'Order Shipped',                      'body' => 'Your TALAbahan order has been shipped! Track your delivery now.'],
+                'Completed'  => ['title' => 'Order Delivered',                    'body' => 'Your order has been delivered. Enjoy your meal!'],
+                'Cancelled'  => ['title' => 'Order Cancelled',                    'body' => 'Your order has been cancelled.'],
+                'Refunded'   => ['title' => 'Order Refunded',                     'body' => 'Your order has been refunded.'],
             ];
 
-            $label = $statusLabels[$newStatus] ?? $newStatus;
-            $title = 'Order #' . $order['transaction_code'];
-            $body  = 'Your order is now: ' . $label;
+            $msg = $statusMessages[$newStatus] ?? ['title' => 'Order Update', 'body' => 'Your order status has been updated to: ' . $newStatus];
+            $title = 'Order #' . $order['transaction_code'] . ' — ' . $msg['title'];
+            $body  = $msg['body'];
 
             $fcm = new FirebaseCloudMessenger();
             $fcm->sendToUserAndPersist(
-                (int) $order['user_id'],
+                $userId,
                 'order_update',
                 $title,
                 $body,

@@ -45,4 +45,13 @@ class FcmTokenModel extends Model
     {
         return $this->where('token', $token)->where('is_active', 1)->countAllResults() > 0;
     }
+
+    public function getActiveTokensByRole(string $role): array
+    {
+        return $this->select('fcm_device_tokens.*')
+            ->join('users', 'users.id = fcm_device_tokens.user_id')
+            ->where('users.role', $role)
+            ->where('fcm_device_tokens.is_active', 1)
+            ->findAll();
+    }
 }
