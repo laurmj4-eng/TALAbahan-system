@@ -42,6 +42,12 @@ android {
             enableSplit = true
         }
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        }
+    }
 }
 
 dependencies {
