@@ -23,6 +23,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
@@ -111,7 +112,10 @@ public class MainActivity extends Activity {
         swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_green_light);
         swipeRefreshLayout.setProgressBackgroundColorSchemeResource(android.R.color.white);
         swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
-        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.canScrollVertically(-1));
+        webView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+            boolean atTop = !webView.canScrollVertically(-1);
+            swipeRefreshLayout.setEnabled(atTop);
+        });
         setupWebView();
 
         backgroundThread = new HandlerThread("BackgroundWork");
