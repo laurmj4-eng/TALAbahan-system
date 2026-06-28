@@ -26,14 +26,19 @@ class FirebaseCloudMessenger
             return;
         }
 
-        $b64 = env('FIREBASE_ADMIN_KEY_B64');
-        if (empty($b64)) {
+        $raw = env('FIREBASE_ADMIN_KEY_B64');
+        if (empty($raw)) {
             return;
         }
 
-        $json = base64_decode($b64, true);
+        $json = base64_decode($raw, true);
         if ($json === false || empty($json)) {
-            log_message('error', '[FCM] FIREBASE_ADMIN_KEY_B64 is not valid Base64.');
+            $json = $raw;
+        }
+
+        // Validate it's actually JSON before writing
+        if (json_decode($json, true) === null) {
+            log_message('error', '[FCM] FIREBASE_ADMIN_KEY_B64 is neither valid Base64 nor valid JSON.');
             return;
         }
 
@@ -67,14 +72,17 @@ class FirebaseCloudMessenger
             }
         }
 
-        $b64 = env('FIREBASE_ADMIN_KEY_B64') ?: getenv('FIREBASE_ADMIN_KEY_B64');
-        if ($b64) {
-            $json = base64_decode($b64, true);
-            if ($json !== false) {
-                $account = json_decode($json, true);
-                if ($account && isset($account['client_email'], $account['private_key'])) {
-                    return $account;
-                }
+        $raw = env('FIREBASE_ADMIN_KEY_B64') ?: getenv('FIREBASE_ADMIN_KEY_B64');
+        if ($raw) {
+            // Try base64 decode first
+            $json = base64_decode($raw, true);
+            if ($json === false) {
+                // Not valid base64 — try as raw JSON (user may have pasted the JSON directly)
+                $json = $raw;
+            }
+            $account = json_decode($json, true);
+            if ($account && isset($account['client_email'], $account['private_key'])) {
+                return $account;
             }
         }
 

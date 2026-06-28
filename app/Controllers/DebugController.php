@@ -27,19 +27,21 @@ class DebugController extends BaseController
         if ($value) {
             $decoded = base64_decode($value, true);
             if ($decoded === false) {
-                $result['base64_decode'] = 'FAILED — invalid base64';
+                // Not base64 — try as raw JSON
+                $result['base64_decode'] = 'FAILED — trying as raw JSON';
+                $decoded = $value;
             } else {
                 $result['base64_decode'] = 'OK (len=' . strlen($decoded) . ')';
-                $json = json_decode($decoded, true);
-                if (!$json) {
-                    $result['json_decode'] = 'FAILED — ' . json_last_error_msg();
-                } else {
-                    $result['json_decode'] = 'OK';
-                    $result['has_client_email'] = isset($json['client_email']) ? 'YES' : 'NO';
-                    $result['has_private_key'] = isset($json['private_key']) ? 'YES' : 'NO';
-                    $result['client_email'] = $json['client_email'] ?? 'missing';
-                    $result['private_key_len'] = isset($json['private_key']) ? strlen($json['private_key']) : 0;
-                }
+            }
+            $json = json_decode($decoded, true);
+            if (!$json) {
+                $result['json_decode'] = 'FAILED — ' . json_last_error_msg();
+            } else {
+                $result['json_decode'] = 'OK';
+                $result['has_client_email'] = isset($json['client_email']) ? 'YES' : 'NO';
+                $result['has_private_key'] = isset($json['private_key']) ? 'YES' : 'NO';
+                $result['client_email'] = $json['client_email'] ?? 'missing';
+                $result['private_key_len'] = isset($json['private_key']) ? strlen($json['private_key']) : 0;
             }
         } else {
             $result['decode_test'] = 'SKIPPED — no value to decode';
