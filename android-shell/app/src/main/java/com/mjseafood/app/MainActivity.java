@@ -45,6 +45,7 @@ import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONObject;
 
@@ -63,6 +64,7 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ProgressBar progressBar;
     private View chromeLoadingOverlay;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread backgroundThread;
     private Handler backgroundHandler;
@@ -105,6 +107,11 @@ public class MainActivity extends Activity {
         webView = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progress_bar);
         chromeLoadingOverlay = findViewById(R.id.chromeLoadingOverlay);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_green_light);
+        swipeRefreshLayout.setProgressBackgroundColorSchemeResource(android.R.color.white);
+        swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
+        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.getScrollY() > 0);
         setupWebView();
 
         backgroundThread = new HandlerThread("BackgroundWork");
@@ -396,6 +403,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                swipeRefreshLayout.setRefreshing(false);
                 isLoadingTimeout = true;
                 progressBar.setVisibility(View.GONE);
 
@@ -415,6 +423,7 @@ public class MainActivity extends Activity {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
+                swipeRefreshLayout.setRefreshing(false);
                 isLoadingTimeout = true;
                 progressBar.setVisibility(View.GONE);
             }
@@ -423,6 +432,7 @@ public class MainActivity extends Activity {
             public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
                 super.onReceivedHttpError(view, request, errorResponse);
                 if (request.isForMainFrame()) {
+                    swipeRefreshLayout.setRefreshing(false);
                     progressBar.setVisibility(View.GONE);
                 }
             }
