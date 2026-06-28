@@ -1,12 +1,12 @@
 <template>
   <div
     v-show="visible || refreshing"
-    class="fixed top-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none"
+    class="fixed inset-x-0 top-0 z-[9999] flex justify-start pointer-events-none"
     :style="overlayStyle"
   >
-    <div class="w-11 h-11 bg-white rounded-full shadow-xl flex items-center justify-center ring-1 ring-black/5">
+    <div class="mx-auto flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-white/90 backdrop-blur rounded-full shadow-2xl ring-1 ring-black/5">
       <div
-        class="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+        class="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-t-transparent animate-spin"
         :class="spinnerColor"
       />
     </div>
@@ -20,7 +20,7 @@ import { usePullToRefresh } from '../composables/usePullToRefresh'
 const { pullY, visible, refreshing, activated } = usePullToRefresh()
 
 const overlayStyle = computed(() => ({
-  transform: `translate(calc(-50%), ${pullY.value}px)`,
+  transform: `translateY(${pullY.value}px)`,
   transition: refreshing.value ? 'none' : 'transform 0.3s ease-out',
 }))
 
