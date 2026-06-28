@@ -20,30 +20,30 @@
           <div class="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-500 text-base md:text-xl mb-3 md:mb-5">
             <Smartphone />
           </div>
-          <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">Devices</div>
+          <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">Total App Installs</div>
           <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent leading-none tracking-tight">
-            {{ deviceStats.total }}
+            {{ analytics.total_installs }}
           </div>
-          <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">{{ deviceStats.trusted }} trusted</div>
-        </div>
-
-        <div class="p-3 md:p-[30px] rounded-xl md:rounded-[24px] border border-white/[0.08] bg-slate-900/40">
-          <div class="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-base md:text-xl mb-3 md:mb-5">
-            <Users />
-          </div>
-          <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">Users Linked</div>
-          <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent leading-none tracking-tight">
-            {{ deviceStats.linked }}
-          </div>
-          <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">{{ deviceStats.orphan }} orphan tokens</div>
+          <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">{{ analytics.active_devices }} active devices</div>
         </div>
 
         <div class="p-3 md:p-[30px] rounded-xl md:rounded-[24px] border border-white/[0.08] bg-slate-900/40">
           <div class="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-base md:text-xl mb-3 md:mb-5">
+            <Activity />
+          </div>
+          <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">Online Now</div>
+          <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent leading-none tracking-tight">
+            {{ analytics.online_now }}
+          </div>
+          <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">active in the last 24h</div>
+        </div>
+
+        <div class="p-3 md:p-[30px] rounded-xl md:rounded-[24px] border border-white/[0.08] bg-slate-900/40">
+          <div class="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-base md:text-xl mb-3 md:mb-5">
             <Radio />
           </div>
           <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">Platforms</div>
-          <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent leading-none tracking-tight">
+          <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent leading-none tracking-tight">
             {{ deviceStats.platforms }}
           </div>
           <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">unique platforms</div>
@@ -55,7 +55,7 @@
           </div>
           <div class="text-xs md:text-[0.9rem] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">App Versions</div>
           <div class="text-lg md:text-[2.5rem] font-black bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent leading-none tracking-tight">
-            {{ deviceStats.versions }}
+            {{ analytics.unique_versions }}
           </div>
           <div class="text-[0.7rem] md:text-[0.8rem] text-slate-500">unique versions</div>
         </div>
@@ -74,38 +74,49 @@
               <tr class="border-b border-white/[0.08] text-white/50 font-bold uppercase tracking-wider">
                 <th class="p-2 md:p-3">User</th>
                 <th class="p-2 md:p-3">Device Model</th>
-                <th class="p-2 md:p-3">Platform</th>
                 <th class="p-2 md:p-3">App Version</th>
-                <th class="p-2 md:p-3">Trusted</th>
-                <th class="p-2 md:p-3">Last Connected</th>
-                <th class="p-2 md:p-3 hidden md:table-cell">Token</th>
+                <th class="p-2 md:p-3">Status</th>
+                <th class="p-2 md:p-3">Last Seen</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="d in devices" :key="d.id" class="border-b border-white/[0.05] hover:bg-white/[0.03] transition-colors">
+              <tr
+                v-for="d in devices"
+                :key="d.id"
+                class="border-b border-white/[0.05] hover:bg-white/[0.03] transition-colors group cursor-pointer"
+                @click="copyToken(d.token)"
+              >
                 <td class="p-2 md:p-3">
                   <div class="font-semibold text-white truncate max-w-[120px]">{{ d.username || '—' }}</div>
                   <div class="text-[0.6rem] text-white/40">{{ d.user_role || 'guest' }}</div>
                 </td>
-                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[140px] truncate">{{ d.device_model || '—' }}</td>
-                <td class="p-2 md:p-3">
-                  <span class="px-1.5 py-0.5 rounded text-[0.6rem] font-bold uppercase" :class="platformBadge(d.platform)">
-                    {{ d.platform || '—' }}
+                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[160px] truncate" :title="d.device_model">
+                  {{ d.device_model || '—' }}
+                </td>
+                <td class="p-2 md:p-3 text-white/70 font-mono text-xs whitespace-nowrap">{{ d.app_version || '—' }}</td>
+                <td class="p-2 md:p-3 whitespace-nowrap">
+                  <span v-if="d.is_online" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                    Online
                   </span>
+                  <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-bold bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>
+                    Inactive
+                  </span>
+                  <span v-if="d.is_trusted_admin_device" class="ml-1 px-1.5 py-0.5 rounded text-[0.55rem] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">TRUSTED</span>
                 </td>
-                <td class="p-2 md:p-3 text-white/70 font-mono text-xs">{{ d.app_version || '—' }}</td>
-                <td class="p-2 md:p-3">
-                  <span v-if="d.is_trusted_admin_device" class="text-emerald-400 font-bold">YES</span>
-                  <span v-else class="text-white/30">no</span>
+                <td class="p-2 md:p-3 text-white/60 text-[0.65rem] md:text-xs whitespace-nowrap" :title="d.last_connected">
+                  {{ formatTime(d.last_connected || d.updated_at) }}
                 </td>
-                <td class="p-2 md:p-3 text-white/60 text-[0.65rem] md:text-xs">{{ formatTime(d.last_connected || d.updated_at) }}</td>
-                <td class="p-2 md:p-3 hidden md:table-cell text-white/40 font-mono text-[0.6rem] max-w-[100px] truncate">{{ d.token_preview }}</td>
               </tr>
               <tr v-if="!devices.length">
-                <td colspan="7" class="p-8 text-center text-white/30 italic">No devices registered yet.</td>
+                <td colspan="5" class="p-8 text-center text-white/30 italic">No devices registered yet.</td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex justify-end">
+          <span class="text-[0.6rem] text-white/30 italic">Click a row to copy its device token</span>
         </div>
       </div>
 
@@ -187,11 +198,18 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import {
-  Smartphone, Monitor, Radio, Users, Loader
+  Smartphone, Monitor, Radio, Activity, Loader
 } from 'lucide-vue-next';
 import DeveloperLayout from '../../layouts/DeveloperLayout.vue';
 
 const devices = ref([]);
+const analytics = ref({
+  total_installs: 0,
+  active_devices: 0,
+  online_now: 0,
+  unique_models: 0,
+  unique_versions: 0,
+});
 const broadcastTitle = ref('');
 const broadcastBody = ref('');
 const broadcastTarget = ref('all');
@@ -200,20 +218,9 @@ const broadcastResult = ref(null);
 
 const deviceStats = computed(() => {
   const list = devices.value;
-  const total = list.length;
-  const trusted = list.filter(d => d.is_trusted_admin_device).length;
-  const linked = list.filter(d => d.user_id).length;
-  const orphan = total - linked;
   const platforms = new Set(list.map(d => d.platform).filter(Boolean)).size;
-  const versions = new Set(list.map(d => d.app_version).filter(Boolean)).size;
-  return { total, trusted, linked, orphan, platforms, versions };
+  return { platforms };
 });
-
-const platformBadge = (platform) => {
-  if (platform === 'android') return 'bg-cyan-500/20 text-cyan-400';
-  if (platform === 'ios') return 'bg-white/10 text-white/80';
-  return 'bg-slate-500/20 text-slate-400';
-};
 
 const formatTime = (ts) => {
   if (!ts) return '—';
@@ -223,7 +230,30 @@ const formatTime = (ts) => {
   if (diff < 60) return 'Just now';
   if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
   if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-  return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+  if (isYesterday) {
+    return 'Yesterday at ' + d.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+  return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) + ' at '
+    + d.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
+const copyToken = async (token) => {
+  if (!token) return;
+  try {
+    await navigator.clipboard.writeText(token);
+  } catch {
+    // fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = token;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
 };
 
 const fetchDevices = async () => {
@@ -231,6 +261,7 @@ const fetchDevices = async () => {
     const res = await axios.get('/api/developer/devices');
     if (res.data?.status === 'success') {
       devices.value = res.data.devices || [];
+      analytics.value = res.data.analytics || analytics.value;
     }
   } catch (err) {
     console.error('Failed to fetch devices:', err);

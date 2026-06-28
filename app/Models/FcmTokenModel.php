@@ -92,7 +92,7 @@ class FcmTokenModel extends Model
 
     public function getDeviceTrackingData(): array
     {
-        return $this->select('
+        $rows = $this->select('
                 fcm_device_tokens.id,
                 fcm_device_tokens.user_id,
                 fcm_device_tokens.token,
@@ -110,6 +110,43 @@ class FcmTokenModel extends Model
             ->where('fcm_device_tokens.is_active', 1)
             ->orderBy('fcm_device_tokens.last_connected', 'DESC')
             ->findAll();
+
+        $twentyFourHoursAgo = date('Y-m-d H:i:s', strtotime('-24 hours'));
+
+        return array_map(function ($row) use ($twentyFourHoursAgo) {
+            $row['is_online'] = !empty($row['last_connected']) && $row['last_connected'] >= $twentyFourHoursAgo;
+            $row['token_preview'] = substr($row['token'] ?? '', 0, 30) . '...';
+            return $row;
+        }, $rows);
+    }
+
+    public function getDeviceAnalytics(): array
+    {
+        $totalInstalls = $this->countAll();
+
+        $activeDevices = $this->where('is_active', 1)->countAllResults();
+
+        $onlineNow = $this->where('is_active', 1)
+            ->where('last_connected >=', date('Y-m-d H:i:s', strtotime('-24 hours')))
+            ->countAllResults();
+
+        $uniqueModels = $this->select('DISTINCT device_model')
+            ->where('device_model IS NOT NULL')
+            ->where("device_model != ''")
+            ->countAllResults();
+
+        $uniqueVersions = $this->select('DISTINCT app_version')
+            ->where('app_version IS NOT NULL')
+            ->where("app_version != ''")
+            ->countAllResults();
+
+        return [
+            'total_installs'  => (int) $totalInstalls,
+            'active_devices'  => (int) $activeDevices,
+            'online_now'      => (int) $onlineNow,
+            'unique_models'   => (int) $uniqueModels,
+            'unique_versions' => (int) $uniqueVersions,
+        ];
     }
 
     public function updateLastConnected(string $token): bool

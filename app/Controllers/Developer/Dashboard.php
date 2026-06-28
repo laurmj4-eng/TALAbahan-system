@@ -127,12 +127,14 @@ class Dashboard extends BaseController
     public function getDevices()
     {
         $tokenModel = new FcmTokenModel();
-        $devices = $tokenModel->getDeviceTrackingData();
+        $devices   = $tokenModel->getDeviceTrackingData();
+        $analytics = $tokenModel->getDeviceAnalytics();
 
         return $this->response->setJSON([
-            'status'  => 'success',
-            'devices' => $devices,
-            'total'   => count($devices),
+            'status'    => 'success',
+            'devices'   => $devices,
+            'total'     => count($devices),
+            'analytics' => $analytics,
         ]);
     }
 
