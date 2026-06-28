@@ -68,6 +68,7 @@ class Filters extends BaseFilters
             'csrf' => ['except' => [
                 'api/auth/*',
                 'api/fcm/*',
+                'api/admin/fcm/*',
                 'admin/chatbot/process',
                 'admin/chatbot/deleteHistory',
                 'api/admin/products/toggleStatus/*',
