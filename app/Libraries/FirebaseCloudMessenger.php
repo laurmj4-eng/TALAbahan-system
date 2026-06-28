@@ -72,8 +72,8 @@ class FirebaseCloudMessenger
             }
         }
 
-        $raw = env('FIREBASE_ADMIN_KEY_B64') ?: getenv('FIREBASE_ADMIN_KEY_B64');
-        if ($raw) {
+        $raw = trim(env('FIREBASE_ADMIN_KEY_B64') ?: getenv('FIREBASE_ADMIN_KEY_B64') ?: '');
+        if ($raw !== '') {
             // Try base64 decode first
             $json = base64_decode($raw, true);
             if ($json === false) {
