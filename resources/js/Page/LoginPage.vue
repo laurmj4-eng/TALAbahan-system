@@ -46,8 +46,34 @@
                   autocomplete="email"
                   required
                   @focus="handleInputFocus('email')"
-                  @blur="emailFocused = false"
+                  @blur="onEmailBlur"
+                  @input="onEmailInput"
+                  @keydown.escape="showDropdown = false"
                 />
+              </div>
+
+              <!-- Username History Dropdown -->
+              <div
+                id="email-dropdown"
+                v-if="showDropdown && filteredSuggestions.length > 0"
+                class="email-dropdown"
+              >
+                <div
+                  v-for="(suggestion, idx) in filteredSuggestions"
+                  :key="idx"
+                  class="email-dropdown-item"
+                  @mousedown.prevent="selectSuggestion(suggestion)"
+                >
+                  <span class="email-dropdown-text">{{ suggestion }}</span>
+                  <button
+                    type="button"
+                    class="email-dropdown-remove"
+                    @mousedown.stop="removeSuggestion($event, suggestion)"
+                    title="Remove from history"
+                  >
+                    <X :size="14" :stroke-width="2.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -62,6 +88,7 @@
                   <Lock :size="18" :stroke-width="2.5" />
                 </span>
                 <input
+                  ref="passwordInputRef"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   id="password"
@@ -291,15 +318,94 @@
     border-radius: 1rem;
   }
 }
+
+/* ── Email History Dropdown ─────────────────────────────────── */
+.email-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.email-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.email-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.email-dropdown-item:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.email-dropdown-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-dropdown-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 0.5rem;
+}
+
+.email-dropdown-remove:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.email-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+.email-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.email-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
 </style>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
+import { Mail, Lock, Eye, EyeOff, X } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
 import { useFcmToken } from '../composables/useFcmToken';
+import { useLoginHistory } from '../composables/useLoginHistory';
 
 // Firebase SDK — lazy-loaded on demand to avoid render-blocking network fetches
 let _firebaseModules = null;
@@ -365,6 +471,17 @@ const emailFocused = ref(false);
 const passwordFocused = ref(false);
 const cardRef = ref(null);
 const cardScale = ref(1);
+
+const { history, saveToHistory, removeFromHistory } = useLoginHistory();
+const showDropdown = ref(false);
+const dropdownFocused = ref(false);
+const passwordInputRef = ref(null);
+
+const filteredSuggestions = computed(() => {
+  if (!email.value || !showDropdown.value) return [];
+  const q = email.value.toLowerCase();
+  return history.value.filter(h => h.toLowerCase().startsWith(q));
+});
 
 const loginAttempts = ref(0);
 const lockoutUntil = ref(0);
@@ -441,7 +558,13 @@ const {
 });
 
 const handleInputFocus = (field) => {
-  if (field === 'email') emailFocused.value = true;
+  if (field === 'email') {
+    emailFocused.value = true;
+    dropdownFocused.value = true;
+    if (history.value.length > 0 && email.value.length > 0) {
+      showDropdown.value = true;
+    }
+  }
   if (field === 'password') passwordFocused.value = true;
   
   if (!hasInteracted.value) {
@@ -452,6 +575,46 @@ const handleInputFocus = (field) => {
     }
   }
 };
+
+function onEmailInput() {
+  if (history.value.length > 0 && email.value.length > 0 && dropdownFocused.value) {
+    showDropdown.value = true;
+  } else {
+    showDropdown.value = false;
+  }
+}
+
+function onEmailBlur() {
+  emailFocused.value = false;
+  setTimeout(() => {
+    if (!dropdownFocused.value) {
+      showDropdown.value = false;
+    }
+  }, 180);
+}
+
+function selectSuggestion(username) {
+  email.value = username;
+  showDropdown.value = false;
+  nextTick(() => {
+    passwordInputRef.value?.focus();
+  });
+}
+
+function removeSuggestion(e, username) {
+  e.stopPropagation();
+  removeFromHistory(username);
+  if (history.value.length === 0) {
+    showDropdown.value = false;
+  }
+}
+
+function handleClickOutside(e) {
+  const el = document.getElementById('email-dropdown');
+  if (el && !el.contains(e.target) && e.target.id !== 'email') {
+    showDropdown.value = false;
+  }
+}
 
 let auth = null;
 let provider = null;
@@ -476,6 +639,7 @@ let _resizeObserver = null;
 let _viewportHandler = null;
 
 onMounted(async () => {
+  document.addEventListener('mousedown', handleClickOutside);
   recalcCardScale();
   const card = cardRef.value;
   if (card && typeof ResizeObserver !== 'undefined') {
@@ -546,6 +710,7 @@ watch(showRecaptcha, async (newVal) => {
 });
 
 onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
   if (_googleSignInFocusHandler) {
     window.removeEventListener('focus', _googleSignInFocusHandler);
     _googleSignInFocusHandler = null;
@@ -740,6 +905,7 @@ const verifyWithBackend = async (userEmail, name, providerType) => {
 };
 
 const handleSuccessfulLogin = (data) => {
+  saveToHistory(email.value);
   localStorage.removeItem('googleSignInInProgress');
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
