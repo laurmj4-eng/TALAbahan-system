@@ -6,6 +6,7 @@ import '../css/recaptcha.css';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import { useFcmToken } from './composables/useFcmToken.js';
+import PullToRefreshOverlay from './Components/PullToRefreshOverlay.vue';
 
 const style = document.createElement('style');
 style.textContent = '#nprogress .bar{height:4px!important;box-shadow:0 0 10px #22d3ee,0 0 20px #22d3ee}';
@@ -97,7 +98,11 @@ function initInertia() {
       return pageImport();
     },
     setup({ el, App, props, plugin }) {
-      const app = createApp({ render: () => h(App, props) })
+      const app = createApp({
+        render() {
+          return [h(App, props), h(PullToRefreshOverlay)];
+        },
+      })
         .use(plugin)
         .mount(el);
 
