@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3'
 const PULL_THRESHOLD = 75
 const MAX_PULL = 90
 const DAMPING = 0.5
+const START_THRESHOLD = 10
 
 export function usePullToRefresh() {
   const pullY = ref(0)
@@ -26,7 +27,6 @@ export function usePullToRefresh() {
     tracking = true
     activated.value = false
     pullY.value = 0
-    visible.value = true
   }
 
   function onTouchMove(e) {
@@ -39,12 +39,14 @@ export function usePullToRefresh() {
     if (dy <= 0) {
       pullY.value = 0
       activated.value = false
+      visible.value = false
       return
     }
 
     const damped = Math.min(dy * DAMPING, MAX_PULL)
     pullY.value = damped
     activated.value = damped >= PULL_THRESHOLD
+    visible.value = damped > START_THRESHOLD
 
     if (dy > 0) {
       e.preventDefault()
