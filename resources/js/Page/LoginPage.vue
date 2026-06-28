@@ -745,8 +745,8 @@ const handleSuccessfulLogin = (data) => {
   localStorage.setItem('userRole', data.role || 'customer');
   localStorage.setItem('username', data.username || '');
 
-  const { registerFcmToken } = useFcmToken();
-  registerFcmToken();
+  const { registerFcmTokenWithRetry } = useFcmToken();
+  registerFcmTokenWithRetry();
 
   if (data.role === 'admin') {
     localStorage.setItem('trustedAdminEmail', email.value.toLowerCase());

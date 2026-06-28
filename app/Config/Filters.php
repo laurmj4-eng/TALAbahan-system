@@ -67,6 +67,7 @@ class Filters extends BaseFilters
             // 'honeypot',
             'csrf' => ['except' => [
                 'api/auth/*',
+                'api/fcm/*',
                 'admin/chatbot/process',
                 'admin/chatbot/deleteHistory',
                 'api/admin/products/toggleStatus/*',

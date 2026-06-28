@@ -102,8 +102,8 @@ function initInertia() {
         .mount(el);
 
       if (localStorage.getItem('isLoggedIn') === 'true') {
-        const { registerFcmToken } = useFcmToken();
-        registerFcmToken();
+        const { registerFcmTokenWithRetry } = useFcmToken();
+        registerFcmTokenWithRetry();
       }
     },
   });

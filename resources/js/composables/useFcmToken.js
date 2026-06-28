@@ -2,6 +2,9 @@ import axios from 'axios';
 
 export function useFcmToken() {
   const TOKEN_ENDPOINT = '/api/fcm/register';
+  let registerAttempts = 0;
+  const MAX_ATTEMPTS = 20;
+  const RETRY_DELAY_MS = 3000;
 
   function isAndroidApp() {
     return navigator.userAgent.includes('TALAbahanAndroidApp');
@@ -33,6 +36,7 @@ export function useFcmToken() {
     try {
       const response = await axios.post(TOKEN_ENDPOINT, payload);
       if (response.data?.status === 'success') {
+        console.log('[FCM] Token registered successfully');
         return true;
       }
       console.warn('[FCM] Registration response:', response.data);
@@ -44,5 +48,22 @@ export function useFcmToken() {
     }
   }
 
-  return { isAndroidApp, getFcmToken, registerFcmToken };
+  async function registerFcmTokenWithRetry() {
+    const result = await registerFcmToken();
+    if (result) return true;
+
+    registerAttempts++;
+    if (registerAttempts >= MAX_ATTEMPTS) {
+      console.warn('[FCM] Max registration attempts reached');
+      return false;
+    }
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(registerFcmTokenWithRetry());
+      }, RETRY_DELAY_MS);
+    });
+  }
+
+  return { isAndroidApp, getFcmToken, registerFcmToken, registerFcmTokenWithRetry };
 }
