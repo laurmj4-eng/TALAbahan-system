@@ -16,6 +16,8 @@ class FcmTokenModel extends Model
         'token',
         'platform',
         'device_model',
+        'app_version',
+        'last_connected',
         'is_active',
         'is_trusted_admin_device',
     ];
@@ -81,5 +83,39 @@ class FcmTokenModel extends Model
         }
 
         return (bool) $row['is_trusted_admin_device'];
+    }
+
+    public function getAllActiveTokens(): array
+    {
+        return $this->where('is_active', 1)->findAll();
+    }
+
+    public function getDeviceTrackingData(): array
+    {
+        return $this->select('
+                fcm_device_tokens.id,
+                fcm_device_tokens.user_id,
+                fcm_device_tokens.token,
+                fcm_device_tokens.platform,
+                fcm_device_tokens.device_model,
+                fcm_device_tokens.app_version,
+                fcm_device_tokens.is_trusted_admin_device,
+                fcm_device_tokens.last_connected,
+                fcm_device_tokens.updated_at,
+                fcm_device_tokens.created_at,
+                users.username,
+                users.role AS user_role
+            ')
+            ->join('users', 'users.id = fcm_device_tokens.user_id', 'left')
+            ->where('fcm_device_tokens.is_active', 1)
+            ->orderBy('fcm_device_tokens.last_connected', 'DESC')
+            ->findAll();
+    }
+
+    public function updateLastConnected(string $token): bool
+    {
+        return (bool) $this->where('token', $token)
+            ->set(['last_connected' => date('Y-m-d H:i:s')])
+            ->update();
     }
 }

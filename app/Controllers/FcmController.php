@@ -20,10 +20,11 @@ class FcmController extends BaseController
             ])->setStatusCode(400);
         }
 
-        $userId   = (int) ($json['user_id'] ?? session()->get('user_id'));
-        $token    = trim($json['token']);
-        $platform = trim($json['platform'] ?? 'android');
+        $userId      = (int) ($json['user_id'] ?? session()->get('user_id'));
+        $token       = trim($json['token']);
+        $platform    = trim($json['platform'] ?? 'android');
         $deviceModel = trim($json['device_model'] ?? '');
+        $appVersion  = trim($json['app_version'] ?? '');
 
         if ($userId <= 0 && !empty($json['username'])) {
             $userModel = new UserModel();
@@ -37,7 +38,26 @@ class FcmController extends BaseController
 
         $tokenModel = new FcmTokenModel();
 
-        if ($tokenModel->tokenExists($token)) {
+        $existing = $tokenModel->where('token', $token)->first();
+
+        if ($existing) {
+            $updateData = [
+                'is_active'       => 1,
+                'last_connected'  => date('Y-m-d H:i:s'),
+                'platform'        => $platform,
+            ];
+            if ($deviceModel !== '') {
+                $updateData['device_model'] = $deviceModel;
+            }
+            if ($appVersion !== '') {
+                $updateData['app_version'] = $appVersion;
+            }
+            if ($userId !== null) {
+                $updateData['user_id'] = $userId;
+            }
+
+            $tokenModel->update($existing['id'], $updateData);
+
             return $this->response->setJSON([
                 'status'  => 'success',
                 'message' => 'Token already registered.',
@@ -45,11 +65,13 @@ class FcmController extends BaseController
         }
 
         $inserted = $tokenModel->insert([
-            'user_id'      => $userId,
-            'token'        => $token,
-            'platform'     => $platform,
-            'device_model' => $deviceModel,
-            'is_active'    => 1,
+            'user_id'       => $userId,
+            'token'         => $token,
+            'platform'      => $platform,
+            'device_model'  => $deviceModel,
+            'app_version'   => $appVersion ?: null,
+            'last_connected' => date('Y-m-d H:i:s'),
+            'is_active'     => 1,
         ]);
 
         if (!$inserted) {

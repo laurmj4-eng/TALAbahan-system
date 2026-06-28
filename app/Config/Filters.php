@@ -37,8 +37,9 @@ class Filters extends BaseFilters
         'staffGuard'    => \App\Filters\StaffGuard::class,    // Role: Staff
         'customerGuard' => \App\Filters\CustomerGuard::class, // Role: Customer
         'chatbotGuard'  => \App\Filters\ChatbotGuard::class,  // Role: Admin or Customer
-        'apiAuth'       => \App\Filters\ApiAuthFilter::class,  // API role-based auth
-        'rateLimit'     => \App\Filters\RateLimitFilter::class, // Request throttling
+        'apiAuth'        => \App\Filters\ApiAuthFilter::class,  // API role-based auth
+        'rateLimit'      => \App\Filters\RateLimitFilter::class, // Request throttling
+        'developerGuard' => \App\Filters\DeveloperGuard::class,
         'activityLogger' => \App\Filters\ActivityLogger::class,
     ];
 
@@ -69,6 +70,7 @@ class Filters extends BaseFilters
                 'api/auth/*',
                 'api/fcm/*',
                 'api/admin/fcm/*',
+                'api/developer/*',
                 'admin/chatbot/process',
                 'admin/chatbot/deleteHistory',
                 'api/admin/products/toggleStatus/*',
@@ -116,6 +118,11 @@ class Filters extends BaseFilters
         // 4. Protect Customer Routes
         'customerGuard' => [
             'before' => ['customer', 'customer/*']
+        ],
+
+        // 5. Protect Developer Routes
+        'developerGuard' => [
+            'before' => ['developer', 'developer/*']
         ],
     ];
 }

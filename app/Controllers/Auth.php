@@ -357,6 +357,7 @@ class Auth extends BaseController
     {
         if ($role === 'admin') return 'admin/dashboard';
         if ($role === 'staff') return 'staff/dashboard';
+        if ($role === 'developer') return 'developer/dashboard';
         return 'customer/dashboard';
     }
 

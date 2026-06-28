@@ -35,7 +35,7 @@ class UserModel extends Model
         'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username]',
         'email'    => 'required|valid_email|max_length[100]|is_unique[users.email]',
         'password' => 'permit_empty|min_length[6]|max_length[255]',
-        'role'     => 'required|in_list[admin,staff,customer]',
+        'role'     => 'required|in_list[admin,staff,customer,developer]',
     ];
 
     // CI4 Callbacks: These run automatically before saving to the database

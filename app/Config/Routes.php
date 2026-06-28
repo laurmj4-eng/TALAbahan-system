@@ -80,6 +80,10 @@ $routes->group('api', ['filter' => 'apiAuth'], function($routes) {
     $routes->post('notifications/mark-all-read', '\App\Controllers\FcmController::markAllRead');
     $routes->post('fcm/send', '\App\Controllers\FcmController::sendNotification');
     $routes->post('admin/fcm/toggle-trusted', '\App\Controllers\FcmController::toggleTrustedDevice');
+
+    // Developer API Routes
+    $routes->get('developer/devices', '\App\Controllers\Developer\Dashboard::getDevices');
+    $routes->post('developer/broadcast', '\App\Controllers\Developer\Dashboard::broadcast');
 });
 
 // Keep existing routes for now but they should eventually be migrated to api group
@@ -192,8 +196,14 @@ $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' 
     $routes->post('refund-request', 'Refunds::submitRefundRequest');
 });
 
-// --- 5. SPA CATCH-ALL ROUTES ---
+// --- 5. DEVELOPER GROUP ---
+$routes->group('developer', ['namespace' => 'App\Controllers\Developer', 'filter' => 'developerGuard'], function($routes) {
+    $routes->get('dashboard', 'Dashboard::index');
+});
+
+// --- 6. SPA CATCH-ALL ROUTES ---
 // These must be at the very bottom to allow specific routes to match first
 $routes->get('admin/(:any)', 'Home::index');
 $routes->get('staff/(:any)', 'Home::index');
 $routes->get('customer/(:any)', 'Home::index');
+$routes->get('developer/(:any)', 'Home::index');

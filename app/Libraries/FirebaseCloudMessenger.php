@@ -231,6 +231,56 @@ class FirebaseCloudMessenger
         return ['success' => true, 'results' => $results, 'notified_users' => $seenUserIds];
     }
 
+    public function sendToAllAndPersist(string $type, string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getAllActiveTokens();
+
+        if (empty($tokens)) {
+            return ['success' => false, 'sent' => 0, 'failed' => 0, 'message' => 'No active device tokens.'];
+        }
+
+        $notificationModel = new NotificationModel();
+        $sent   = 0;
+        $failed = 0;
+        $seenUserIds = [];
+
+        foreach ($tokens as $row) {
+            $result = $this->sendToDevice($row['token'], $title, $body, $data);
+
+            if (!empty($result['success'])) {
+                $sent++;
+            } else {
+                $failed++;
+                if (!empty($result['error'])) {
+                    log_message('error', '[FCM] Broadcast failed for token ' . substr($row['token'], 0, 20) . '...: ' . $result['error']);
+                }
+            }
+
+            $uid = $row['user_id'] !== null ? (int) $row['user_id'] : null;
+            if ($uid !== null && !in_array($uid, $seenUserIds, true)) {
+                $notificationModel->insert([
+                    'user_id' => $uid,
+                    'type'    => $type,
+                    'title'   => $title,
+                    'body'    => $body,
+                    'data'    => !empty($data) ? json_encode($data) : null,
+                ]);
+                $seenUserIds[] = $uid;
+            } elseif ($uid === null) {
+                $notificationModel->insert([
+                    'user_id' => null,
+                    'type'    => $type,
+                    'title'   => $title,
+                    'body'    => $body,
+                    'data'    => !empty($data) ? json_encode($data) : null,
+                ]);
+            }
+        }
+
+        return ['success' => true, 'sent' => $sent, 'failed' => $failed, 'notified_users' => $seenUserIds];
+    }
+
     public function sendToUserAndPersist(int $userId, string $type, string $title, string $body, array $data = []): array
     {
         $notificationModel = new NotificationModel();
