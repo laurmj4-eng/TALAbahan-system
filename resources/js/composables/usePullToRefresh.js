@@ -1,5 +1,4 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { router } from '@inertiajs/vue3'
 
 const PULL_THRESHOLD = 75
 const MAX_PULL = 90
@@ -98,11 +97,9 @@ export function usePullToRefresh() {
   }
 
   function triggerRefresh() {
-    try {
-      router.reload()
-    } catch {
+    setTimeout(() => {
       window.location.reload()
-    }
+    }, 400)
   }
 
   function onPageShow() {
