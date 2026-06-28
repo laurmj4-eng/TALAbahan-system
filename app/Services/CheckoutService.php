@@ -16,6 +16,7 @@ use App\Models\CodComplianceModel;
 use App\Models\UserModel;
 use App\Models\OrderStatusHistoryModel;
 use Config\AppConfig;
+use App\Controllers\FcmController;
 use Exception;
 
 class CheckoutService
@@ -345,6 +346,7 @@ class CheckoutService
             $db->transCommit();
             
             $this->sendOrderConfirmation($username, $quoteData, $transactionCode);
+            $this->sendNewOrderPush($orderId, $username, $transactionCode);
             
             return [
                 'ok' => true,
@@ -357,6 +359,21 @@ class CheckoutService
         }
     }
     
+    protected function sendNewOrderPush(int $orderId, string $username, string $transactionCode): void
+    {
+        $user = $this->userModel->where('username', $username)->first();
+        if (!$user || empty($user['id'])) {
+            return;
+        }
+
+        try {
+            $fcm = new FcmController();
+            $fcm->sendOrderStatusPush($orderId, 'Pending');
+        } catch (\Exception $e) {
+            log_message('error', '[CheckoutService] Failed to send new-order push: ' . $e->getMessage());
+        }
+    }
+
     protected function sendOrderConfirmation(string $username, array $quoteData, string $transactionCode): void
     {
         $user = $this->userModel->where('username', $username)->first();

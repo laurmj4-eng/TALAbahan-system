@@ -20,7 +20,8 @@ class UserModel extends Model
         'gemma_count',
         'gpt_count',
         'last_reset',
-        'last_active'
+        'last_active',
+        'fcm_token'
     ];
 
     protected $returnType = 'array';

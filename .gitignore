@@ -51,8 +51,14 @@ composer.phar
 android-shell/.gradle/
 android-shell/app/build/
 android-shell/app/release/
+android-shell/app/google-services.json
 *.apk
 *.aab
+
+# Firebase Admin SDK key (sensitive — never commit)
+/writable/conf/*
+!/writable/conf/.gitkeep
+!/writable/conf/index.html
 
 # OS Files
 .DS_Store

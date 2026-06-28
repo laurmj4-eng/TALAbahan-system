@@ -57,15 +57,18 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!--
-        FCM Push Notifications - Uncomment after adding google-services.json:
+        <!-- FCM Push Notifications -->
         <service
-            android:name=".firebase.TALAbahanMessagingService"
+            android:name=".firebase.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        -->
+
+        <!-- Default notification channel metadata (Android 8+) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="talabahan_orders" />
     </application>
 </manifest>

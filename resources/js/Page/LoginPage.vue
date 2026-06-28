@@ -299,6 +299,7 @@ import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
+import { useFcmToken } from '../composables/useFcmToken';
 
 // Firebase SDK — lazy-loaded on demand to avoid render-blocking network fetches
 let _firebaseModules = null;
@@ -743,6 +744,9 @@ const handleSuccessfulLogin = (data) => {
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userRole', data.role || 'customer');
   localStorage.setItem('username', data.username || '');
+
+  const { registerFcmToken } = useFcmToken();
+  registerFcmToken();
 
   if (data.role === 'admin') {
     localStorage.setItem('trustedAdminEmail', email.value.toLowerCase());

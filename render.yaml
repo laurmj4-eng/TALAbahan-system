@@ -58,3 +58,5 @@ services:
         sync: false
       - key: app.baseURL
         sync: false
+      - key: FCM_SERVICE_ACCOUNT_PATH
+        value: writable/conf/talabahan-firebase-admin.json

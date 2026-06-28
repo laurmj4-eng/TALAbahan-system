@@ -10,6 +10,7 @@ use App\Models\UserModel;
 use App\Models\OrderStatusHistoryModel;
 use App\Models\DamagedLedgerModel;
 use App\Models\LossesModel;
+use App\Controllers\FcmController;
 use Exception;
 
 class OrderService
@@ -141,6 +142,15 @@ class OrderService
                 log_message('error', '[OrderService] Failed to send status update email: ' . $e->getMessage());
             }
         }
+
+        if ($user && !empty($user['id'])) {
+            try {
+                $fcm = new FcmController();
+                $fcm->sendOrderStatusPush($order['id'], $newStatus);
+            } catch (Exception $e) {
+                log_message('error', '[OrderService] Failed to send push notification: ' . $e->getMessage());
+            }
+        }
     }
 
     public function cancelOrder(int $orderId, string $reason = '', string $customerName = ''): array
@@ -178,6 +188,14 @@ class OrderService
             $this->historyModel->logStatusChange($orderId, $order['status'], OrderModel::STATUS_CANCELLED, $changedBy, $cancelReason);
 
             $db->transCommit();
+
+            try {
+                $fcm = new FcmController();
+                $fcm->sendOrderStatusPush($orderId, OrderModel::STATUS_CANCELLED);
+            } catch (Exception $e) {
+                log_message('error', '[OrderService] Failed to send push for cancelOrder: ' . $e->getMessage());
+            }
+
             return ['ok' => true, 'message' => 'Order cancelled successfully.'];
         } catch (Exception $e) {
             $db->transRollback();

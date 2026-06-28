@@ -1,0 +1,204 @@
+<?php
+
+namespace App\Libraries;
+
+use App\Models\FcmTokenModel;
+use App\Models\NotificationModel;
+use Exception;
+
+class FirebaseCloudMessenger
+{
+    private string $projectId;
+    private string $adminKeyPath;
+    private ?string $cachedToken = null;
+    private ?int $tokenExpiresAt = null;
+
+    public function __construct()
+    {
+        $this->projectId = env('FIREBASE_PROJECT_ID', 'sefood-d603d');
+        $this->adminKeyPath = WRITEPATH . 'conf/talabahan-firebase-admin.json';
+    }
+
+    public function setAdminKeyPath(string $path): void
+    {
+        $this->adminKeyPath = $path;
+    }
+
+    private function getAccessToken(): string
+    {
+        if ($this->cachedToken !== null && $this->tokenExpiresAt !== null && time() < $this->tokenExpiresAt) {
+            return $this->cachedToken;
+        }
+
+        if (!file_exists($this->adminKeyPath)) {
+            throw new Exception('Firebase Admin SDK key not found at: ' . $this->adminKeyPath . '. Create it from Firebase Console > Service Accounts.');
+        }
+
+        $serviceAccount = json_decode(file_get_contents($this->adminKeyPath), true);
+        if (!$serviceAccount || !isset($serviceAccount['client_email'], $serviceAccount['private_key'])) {
+            throw new Exception('Invalid Firebase Admin SDK key file.');
+        }
+
+        $now = time();
+        $payload = [
+            'iss'   => $serviceAccount['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud'   => 'https://oauth2.googleapis.com/token',
+            'exp'   => $now + 3600,
+            'iat'   => $now,
+        ];
+
+        $header = $this->base64UrlEncode(json_encode(['alg' => 'RS256', 'typ' => 'JWT']));
+        $body   = $this->base64UrlEncode(json_encode($payload));
+
+        $privateKey = openssl_get_privatekey($serviceAccount['private_key']);
+        if (!$privateKey) {
+            throw new Exception('Failed to parse Firebase private key.');
+        }
+
+        $signature = '';
+        if (!openssl_sign($header . '.' . $body, $signature, $privateKey, OPENSSL_ALGO_SHA256)) {
+            throw new Exception('Failed to sign JWT assertion.');
+        }
+        openssl_free_key($privateKey);
+
+        $jwt = $header . '.' . $body . '.' . $this->base64UrlEncode($signature);
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => 'https://oauth2.googleapis.com/token',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query([
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion'  => $jwt,
+            ]),
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error    = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false || $httpCode !== 200) {
+            throw new Exception('Failed to obtain OAuth2 token: HTTP ' . $httpCode . ' ' . ($error ?: $response));
+        }
+
+        $data = json_decode($response, true);
+        if (!$data || !isset($data['access_token'], $data['expires_in'])) {
+            throw new Exception('Invalid OAuth2 token response.');
+        }
+
+        $this->cachedToken = $data['access_token'];
+        $this->tokenExpiresAt = $now + (int) $data['expires_in'] - 60;
+
+        return $this->cachedToken;
+    }
+
+    public function sendToDevice(string $token, string $title, string $body, array $data = []): array
+    {
+        $message = [
+            'token' => $token,
+            'data'  => array_merge([
+                'title' => $title,
+                'body'  => $body,
+            ], $data),
+        ];
+
+        return $this->sendMessage($message);
+    }
+
+    public function sendToUser(int $userId, string $title, string $body, array $data = []): array
+    {
+        $tokenModel = new FcmTokenModel();
+        $tokens = $tokenModel->getActiveTokensByUser($userId);
+
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No active device tokens for user.'];
+        }
+
+        $results = [];
+        foreach ($tokens as $row) {
+            $results[] = $this->sendToDevice($row['token'], $title, $body, $data);
+        }
+
+        return ['success' => true, 'results' => $results];
+    }
+
+    public function sendToUserAndPersist(int $userId, string $type, string $title, string $body, array $data = []): array
+    {
+        $notificationModel = new NotificationModel();
+        $notificationModel->insert([
+            'user_id' => $userId,
+            'type'    => $type,
+            'title'   => $title,
+            'body'    => $body,
+            'data'    => !empty($data) ? json_encode($data) : null,
+        ]);
+
+        return $this->sendToUser($userId, $title, $body, $data);
+    }
+
+    private function sendMessage(array $message): array
+    {
+        $accessToken = $this->getAccessToken();
+        $url = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
+
+        $payload = json_encode(['message' => $message]);
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $accessToken,
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error    = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            log_message('error', '[FCM] Request failed: ' . $error);
+            return ['success' => false, 'error' => $error];
+        }
+
+        $result = json_decode($response, true);
+
+        if ($httpCode === 200) {
+            return ['success' => true, 'name' => $result['name'] ?? ''];
+        }
+
+        $errorMsg = $result['error']['message'] ?? ($result['error']['status'] ?? 'Unknown FCM error');
+        log_message('error', '[FCM] HTTP ' . $httpCode . ': ' . $errorMsg);
+
+        if ($httpCode === 404 && strpos($errorMsg, 'NotRegistered') !== false) {
+            $this->handleUnregisteredToken($message['token'] ?? '');
+        }
+
+        return ['success' => false, 'error' => $errorMsg, 'httpCode' => $httpCode];
+    }
+
+    private function handleUnregisteredToken(string $token): void
+    {
+        if ($token === '') return;
+        $tokenModel = new FcmTokenModel();
+        $tokenModel->deactivateToken($token);
+        log_message('info', '[FCM] Deactivated unregistered token: ' . substr($token, 0, 20) . '...');
+    }
+
+    private function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+}

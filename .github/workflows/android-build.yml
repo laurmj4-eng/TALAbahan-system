@@ -21,6 +21,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Decode google-services.json
+        run: |
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
+            echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > android-shell/app/google-services.json
+          else
+            echo "Warning: GOOGLE_SERVICES_JSON secret not set — FCM will not work in this build."
+          fi
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 

@@ -191,6 +191,20 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        // Handle talabahan://order/{id} (push notification tap → navigate to order detail)
+        if ("talabahan".equals(data.getScheme()) && "order".equals(data.getHost())) {
+            String orderPath = data.getPath();
+            if (orderPath != null && orderPath.length() > 1) {
+                String orderId = orderPath.substring(1);
+                webView.loadUrl(BASE_URL + "/customer/order-details/" + orderId);
+            } else {
+                webView.loadUrl(BASE_URL);
+            }
+            chromeLoadingOverlay.setVisibility(View.GONE);
+            intent.setData(null);
+            return true;
+        }
+
         return false;
     }
 
@@ -591,6 +605,12 @@ public class MainActivity extends Activity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 });
+            }
+
+            @JavascriptInterface
+            public String getFcmToken() {
+                return getSharedPreferences("fcm_prefs", MODE_PRIVATE)
+                    .getString("fcm_token", "");
             }
 
             @JavascriptInterface

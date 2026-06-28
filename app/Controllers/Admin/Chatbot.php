@@ -101,6 +101,8 @@ class Chatbot extends BaseController
                 $this->_streamOpenRouter($resolvedModel, $systemPrompt, $cleanHistory);
             }
 
+            $this->_sendChatbotPush($newUserMessage);
+
             echo "data: [DONE]\n\n";
             exit;
 
@@ -109,6 +111,31 @@ class Chatbot extends BaseController
             echo "data: " . json_encode(['text' => "An unexpected error occurred. Please try again."]) . "\n\n";
             echo "data: [DONE]\n\n";
             exit;
+        }
+    }
+
+    private function _sendChatbotPush(string $userMessage): void
+    {
+        if (session()->get('role') !== 'customer') {
+            return;
+        }
+
+        $userId = (int) session()->get('user_id');
+        if ($userId <= 0) {
+            return;
+        }
+
+        $preview = mb_strlen($userMessage) > 60 ? mb_substr($userMessage, 0, 60) . '...' : $userMessage;
+        $title   = 'AI Assistant Response';
+        $body    = $preview !== '' ? 'Reply to: ' . $preview : 'Your AI assistant has a new response.';
+
+        try {
+            $fcm = new \App\Libraries\FirebaseCloudMessenger();
+            $fcm->sendToUserAndPersist($userId, 'chatbot_response', $title, $body, [
+                'type' => 'chatbot_response',
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', '[Chatbot] Push notification failed: ' . $e->getMessage());
         }
     }
 

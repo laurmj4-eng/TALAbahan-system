@@ -22,3 +22,6 @@
 # Keep Firebase messaging
 -keep class com.google.firebase.** { *; }
 -dontwarn com.google.firebase.**
+
+# Keep custom FCM service class
+-keep class com.mjseafood.app.MyFirebaseMessagingService { *; }

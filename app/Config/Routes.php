@@ -70,6 +70,15 @@ $routes->group('api', ['filter' => 'apiAuth'], function($routes) {
     $routes->post('admin/users/save', '\App\Controllers\Admin\AdminController::saveUser');
     $routes->post('admin/users/update', '\App\Controllers\Admin\AdminController::updateUser');
     $routes->post('admin/users/delete/(:num)', '\App\Controllers\Admin\AdminController::deleteUser/$1');
+
+    // FCM Push Notification Routes
+    $routes->post('fcm/register', '\App\Controllers\FcmController::registerToken');
+    $routes->post('fcm/unregister', '\App\Controllers\FcmController::unregisterToken');
+    $routes->get('notifications/unread-count', '\App\Controllers\FcmController::unreadCount');
+    $routes->get('notifications/list', '\App\Controllers\FcmController::list');
+    $routes->post('notifications/mark-read/(:num)', '\App\Controllers\FcmController::markRead/$1');
+    $routes->post('notifications/mark-all-read', '\App\Controllers\FcmController::markAllRead');
+    $routes->post('fcm/send', '\App\Controllers\FcmController::sendNotification');
 });
 
 // Keep existing routes for now but they should eventually be migrated to api group
