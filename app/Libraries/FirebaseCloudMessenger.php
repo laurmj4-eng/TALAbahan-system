@@ -17,6 +17,40 @@ class FirebaseCloudMessenger
     {
         $this->projectId = env('FIREBASE_PROJECT_ID', 'sefood-d603d');
         $this->adminKeyPath = WRITEPATH . 'conf/talabahan-firebase-admin.json';
+        $this->ensureKeyFile();
+    }
+
+    private function ensureKeyFile(): void
+    {
+        if (file_exists($this->adminKeyPath)) {
+            return;
+        }
+
+        $b64 = env('FIREBASE_ADMIN_KEY_B64');
+        if (empty($b64)) {
+            return;
+        }
+
+        $json = base64_decode($b64, true);
+        if ($json === false || empty($json)) {
+            log_message('error', '[FCM] FIREBASE_ADMIN_KEY_B64 is not valid Base64.');
+            return;
+        }
+
+        $dir = dirname($this->adminKeyPath);
+        if (!is_dir($dir)) {
+            if (!mkdir($dir, 0755, true)) {
+                log_message('error', '[FCM] Failed to create directory: ' . $dir);
+                return;
+            }
+        }
+
+        if (file_put_contents($this->adminKeyPath, $json) === false) {
+            log_message('error', '[FCM] Failed to write Firebase admin key to: ' . $this->adminKeyPath);
+            return;
+        }
+
+        log_message('info', '[FCM] Firebase admin key written from FIREBASE_ADMIN_KEY_B64');
     }
 
     public function setAdminKeyPath(string $path): void
