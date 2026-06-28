@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
         swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color.holo_green_light);
         swipeRefreshLayout.setProgressBackgroundColorSchemeResource(android.R.color.white);
         swipeRefreshLayout.setOnRefreshListener(() -> webView.reload());
-        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.getScrollY() > 0);
+        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.canScrollVertically(-1));
         setupWebView();
 
         backgroundThread = new HandlerThread("BackgroundWork");
