@@ -8,6 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 
 // Health check for Render / load balancers (no DB, no auth)
 $routes->get('health', 'Health::index');
+$routes->get('debug/env', 'DebugController::checkEnv');
 
 // App config served as external JS (keeps secrets out of view-source)
 $routes->get('app-config.js', 'AppConfig::js');
