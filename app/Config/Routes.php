@@ -84,6 +84,11 @@ $routes->group('api', ['filter' => 'apiAuth'], function($routes) {
     // Developer API Routes
     $routes->get('developer/devices', '\App\Controllers\Developer\Dashboard::getDevices');
     $routes->post('developer/broadcast', '\App\Controllers\Developer\Dashboard::broadcast');
+    $routes->post('developer/update-profile', '\App\Controllers\Developer\Dashboard::updateProfile');
+    $routes->get('developer/users', '\App\Controllers\Developer\UserController::getUsers');
+    $routes->post('developer/users/save', '\App\Controllers\Developer\UserController::saveUser');
+    $routes->post('developer/users/update', '\App\Controllers\Developer\UserController::updateUser');
+    $routes->post('developer/users/delete/(:num)', '\App\Controllers\Developer\UserController::deleteUser/$1');
 });
 
 // Keep existing routes for now but they should eventually be migrated to api group
@@ -199,6 +204,8 @@ $routes->group('customer', ['namespace' => 'App\Controllers\Customer', 'filter' 
 // --- 5. DEVELOPER GROUP ---
 $routes->group('developer', ['namespace' => 'App\Controllers\Developer', 'filter' => 'developerGuard'], function($routes) {
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->get('settings', 'Dashboard::settings');
+    $routes->get('users', 'UserController::index');
 });
 
 // --- 6. SPA CATCH-ALL ROUTES ---

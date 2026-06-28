@@ -101,7 +101,9 @@ import {
   UserCircle,
   Radio,
   Monitor,
-  Smartphone
+  Smartphone,
+  Settings,
+  Users
 } from 'lucide-vue-next';
 
 const isSidebarOpen = ref(false);
@@ -112,7 +114,16 @@ const navSections = [
     title: 'System',
     icon: Monitor,
     items: [
-      { name: 'Dashboard', path: '/developer/dashboard', icon: LayoutDashboard }
+      { name: 'Dashboard', path: '/developer/dashboard', icon: LayoutDashboard },
+      { name: 'Settings', path: '/developer/settings', icon: Settings }
+    ],
+    divider: true
+  },
+  {
+    title: 'Management',
+    icon: Users,
+    items: [
+      { name: 'User Management', path: '/developer/users', icon: Users }
     ],
     divider: true
   },

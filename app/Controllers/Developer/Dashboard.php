@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Libraries\FirebaseCloudMessenger;
 use App\Models\FcmTokenModel;
 use App\Models\NotificationModel;
+use App\Models\UserModel;
 
 class Dashboard extends BaseController
 {
@@ -17,6 +18,110 @@ class Dashboard extends BaseController
         ];
 
         return inertia('developer/Dashboard', $data);
+    }
+
+    public function settings()
+    {
+        $data = [
+            'title'    => 'Developer Settings',
+            'username' => session()->get('username') ?? 'Developer',
+            'email'    => session()->get('email') ?? '',
+        ];
+
+        return inertia('developer/Settings', $data);
+    }
+
+    public function updateProfile()
+    {
+        $json = $this->request->getJSON(true);
+        if (!$json) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid request.',
+            ])->setStatusCode(400);
+        }
+
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Not authenticated.',
+            ])->setStatusCode(401);
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->find($userId);
+        if (!$user) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'User not found.',
+            ])->setStatusCode(404);
+        }
+
+        $username     = trim($json['username'] ?? '');
+        $currentPass  = $json['current_password'] ?? '';
+        $newPassword  = $json['new_password'] ?? '';
+
+        if (empty($username)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Username is required.',
+            ])->setStatusCode(400);
+        }
+
+        if (strlen($username) < 3) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Username must be at least 3 characters.',
+            ])->setStatusCode(400);
+        }
+
+        if (!empty($newPassword) && strlen($newPassword) < 6) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Password must be at least 6 characters.',
+            ])->setStatusCode(400);
+        }
+
+        if (!password_verify($currentPass, $user['password'])) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Current password is incorrect.',
+            ])->setStatusCode(403);
+        }
+
+        if ($username !== $user['username']) {
+            $existing = $userModel->where('username', $username)->where('id !=', $userId)->first();
+            if ($existing) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Username is already taken.',
+                ])->setStatusCode(400);
+            }
+        }
+
+        $updateData = ['username' => $username];
+        if (!empty($newPassword)) {
+            $updateData['password'] = $newPassword;
+        }
+
+        if (!$userModel->update($userId, $updateData)) {
+            $errors = $userModel->errors();
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => !empty($errors) ? implode(' ', $errors) : 'Failed to update profile.',
+            ])->setStatusCode(400);
+        }
+
+        session()->set('username', $username);
+
+        log_message('info', "[Developer] Profile updated: user_id={$userId} username={$username}");
+
+        return $this->response->setJSON([
+            'status'   => 'success',
+            'message'  => 'Profile updated successfully.',
+            'username' => $username,
+        ]);
     }
 
     public function getDevices()

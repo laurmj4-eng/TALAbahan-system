@@ -27,7 +27,7 @@ class AddDeveloperRoleSupport extends Migration
         // Create the developer user
         $this->db->table('users')->insert([
             'username' => 'mjlaurrito',
-            'email'    => 'dev@talabahan.app',
+            'email'    => 'mjlaurito@gmail.com',
             'password' => password_hash('mjlauritodevmode', PASSWORD_DEFAULT),
             'role'     => 'developer',
         ]);
