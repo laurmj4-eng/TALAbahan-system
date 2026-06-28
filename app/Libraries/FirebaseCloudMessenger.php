@@ -58,20 +58,36 @@ class FirebaseCloudMessenger
         $this->adminKeyPath = $path;
     }
 
+    private function getServiceAccount(): array
+    {
+        if (file_exists($this->adminKeyPath)) {
+            $account = json_decode(file_get_contents($this->adminKeyPath), true);
+            if ($account && isset($account['client_email'], $account['private_key'])) {
+                return $account;
+            }
+        }
+
+        $b64 = env('FIREBASE_ADMIN_KEY_B64') ?: getenv('FIREBASE_ADMIN_KEY_B64');
+        if ($b64) {
+            $json = base64_decode($b64, true);
+            if ($json !== false) {
+                $account = json_decode($json, true);
+                if ($account && isset($account['client_email'], $account['private_key'])) {
+                    return $account;
+                }
+            }
+        }
+
+        throw new Exception('Firebase Admin SDK key not found at: ' . $this->adminKeyPath . ' and FIREBASE_ADMIN_KEY_B64 env var is not set or invalid. Create the key file or set the env var.');
+    }
+
     private function getAccessToken(): string
     {
         if ($this->cachedToken !== null && $this->tokenExpiresAt !== null && time() < $this->tokenExpiresAt) {
             return $this->cachedToken;
         }
 
-        if (!file_exists($this->adminKeyPath)) {
-            throw new Exception('Firebase Admin SDK key not found at: ' . $this->adminKeyPath . '. Create it from Firebase Console > Service Accounts.');
-        }
-
-        $serviceAccount = json_decode(file_get_contents($this->adminKeyPath), true);
-        if (!$serviceAccount || !isset($serviceAccount['client_email'], $serviceAccount['private_key'])) {
-            throw new Exception('Invalid Firebase Admin SDK key file.');
-        }
+        $serviceAccount = $this->getServiceAccount();
 
         $now = time();
         $payload = [
