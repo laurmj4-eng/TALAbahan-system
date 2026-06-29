@@ -1,4 +1,4 @@
-const CACHE_NAME = 'talabahan-v2';
+const CACHE_NAME = 'talabahan-v3';
 const SHELL_ASSETS = [
   '/',
   '/favicon.ico',

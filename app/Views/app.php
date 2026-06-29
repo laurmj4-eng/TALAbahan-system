@@ -145,11 +145,16 @@ if (!function_exists('vite_css')) {
       window.addEventListener('offline',showOffline);
       window.addEventListener('online',hideOffline);
       // Android WebView often reports false on navigator.onLine even when
-      // connected. Verify with a real fetch before showing the offline screen.
+      // connected. Use Image load (more reliable in WebView) with fetch fallback.
       if(!navigator.onLine) {
-        fetch('/favicon.ico', { method: 'HEAD', cache: 'no-store' })
-          .then(function(){ hideOffline(); })
-          .catch(function(){ showOffline(); });
+        var checkImg = new Image();
+        checkImg.onload = function(){ hideOffline(); };
+        checkImg.onerror = function(){
+          fetch('/app-config.js?' + Date.now(), { method: 'HEAD', cache: 'no-store' })
+            .then(function(){ hideOffline(); })
+            .catch(function(){ showOffline(); });
+        };
+        checkImg.src = '/favicon.ico?' + Date.now();
       }
     })();
     </script>
