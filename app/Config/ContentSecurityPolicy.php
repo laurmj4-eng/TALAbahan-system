@@ -62,14 +62,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $scriptSrc = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com'];
+    public $scriptSrc = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.google.com'];
 
     /**
      * Specifies valid sources for JavaScript <script> elements.
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcElem = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com'];
+    public array|string $scriptSrcElem = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.google.com'];
 
     /**
      * Specifies valid sources for JavaScript inline event
@@ -166,7 +166,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameSrc = ['https://accounts.google.com', 'https://apis.google.com'];
+    public $frameSrc = ['https://accounts.google.com', 'https://apis.google.com', 'https://sefood-d603d.firebaseapp.com', 'https://www.google.com'];
 
     /**
      * Restricts the origins allowed to deliver video and audio.
