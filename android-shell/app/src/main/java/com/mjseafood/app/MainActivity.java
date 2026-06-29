@@ -88,7 +88,9 @@ public class MainActivity extends Activity {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return false;
         NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
-        return nc != null && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        return nc != null
+                && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
     }
 
     @Override
@@ -117,10 +119,6 @@ public class MainActivity extends Activity {
         backgroundThread = new HandlerThread("BackgroundWork");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
-
-        if (!isConnected()) {
-            Toast.makeText(this, "No internet connection", Toast.LENGTH_LONG).show();
-        }
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);

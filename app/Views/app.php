@@ -140,21 +140,55 @@ if (!function_exists('vite_css')) {
     (function(){
       var offline=document.getElementById('offline-screen');
       var app=document.getElementById('app');
-      function showOffline(){offline.style.display='flex';if(app)app.style.display='none';}
-      function hideOffline(){offline.style.display='none';if(app)app.style.display='';}
-      window.addEventListener('offline',showOffline);
-      window.addEventListener('online',hideOffline);
-      // Android WebView often reports false on navigator.onLine even when
-      // connected. Use Image load (more reliable in WebView) with fetch fallback.
-      if(!navigator.onLine) {
-        var checkImg = new Image();
-        checkImg.onload = function(){ hideOffline(); };
-        checkImg.onerror = function(){
-          fetch('/app-config.js?' + Date.now(), { method: 'HEAD', cache: 'no-store' })
-            .then(function(){ hideOffline(); })
-            .catch(function(){ showOffline(); });
+      var retryTimer=null;
+      var isOfflineShown=false;
+
+      function showOffline(){
+        if(isOfflineShown) return;
+        isOfflineShown=true;
+        offline.style.display='flex';
+        if(app) app.style.display='none';
+        // Auto-retry every 3 seconds
+        if(!retryTimer) retryTimer=setInterval(probeNetwork, 3000);
+      }
+      function hideOffline(){
+        isOfflineShown=false;
+        offline.style.display='none';
+        if(app) app.style.display='';
+        if(retryTimer){clearInterval(retryTimer);retryTimer=null;}
+      }
+
+      // Real network probe — never trust navigator.onLine alone
+      function probeNetwork(){
+        // 1. Ask Android native bridge if available (most reliable in WebView)
+        if(window.AndroidBridge && typeof window.AndroidBridge.isConnected==='function'){
+          try{
+            if(window.AndroidBridge.isConnected()){hideOffline();return;}
+          }catch(e){}
+        }
+        // 2. Try loading a tiny resource with cache-busting
+        var img=new Image();
+        img.onload=function(){hideOffline();};
+        img.onerror=function(){
+          // 3. Fallback: fetch HEAD request
+          fetch('/app-config.js?_nc='+Date.now(),{method:'HEAD',cache:'no-store',mode:'no-cors'})
+            .then(function(r){hideOffline();})
+            .catch(function(){
+              // Genuinely offline — show the screen
+              showOffline();
+            });
         };
-        checkImg.src = '/favicon.ico?' + Date.now();
+        img.src='/favicon.ico?_nc='+Date.now();
+      }
+
+      // Listen for browser events but always verify with a probe
+      window.addEventListener('offline',function(){probeNetwork();});
+      window.addEventListener('online',function(){hideOffline();});
+
+      // On initial load: only probe if navigator.onLine is false
+      // (Android WebView commonly lies about this)
+      if(!navigator.onLine){
+        probeNetwork();
       }
     })();
     </script>
