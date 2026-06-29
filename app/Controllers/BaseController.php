@@ -63,6 +63,9 @@ abstract class BaseController extends Controller
             $this->response->setStatusCode(200)->send();
             exit;
         }
+
+        // --- Content Security Policy (manual — CI4's built-in CSP adds nonces that break unsafe-inline) ---
+        $this->response->setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://accounts.google.com https://apis.google.com https://www.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://www.gstatic.com; font-src 'self' data:; frame-src https://accounts.google.com https://apis.google.com https://sefood-d603d.firebaseapp.com https://www.google.com; object-src 'none'; worker-src 'self'; form-action 'self';");
         // -----------------------------------------------------------------
 
         // Preload any models, libraries, etc, here.
