@@ -42,7 +42,7 @@ export function usePullToRefresh() {
     const currentY = touch.clientY
     const pullDistance = currentY - startY
 
-    if (currentY < lastY || pullDistance <= 0) {
+    if (pullDistance < 0) {
       isRefreshEligible = false
       pullY.value = 0
       visible.value = false
