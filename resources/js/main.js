@@ -66,7 +66,6 @@ function initInertia() {
   let initialPage = null;
   try {
     initialPage = JSON.parse(el.dataset.page);
-    console.log('[Inertia] Successfully parsed initial page data.');
   } catch (e) {
     console.error('[Inertia] Failed to parse page data:', e);
   }
