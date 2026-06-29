@@ -4,6 +4,7 @@ const PULL_THRESHOLD = 40
 const MAX_PULL = 45
 const DAMPING = 0.5
 const START_THRESHOLD = 0
+const INTENT_THRESHOLD = 15
 
 export function usePullToRefresh() {
   const pullY = ref(0)
@@ -14,42 +15,53 @@ export function usePullToRefresh() {
   let startY = 0
   let tracking = false
   let touchId = null
+  let isRefreshEligible = false
+  let lastY = 0
 
   function onTouchStart(e) {
     if (refreshing.value) return
     const scrollContainer = document.querySelector('.smooth-scroll-container') || document.documentElement
-    if (scrollContainer.scrollTop > 0) return
+    const isAtTop = scrollContainer.scrollTop === 0
 
     const touch = e.changedTouches[0]
     startY = touch.clientY
+    lastY = startY
     touchId = touch.identifier
     tracking = true
+    isRefreshEligible = isAtTop
     activated.value = false
     pullY.value = 0
   }
 
   function onTouchMove(e) {
-    if (!tracking || refreshing.value) return
+    if (!tracking || refreshing.value || !isRefreshEligible) return
 
     const touch = findTouch(e.changedTouches)
     if (!touch) return
 
-    const dy = touch.clientY - startY
-    if (dy <= 0) {
+    const currentY = touch.clientY
+    const pullDistance = currentY - startY
+
+    if (currentY < lastY || pullDistance <= 0) {
+      isRefreshEligible = false
       pullY.value = 0
-      activated.value = false
       visible.value = false
+      activated.value = false
+      lastY = currentY
       return
     }
 
-    const damped = Math.min(dy * DAMPING, MAX_PULL)
+    if (pullDistance < INTENT_THRESHOLD) {
+      lastY = currentY
+      return
+    }
+
+    const damped = Math.min(pullDistance * DAMPING, MAX_PULL)
     pullY.value = damped
     activated.value = damped >= PULL_THRESHOLD
-    visible.value = damped > START_THRESHOLD
-
-    if (dy > 0) {
-      e.preventDefault()
-    }
+    visible.value = true
+    e.preventDefault()
+    lastY = currentY
   }
 
   function onTouchEnd(e) {
@@ -60,7 +72,7 @@ export function usePullToRefresh() {
 
     tracking = false
 
-    if (activated.value) {
+    if (isRefreshEligible && activated.value) {
       refreshing.value = true
       pullY.value = PULL_THRESHOLD
       triggerRefresh()
@@ -72,10 +84,13 @@ export function usePullToRefresh() {
         }
       }, 300)
     }
+
+    isRefreshEligible = false
   }
 
   function onTouchCancel() {
     tracking = false
+    isRefreshEligible = false
     if (!refreshing.value) {
       pullY.value = 0
       activated.value = false
@@ -108,6 +123,7 @@ export function usePullToRefresh() {
     pullY.value = 0
     visible.value = false
     tracking = false
+    isRefreshEligible = false
   }
 
   onMounted(() => {
