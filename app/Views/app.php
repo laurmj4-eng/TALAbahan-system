@@ -144,7 +144,13 @@ if (!function_exists('vite_css')) {
       function hideOffline(){offline.style.display='none';if(app)app.style.display='';}
       window.addEventListener('offline',showOffline);
       window.addEventListener('online',hideOffline);
-      if(!navigator.onLine)showOffline();
+      // Android WebView often reports false on navigator.onLine even when
+      // connected. Verify with a real fetch before showing the offline screen.
+      if(!navigator.onLine) {
+        fetch('/favicon.ico', { method: 'HEAD', cache: 'no-store' })
+          .then(function(){ hideOffline(); })
+          .catch(function(){ showOffline(); });
+      }
     })();
     </script>
 </body>
