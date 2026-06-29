@@ -62,14 +62,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $scriptSrc = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com'];
+    public $scriptSrc = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com'];
 
     /**
      * Specifies valid sources for JavaScript <script> elements.
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcElem = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com'];
+    public array|string $scriptSrcElem = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com', 'https://apis.google.com'];
 
     /**
      * Specifies valid sources for JavaScript inline event
@@ -133,7 +133,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $connectSrc = ['self', 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com', 'https://www.googleapis.com'];
+    public $connectSrc = ['self', 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com', 'https://www.googleapis.com', 'https://www.gstatic.com'];
 
     /**
      * Specifies the origins that can serve web fonts.
@@ -166,7 +166,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameSrc = ['https://accounts.google.com'];
+    public $frameSrc = ['https://accounts.google.com', 'https://apis.google.com'];
 
     /**
      * Restricts the origins allowed to deliver video and audio.
@@ -220,5 +220,5 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * Replace nonce tag automatically?
      */
-    public bool $autoNonce = true;
+    public bool $autoNonce = false;
 }
