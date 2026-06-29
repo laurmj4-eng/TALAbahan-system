@@ -20,8 +20,10 @@ export function usePullToRefresh() {
 
   function onTouchStart(e) {
     if (refreshing.value) return
-    const scrollContainer = document.querySelector('.smooth-scroll-container') || document.documentElement
-    const isAtTop = scrollContainer.scrollTop === 0
+    const container = document.querySelector('.smooth-scroll-container')
+    const containerScroll = container ? container.scrollTop : 0
+    const pageScroll = window.scrollY || document.documentElement.scrollTop || 0
+    const isAtTop = containerScroll === 0 && pageScroll === 0
 
     const touch = e.changedTouches[0]
     startY = touch.clientY
