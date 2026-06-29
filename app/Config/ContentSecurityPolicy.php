@@ -56,17 +56,20 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Lists allowed scripts' URLs.
+     * unsafe-inline: required for Inertia page data, service worker, offline detection.
+     * www.gstatic.com: Firebase SDK.
+     * accounts.google.com: Google Sign-In.
      *
      * @var list<string>|string
      */
-    public $scriptSrc = 'self';
+    public $scriptSrc = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com'];
 
     /**
      * Specifies valid sources for JavaScript <script> elements.
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcElem = 'self';
+    public array|string $scriptSrcElem = ['self', 'unsafe-inline', 'https://www.gstatic.com', 'https://accounts.google.com'];
 
     /**
      * Specifies valid sources for JavaScript inline event
@@ -74,21 +77,22 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcAttr = 'self';
+    public array|string $scriptSrcAttr = ['self', 'unsafe-inline'];
 
     /**
      * Lists allowed stylesheets' URLs.
+     * unsafe-inline: required for Tailwind CSS, Vue scoped styles, NProgress.
      *
      * @var list<string>|string
      */
-    public $styleSrc = 'self';
+    public $styleSrc = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for stylesheets <link> elements.
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcElem = 'self';
+    public array|string $styleSrcElem = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for stylesheets inline
@@ -96,14 +100,15 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcAttr = 'self';
+    public array|string $styleSrcAttr = ['self', 'unsafe-inline'];
 
     /**
      * Defines the origins from which images can be loaded.
+     * https:: required for Firebase user photos, external product images.
      *
      * @var list<string>|string
      */
-    public $imageSrc = 'self';
+    public $imageSrc = ['self', 'data:', 'https:'];
 
     /**
      * Restricts the URLs that can appear in a page's `<base>` element.
@@ -124,17 +129,18 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * Limits the origins that you can connect to (via XHR,
      * WebSockets, and EventSource).
+     * googleapis.com: Firebase Auth, token refresh.
      *
      * @var list<string>|string
      */
-    public $connectSrc = 'self';
+    public $connectSrc = ['self', 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com', 'https://www.googleapis.com'];
 
     /**
      * Specifies the origins that can serve web fonts.
      *
      * @var list<string>|string
      */
-    public $fontSrc;
+    public $fontSrc = ['self', 'data:'];
 
     /**
      * Lists valid endpoints for submission from `<form>` tags.
@@ -156,10 +162,11 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * The frame-src directive restricts the URLs which may
      * be loaded into nested browsing contexts.
+     * accounts.google.com: Google Sign-In popup.
      *
      * @var list<string>|string|null
      */
-    public $frameSrc;
+    public $frameSrc = ['https://accounts.google.com'];
 
     /**
      * Restricts the origins allowed to deliver video and audio.
@@ -170,10 +177,11 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Allows control over Flash and other plugins.
+     * Set to 'none' to block all plugins (Flash, etc.).
      *
      * @var list<string>|string
      */
-    public $objectSrc = 'self';
+    public $objectSrc = 'none';
 
     /**
      * @var list<string>|string|null
@@ -183,7 +191,7 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * @var list<string>|string
      */
-    public array|string $workerSrc = [];
+    public array|string $workerSrc = ['self'];
 
     /**
      * Limits the kinds of plugins a page may invoke.
