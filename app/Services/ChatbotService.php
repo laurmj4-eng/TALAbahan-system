@@ -111,6 +111,16 @@ class ChatbotService
            ->where($countCol, $modelUsed)
            ->update([$countCol => $modelUsed + 1]);
 
+        if ($db->affectedRows() === 0) {
+            $this->clearUserCache($userId);
+            $freshUser = $this->loadUserRow($userId);
+            if (!$freshUser) return null;
+            $actualUsed = (int)($freshUser[$countCol] ?? 0);
+            if ($actualUsed >= self::PER_MODEL_LIMIT) {
+                return "This model is busy. Try again in a moment.";
+            }
+        }
+
         $this->clearUserCache($userId);
 
         return null;

@@ -194,9 +194,8 @@ class Dashboard extends BaseController
             return $this->response->setStatusCode(403)->setJSON(['error' => 'Unauthorized']);
         }
 
-        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
         $db = \Config\Database::connect();
-        $db->query("SET time_zone = '+08:00'");
+        $db->query("SET time_zone = '" . date('P') . "'");
 
         $orderModel = new OrderModel();
         $todaySales = round((float) $orderModel->getTodayRevenue(), 2);
@@ -223,9 +222,8 @@ class Dashboard extends BaseController
             return $this->response->setStatusCode(403)->setJSON(['error' => 'Unauthorized']);
         }
 
-        // Ensure DB connection uses the same timezone as PHP (Asia/Manila)
         $db = \Config\Database::connect();
-        $db->query("SET time_zone = '+08:00'");
+        $db->query("SET time_zone = '" . date('P') . "'");
 
         $orderModel = new OrderModel();
         $salesModel = new SalesModel();

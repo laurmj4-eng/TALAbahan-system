@@ -33,17 +33,14 @@ class CorsFilter implements FilterInterface
 
             if (in_array($origin, $allowedOrigins)) {
                 $response->setHeader('Access-Control-Allow-Origin', $origin);
+                $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+                $response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
+                $response->setHeader('Access-Control-Allow-Credentials', 'true');
+                $response->setHeader('Access-Control-Max-Age', '86400');
+                $response->setStatusCode(200);
             } else {
-                // If origin is not in list, but we want to allow it for now
-                // OR if it's empty (some old browsers)
-                $response->setHeader('Access-Control-Allow-Origin', 'https://tal-abahan-system.vercel.app');
+                $response->setStatusCode(204);
             }
-
-            $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-            $response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
-            $response->setHeader('Access-Control-Allow-Credentials', 'true');
-            $response->setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-            $response->setStatusCode(200);
             
             return $response;
         }
@@ -60,13 +57,10 @@ class CorsFilter implements FilterInterface
 
         if (in_array($origin, $allowedOrigins)) {
             $response->setHeader('Access-Control-Allow-Origin', $origin);
-        } else {
-            $response->setHeader('Access-Control-Allow-Origin', 'https://tal-abahan-system.vercel.app');
+            $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+            $response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
+            $response->setHeader('Access-Control-Allow-Credentials', 'true');
         }
-
-        $response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-        $response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Auth-Token, Accept, Origin, X-API-KEY');
-        $response->setHeader('Access-Control-Allow-Credentials', 'true');
 
         return $response;
     }

@@ -39,8 +39,8 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
-        // --- Custom CORS Headers for InfinityFree/Vercel compatibility ---
-        // Setting COOP to unsafe-none to allow Google/Firebase auth popups to communicate and close properly
+        // --- CORS Headers ---
+        // COOP set to unsafe-none for Firebase auth popup compatibility
         $this->response->setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
         $this->response->setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
         
@@ -56,12 +56,12 @@ abstract class BaseController extends Controller
             $this->response->setHeader('Access-Control-Allow-Headers', 'X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization');
             $this->response->setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
             $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
-            
-            // Handle preflight OPTIONS request
-            if ($request->getMethod() === 'options') {
-                $this->response->setStatusCode(200)->send();
-                exit;
-            }
+        }
+
+        // Handle preflight OPTIONS request
+        if ($request->getMethod() === 'options') {
+            $this->response->setStatusCode(200)->send();
+            exit;
         }
         // -----------------------------------------------------------------
 

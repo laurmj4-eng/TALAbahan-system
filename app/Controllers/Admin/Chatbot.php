@@ -77,7 +77,6 @@ class Chatbot extends BaseController
         header('Cache-Control: no-cache');
         header('Connection: keep-alive');
         header('X-Accel-Buffering: no');
-        if (ob_get_level() > 0) ob_end_clean();
 
         try {
             if ($useGemini) {
@@ -104,13 +103,13 @@ class Chatbot extends BaseController
             $this->_sendChatbotPush($newUserMessage);
 
             echo "data: [DONE]\n\n";
-            exit;
+            return;
 
         } catch (\Exception $e) {
             log_message('error', '[Chatbot] Process error: ' . $e->getMessage());
             echo "data: " . json_encode(['text' => "An unexpected error occurred. Please try again."]) . "\n\n";
             echo "data: [DONE]\n\n";
-            exit;
+            return;
         }
     }
 
@@ -226,7 +225,7 @@ class Chatbot extends BaseController
             ],
         ]);
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:streamGenerateContent?alt=sse&key={$geminiKey}";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:streamGenerateContent?alt=sse";
 
         $lineBuffer = "";
         $httpCode = 0;
@@ -275,7 +274,7 @@ class Chatbot extends BaseController
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "X-Goog-Api-Key: {$geminiKey}"]);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
@@ -464,7 +463,7 @@ class Chatbot extends BaseController
 
         echo "data: " . json_encode(['text' => $message]) . "\n\n";
         echo "data: [DONE]\n\n";
-        exit;
+        return;
     }
 
     private function _verifySameOrigin(): bool

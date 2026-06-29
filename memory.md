@@ -474,3 +474,37 @@ An inline `#offline-screen` overlay is shown when `window.offline` fires, hiding
 | Login stuck on "Connecting..." | Firebase config missing | Check `/app-config.js` for `FIREBASE_CONFIG` |
 | Uploads disappear after deploy | Render persistent disk not mounted | Check `docker-entrypoint.sh` symlink logic; `$RENDER` env var |
 | Chatbot returns no response | OpenRouter API key invalid | Check `server.js` logs; test key directly with curl |
+
+---
+
+## 10. Session Log — June 29, 2026
+
+### 10.1 App Installation Tracker & Device Analytics
+- **Migration** `2026-06-29-000001_AddAppVersionAndLastConnected.php` — formalizes `app_version` (VARCHAR 20) and `last_connected` (DATETIME) columns on `fcm_device_tokens`
+- **`FcmTokenModel::getDeviceAnalytics()`** — returns `total_installs`, `active_devices`, `online_now` (active in 24h), `unique_models`, `unique_versions`
+- **`getDeviceTrackingData()`** — now injects `is_online` boolean per device
+- **Developer Dashboard** — 4 stat cards: Total App Installs, Online Now, Platforms, App Versions; device table with Status pill (Online/Inactive), TRUSTED chip, "Yesterday at X" relative time, token copy on row click
+
+### 10.2 Native Pull-to-Refresh (SwipeRefreshLayout — legacy, now disabled)
+- Added `androidx.swiperefreshlayout:swiperefreshlayout:1.1.0` dependency
+- Wrapped WebView in `<SwipeRefreshLayout>` in `activity_main.xml`
+- Had scroll-sync bugs with `OnChildScrollUpCallback` → replaced with `ViewTreeObserver` + `setEnabled()` → still unreliable
+- **Final state (81aaa53+):** `swipeRefreshLayout.setEnabled(false)` — permanently disabled; WebView gets 100% touch events
+
+### 10.3 Web-Based Pull-to-Refresh (active solution)
+- **`resources/js/composables/usePullToRefresh.js`** — touch composable:
+  - Only activates when `.smooth-scroll-container` or `documentElement` is at `scrollTop === 0`
+  - 10px dead zone before spinner appears (prevents hold-to-trigger)
+  - 0.5 damping, 90px max pull, 75px activation threshold
+  - `window.location.reload()` with 400ms delay (replaced buggy Inertia `router.reload()`)
+- **`resources/js/components/PullToRefreshOverlay.vue`** — fixed-position spinner:
+  - `inset-x-0` + `flex justify-center` for perfect centering
+  - Responsive sizing: `w-12 h-12` mobile, `w-14 h-14` desktop
+  - Frosted glass (`bg-white/90 backdrop-blur`), `shadow-2xl`
+  - Slides with finger via `translateY()`, snaps back on cancel
+- **`main.js`** — mounts overlay globally alongside Inertia app (no layout changes needed)
+
+### 10.4 Key Decisions
+- Web-based pull-to-refresh over native: avoids all scroll-sync bugs inherent to WebView + SwipeRefreshLayout
+- `window.location.reload()` over `router.reload()`: Inertia reload caused white screen flash + spinner stuck on back navigation
+- No layout modifications — overlay is mounted as sibling of Inertia app in `main.js` via fragment render

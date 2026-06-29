@@ -55,7 +55,13 @@ class App extends BaseConfig
      *
      * @var list<string>
      */
-    public array $allowedHostnames = [];
+    public array $allowedHostnames = [
+        'localhost',
+        'talabahan-system-1.onrender.com',
+        'tal-abahan-system.vercel.app',
+        'mjtalabahan.page.gd',
+        'mj-talabahan.infy.uk',
+    ];
 
     /**
      * --------------------------------------------------------------------------
@@ -224,5 +230,5 @@ class App extends BaseConfig
      * @see http://www.html5rocks.com/en/tutorials/security/content-security-policy/
      * @see http://www.w3.org/TR/CSP/
      */
-    public bool $CSPEnabled = false;
+    public bool $CSPEnabled = true;
 }

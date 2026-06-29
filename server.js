@@ -34,6 +34,9 @@ app.use(compression());
 
 let pool;
 let isDbAvailable = false;
+let dbRetryTimer = null;
+const DB_RETRY_INTERVAL = 60000;
+
 async function initDatabase() {
     const poolConfig = {
         host: process.env.DB_HOST || 'localhost', 
@@ -43,7 +46,6 @@ async function initDatabase() {
         port: process.env.DB_PORT || 3306,
     };
 
-    // Conditionally add SSL configuration based on environment variable
     if (process.env.DB_SSL === 'true') {
         poolConfig.ssl = {
             rejectUnauthorized: false
@@ -53,6 +55,21 @@ async function initDatabase() {
     pool = mysql.createPool(poolConfig);
     await pool.query('CREATE TABLE IF NOT EXISTS firebase_users_tracking (uid VARCHAR(255) PRIMARY KEY, prompt_count INT DEFAULT 0, last_reset DATE)');
     console.log('Database connected');
+}
+
+async function tryReconnectDb() {
+    if (dbRetryTimer) return;
+    dbRetryTimer = setTimeout(async () => {
+        dbRetryTimer = null;
+        try {
+            await initDatabase();
+            isDbAvailable = true;
+            console.log('Database reconnected');
+        } catch (err) {
+            console.warn(`DB reconnect failed: ${err.message}. Retrying in ${DB_RETRY_INTERVAL / 1000}s.`);
+            isDbAvailable = false;
+        }
+    }, DB_RETRY_INTERVAL);
 }
 
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 15 });
@@ -105,6 +122,7 @@ app.post('/api/chat', async (req, res) => {
                 console.warn(`⚠️ Database tracking temporarily unavailable: ${dbError.message}`);
                 isDbAvailable = false;
                 pool = null;
+                tryReconnectDb();
             }
         }
         
@@ -174,6 +192,7 @@ app.post('/api/chat', async (req, res) => {
                 console.warn(`⚠️ Failed to update prompt counter: ${dbError.message}`);
                 isDbAvailable = false;
                 pool = null;
+                tryReconnectDb();
             }
         }
         res.setHeader('Content-Type', 'text/event-stream');
