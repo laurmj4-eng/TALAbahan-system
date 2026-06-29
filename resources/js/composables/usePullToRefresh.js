@@ -1,9 +1,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const PULL_THRESHOLD = 75
-const MAX_PULL = 90
+const PULL_THRESHOLD = 40
+const MAX_PULL = 45
 const DAMPING = 0.5
-const START_THRESHOLD = 10
+const START_THRESHOLD = 0
 
 export function usePullToRefresh() {
   const pullY = ref(0)
