@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,6 +44,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -81,10 +85,12 @@ public class MainActivity extends Activity {
     private static final String BASE_URL = "https://talabahan-system-1.onrender.com";
     private static final String SITE_URL = BASE_URL + "/?auth_mode=mobile";
     private static final String VERSION_URL = BASE_URL + "/version.json";
-    private static final String AUTHORITY = "com.mjseafood.app.fileprovider";
+    private static final String AUTHORITY = "com.Mjtalabahan.app.fileprovider";
     private static final String DEEP_LINK_SCHEME = "talabahan:";
     private static final long PAGE_LOAD_TIMEOUT_MS = 30000;
     private static final String APP_CACHE_DIR = "updates";
+    private static final String UPDATE_CHANNEL_ID = "talabahan_updates";
+    private static final int UPDATE_NOTIFICATION_ID = 1000;
 
     private boolean isConnected() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -130,6 +136,7 @@ public class MainActivity extends Activity {
             }
         }
 
+        createUpdateChannel();
         checkForUpdates();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -251,8 +258,33 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void createUpdateChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                UPDATE_CHANNEL_ID,
+                "App Updates",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("APK download progress");
+            channel.setShowBadge(false);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
     private void downloadUpdate(String apkUrl) {
-        Toast.makeText(this, "New update available. Downloading...", Toast.LENGTH_LONG).show();
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPDATE_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.stat_sys_download)
+            .setContentTitle("Downloading update")
+            .setContentText("Starting...")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setProgress(0, 0, true);
+        notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
 
         backgroundHandler.post(() -> {
             try {
@@ -260,28 +292,64 @@ public class MainActivity extends Activity {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.connect();
 
-                File cacheDir = new File(getCacheDir(), APP_CACHE_DIR);
-                if (!cacheDir.exists()) {
-                    cacheDir.mkdirs();
-                }
-                File apkFile = new File(cacheDir, "talabahan-update.apk");
-                InputStream input = new BufferedInputStream(url.openStream());
-                OutputStream output = new FileOutputStream(apkFile);
+                int contentLength = conn.getContentLength();
 
-                byte[] data = new byte[1024];
-                int count;
-                while ((count = input.read(data)) != -1) {
-                    output.write(data, 0, count);
+                File cacheDir = new File(getCacheDir(), APP_CACHE_DIR);
+                if (!cacheDir.exists()) cacheDir.mkdirs();
+                File apkFile = new File(cacheDir, "talabahan-update.apk");
+
+                InputStream input = new BufferedInputStream(url.openStream());
+                FileOutputStream output = new FileOutputStream(apkFile);
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                long totalBytes = 0;
+                int lastProgressReport = 0;
+
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+
+                    if (contentLength > 0) {
+                        int pct = (int) (totalBytes * 100 / contentLength);
+                        if (pct > lastProgressReport) {
+                            lastProgressReport = pct;
+                            int reportPct = pct;
+                            mainHandler.post(() -> {
+                                builder.setProgress(100, reportPct, false)
+                                    .setContentText("Downloading... " + reportPct + "%");
+                                notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                            });
+                        }
+                    }
                 }
 
                 output.flush();
                 output.close();
                 input.close();
 
-                mainHandler.post(() -> installApk(apkFile));
+                mainHandler.post(() -> {
+                    builder.setContentTitle("Installing update")
+                        .setContentText("Please wait...")
+                        .setProgress(0, 0, true)
+                        .setOngoing(false);
+                    notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                    installApk(apkFile);
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
-                mainHandler.post(() -> Toast.makeText(MainActivity.this, "Update download failed.", Toast.LENGTH_SHORT).show());
+                mainHandler.post(() -> {
+                    builder.setContentTitle("Update failed")
+                        .setContentText("Download error. Tap to retry.")
+                        .setProgress(0, 0, false)
+                        .setOngoing(false);
+                    notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                    mainHandler.postDelayed(() ->
+                        notificationManager.cancel(UPDATE_NOTIFICATION_ID), 5000);
+                    Toast.makeText(MainActivity.this,
+                        "Update download failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         });
     }
@@ -294,8 +362,11 @@ public class MainActivity extends Activity {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            Toast.makeText(this, "Installing update...", Toast.LENGTH_SHORT).show();
+            NotificationManagerCompat.from(this).cancel(UPDATE_NOTIFICATION_ID);
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(this, "Update install failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
