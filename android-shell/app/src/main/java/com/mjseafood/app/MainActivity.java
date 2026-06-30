@@ -285,17 +285,18 @@ public class MainActivity extends Activity {
 
         Toast.makeText(this, "New update available. Downloading...", Toast.LENGTH_LONG).show();
 
-        NotificationCompat.Builder builder = null;
-        NotificationManagerCompat notificationManager = null;
-        if (canNotify) {
-            notificationManager = NotificationManagerCompat.from(this);
-            builder = new NotificationCompat.Builder(this, UPDATE_CHANNEL_ID)
+        final NotificationManagerCompat notificationManager = canNotify
+            ? NotificationManagerCompat.from(this) : null;
+        final NotificationCompat.Builder builder = canNotify
+            ? new NotificationCompat.Builder(this, UPDATE_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setContentTitle("Downloading update")
                 .setContentText("Starting...")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
-                .setProgress(0, 0, true);
+                .setProgress(0, 0, true)
+            : null;
+        if (canNotify) {
             notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
         }
 
