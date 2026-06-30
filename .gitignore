@@ -52,6 +52,7 @@ android-shell/.gradle/
 android-shell/app/build/
 android-shell/app/release/
 android-shell/app/google-services.json
+android-shell/ci-keystore/
 *.apk
 *.aab
 
