@@ -7,6 +7,7 @@ import '../css/recaptcha.css';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import { useFcmToken } from './composables/useFcmToken.js';
+import { useAutoLogout } from './composables/useAutoLogout.js';
 import PullToRefreshOverlay from './components/PullToRefreshOverlay.vue';
 
 const style = document.createElement('style');
@@ -113,6 +114,10 @@ function initInertia() {
       })
         .use(plugin)
         .mount(el);
+
+      // Auto-logout on inactivity (all users, all browsers)
+      const autoLogout = useAutoLogout();
+      autoLogout.init();
 
       // Always attempt FCM registration (device can register without userId, linked later on login)
       // Only inside the Android app

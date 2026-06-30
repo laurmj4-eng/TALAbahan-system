@@ -14,7 +14,12 @@ class Auth extends BaseController
             return $this->_redirectByRole(session()->get('role'));
         }
 
-        return inertia('LoginPage');
+        $props = [];
+        if ($this->request->getGet('expired') === '1') {
+            $props['error'] = 'Session expired due to inactivity.';
+        }
+
+        return inertia('LoginPage', $props);
     }
 
     public function verify()
@@ -368,6 +373,8 @@ class Auth extends BaseController
 
     public function logout()
     {
+        $isExpired = $this->request->getGet('expired') === '1';
+
         $userId = (int) session()->get('user_id');
         if ($userId > 0) {
             $tokenModel = new \App\Models\FcmTokenModel();
@@ -379,6 +386,6 @@ class Auth extends BaseController
         session()->destroy();
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');
-        return redirect()->to(base_url('login')); 
+        return redirect()->to(base_url('login' . ($isExpired ? '?expired=1' : ''))); 
     }
 }

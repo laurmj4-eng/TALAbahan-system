@@ -400,7 +400,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Mail, Lock, Eye, EyeOff, X } from 'lucide-vue-next';
 import { useRecaptcha } from '../composables/useRecaptcha';
@@ -463,6 +463,10 @@ const password = ref('');
 const loading = ref(false);
 const googleLoading = ref(false);
 const error = ref('');
+const page = usePage();
+if (page.props.error) {
+  error.value = page.props.error;
+}
 const showRecaptcha = ref(false);
 const hasInteracted = ref(false);
 const recaptchaContainerRef = ref(null);
