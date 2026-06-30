@@ -687,6 +687,16 @@ public class MainActivity extends Activity {
             }
 
             @JavascriptInterface
+            public int getAppVersionCode() {
+                try {
+                    PackageInfo pkgInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                    return pkgInfo.versionCode;
+                } catch (Exception e) {
+                    return 0;
+                }
+            }
+
+            @JavascriptInterface
             public boolean isLocationEnabled() {
                 LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 if (lm == null) return false;

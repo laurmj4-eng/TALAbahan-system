@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-animate text-white font-sans selection:bg-pink-500/30 overflow-x-hidden">
+    <UpdateBanner />
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
@@ -7,6 +8,10 @@
     </router-view>
   </div>
 </template>
+
+<script setup>
+import UpdateBanner from './components/UpdateBanner.vue'
+</script>
 
 <style>
 .bg-animate {
