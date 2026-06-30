@@ -718,6 +718,20 @@ public class MainActivity extends Activity {
             }
 
             @JavascriptInterface
+            public String getDeviceModel() {
+                return Build.MANUFACTURER + " " + Build.MODEL;
+            }
+
+            @JavascriptInterface
+            public String getDeviceName() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    String name = Settings.Global.getString(getContentResolver(), Settings.Global.DEVICE_NAME);
+                    if (name != null && !name.isEmpty()) return name;
+                }
+                return Build.MODEL;
+            }
+
+            @JavascriptInterface
             public String getFcmToken() {
                 SharedPreferences prefs = getSharedPreferences("fcm_prefs", MODE_PRIVATE);
                 String cached = prefs.getString("fcm_token", "");

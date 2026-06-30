@@ -25,10 +25,20 @@ export function useFcmToken() {
   }
 
   function getDeviceInfo() {
+    const bridge = window.AndroidBridge;
+    const bridgeOk = !!(bridge && typeof bridge.getFcmToken === 'function');
+    let deviceModel = '';
+    let deviceName = '';
+    if (bridgeOk) {
+      if (typeof bridge.getDeviceModel === 'function') deviceModel = bridge.getDeviceModel();
+      if (typeof bridge.getDeviceName === 'function') deviceName = bridge.getDeviceName();
+    }
     return {
       userAgent: navigator.userAgent,
-      bridgeAvailable: !!(window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function'),
+      bridgeAvailable: bridgeOk,
       tokenPreview: null,
+      deviceModel,
+      deviceName,
     };
   }
 
@@ -41,10 +51,18 @@ export function useFcmToken() {
       return false;
     }
 
+    const info = getDeviceInfo();
+
     const payload = {
       token,
       platform: 'android',
     };
+
+    if (info.deviceModel) {
+      payload.device_model = info.deviceName
+        ? info.deviceName + ' (' + info.deviceModel + ')'
+        : info.deviceModel;
+    }
 
     const username = localStorage.getItem('username');
     if (username) {

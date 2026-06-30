@@ -104,6 +104,7 @@ class FcmTokenModel extends Model
                 fcm_device_tokens.updated_at,
                 fcm_device_tokens.created_at,
                 users.username,
+                users.email,
                 users.role AS user_role
             ')
             ->join('users', 'users.id = fcm_device_tokens.user_id', 'left')

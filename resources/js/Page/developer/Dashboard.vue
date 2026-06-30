@@ -73,7 +73,8 @@
             <thead>
               <tr class="border-b border-white/[0.08] text-white/50 font-bold uppercase tracking-wider">
                 <th class="p-2 md:p-3">User</th>
-                <th class="p-2 md:p-3">Device Model</th>
+                <th class="p-2 md:p-3">Email</th>
+                <th class="p-2 md:p-3">Device</th>
                 <th class="p-2 md:p-3">App Version</th>
                 <th class="p-2 md:p-3">Status</th>
                 <th class="p-2 md:p-3">Last Seen</th>
@@ -90,7 +91,10 @@
                   <div class="font-semibold text-white truncate max-w-[120px]">{{ d.username || '—' }}</div>
                   <div class="text-[0.6rem] text-white/40">{{ d.user_role || 'guest' }}</div>
                 </td>
-                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[160px] truncate" :title="d.device_model">
+                <td class="p-2 md:p-3 text-white/70 text-[0.65rem] md:text-xs max-w-[160px] truncate" :title="d.email">
+                  {{ d.email || '—' }}
+                </td>
+                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[180px] truncate" :title="d.device_model">
                   {{ d.device_model || '—' }}
                 </td>
                 <td class="p-2 md:p-3 text-white/70 font-mono text-xs whitespace-nowrap">{{ d.app_version || '—' }}</td>
@@ -110,7 +114,7 @@
                 </td>
               </tr>
               <tr v-if="!devices.length">
-                <td colspan="5" class="p-8 text-center text-white/30 italic">No devices registered yet.</td>
+                <td colspan="6" class="p-8 text-center text-white/30 italic">No devices registered yet.</td>
               </tr>
             </tbody>
           </table>
