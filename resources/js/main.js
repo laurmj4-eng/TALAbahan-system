@@ -56,12 +56,10 @@ axios.interceptors.response.use(response => {
   return response;
 });
 
-// Re-attempt FCM registration on every Inertia navigation if logged in
+// Re-attempt FCM registration on every Inertia navigation
 router.on('navigate', () => {
-  if (localStorage.getItem('isLoggedIn') === 'true') {
-    const { registerFcmToken } = useFcmToken();
-    registerFcmToken();
-  }
+  const { registerFcmToken } = useFcmToken();
+  registerFcmToken();
 });
 
 // Standardize the initialization process
@@ -114,10 +112,9 @@ function initInertia() {
         .use(plugin)
         .mount(el);
 
-      if (localStorage.getItem('isLoggedIn') === 'true') {
-        const { registerFcmTokenWithRetry } = useFcmToken();
-        registerFcmTokenWithRetry();
-      }
+      // Always attempt FCM registration (device can register without userId, linked later on login)
+      const { registerFcmTokenWithRetry } = useFcmToken();
+      registerFcmTokenWithRetry();
     },
   });
 }

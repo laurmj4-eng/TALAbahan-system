@@ -120,6 +120,54 @@
         </div>
       </div>
 
+      <!-- FCM Device Registration Status -->
+      <div class="space-y-3 md:space-y-6">
+        <div class="flex items-center gap-2 md:gap-3">
+          <Smartphone class="text-cyan-500 w-4 h-4 md:w-6 md:h-6" />
+          <h3 class="text-base md:text-xl font-bold text-white tracking-tight">Device Registration Status</h3>
+        </div>
+
+        <div class="p-4 md:p-[30px] rounded-xl md:rounded-[24px] border border-white/[0.08] bg-slate-900/40">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 text-xs md:text-sm">
+              <span class="text-white/50 font-bold">Bridge:</span>
+              <span :class="bridgeAvailable ? 'text-emerald-400' : 'text-rose-400'">
+                {{ bridgeAvailable ? 'Available' : 'Not Available' }}
+              </span>
+            </div>
+            <div class="flex items-center gap-3 text-xs md:text-sm">
+              <span class="text-white/50 font-bold">Token:</span>
+              <span :class="currentToken ? 'text-emerald-400' : 'text-amber-400'">
+                {{ currentToken ? currentToken.substring(0, 30) + '...' : 'Not obtained yet' }}
+              </span>
+            </div>
+            <div class="flex items-center gap-3 text-xs md:text-sm">
+              <span class="text-white/50 font-bold">Register Status:</span>
+              <span :class="registerStatus === 'ok' ? 'text-emerald-400' : registerStatus === 'failed' ? 'text-rose-400' : 'text-amber-400'">
+                {{ registerStatusMsg }}
+              </span>
+            </div>
+
+            <button
+              @click="forceRegister"
+              :disabled="registering"
+              :class="[
+                registering ? 'opacity-60 cursor-wait' : 'hover:bg-cyan-500 hover:text-black hover:scale-[1.02] active:scale-95',
+              ]"
+              class="flex items-center justify-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-extrabold rounded-xl md:rounded-2xl transition-all text-xs md:text-sm shadow-lg shadow-cyan-500/10 mt-4"
+            >
+              <Loader v-if="registering" class="w-4 h-4 animate-spin" />
+              <Smartphone v-else class="w-4 h-4" />
+              <span>{{ registering ? 'Registering...' : 'Force Register Device' }}</span>
+            </button>
+
+            <div v-if="registerResult" class="text-xs text-white/60 mt-2">
+              {{ registerResult }}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Broadcast Console -->
       <div class="space-y-3 md:space-y-6">
         <div class="flex items-center gap-2 md:gap-3">
@@ -201,6 +249,7 @@ import {
   Smartphone, Monitor, Radio, Activity, Loader
 } from 'lucide-vue-next';
 import DeveloperLayout from '../../layouts/DeveloperLayout.vue';
+import { useFcmToken } from '../../composables/useFcmToken.js';
 
 const devices = ref([]);
 const analytics = ref({
@@ -215,6 +264,45 @@ const broadcastBody = ref('');
 const broadcastTarget = ref('all');
 const sending = ref(false);
 const broadcastResult = ref(null);
+
+const bridgeAvailable = ref(!!(window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function'));
+const currentToken = ref(null);
+const registerStatus = ref('unknown');
+const registerStatusMsg = ref('Not attempted');
+const registering = ref(false);
+const registerResult = ref('');
+
+function refreshDeviceStatus() {
+  const { getFcmToken } = useFcmToken();
+  bridgeAvailable.value = !!(window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function');
+  const token = getFcmToken();
+  currentToken.value = token;
+  if (token) {
+    registerStatus.value = 'has_token';
+    registerStatusMsg.value = 'Token obtained';
+  } else {
+    registerStatus.value = 'no_token';
+    registerStatusMsg.value = 'No token — tap "Force Register"';
+  }
+}
+
+async function forceRegister() {
+  registering.value = true;
+  registerResult.value = '';
+  const { registerFcmTokenWithRetry } = useFcmToken();
+  const ok = await registerFcmTokenWithRetry();
+  if (ok) {
+    registerStatus.value = 'ok';
+    registerStatusMsg.value = 'Registered successfully';
+    registerResult.value = 'Device registered. Check the device table for your entry.';
+  } else {
+    registerStatus.value = 'failed';
+    registerStatusMsg.value = 'Registration failed';
+    registerResult.value = 'Could not obtain or register token. Is this running inside the Android app?';
+  }
+  refreshDeviceStatus();
+  registering.value = false;
+}
 
 const deviceStats = computed(() => {
   const list = devices.value;
@@ -304,6 +392,7 @@ const sendBroadcast = async () => {
 let interval;
 onMounted(() => {
   fetchDevices();
+  refreshDeviceStatus();
   interval = setInterval(fetchDevices, 30000);
 });
 

@@ -16,12 +16,7 @@ export function useFcmToken() {
     });
   }
 
-  function isAndroidApp() {
-    return navigator.userAgent.includes('TALAbahanAndroidApp');
-  }
-
   function getFcmToken() {
-    if (!isAndroidApp()) return null;
     if (window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function') {
       const token = window.AndroidBridge.getFcmToken();
       return token || null;
@@ -29,10 +24,20 @@ export function useFcmToken() {
     return null;
   }
 
+  function getDeviceInfo() {
+    return {
+      userAgent: navigator.userAgent,
+      bridgeAvailable: !!(window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function'),
+      tokenPreview: null,
+    };
+  }
+
   async function registerFcmToken() {
     const token = getFcmToken();
     if (!token) {
-      console.log('[FCM] No token available yet (attempt ' + (registerAttempts + 1) + ')');
+      const info = getDeviceInfo();
+      console.log('[FCM] No token available yet (attempt ' + (registerAttempts + 1) + ') '
+        + 'bridge=' + info.bridgeAvailable + ' ua=<' + info.userAgent.slice(-30) + '>');
       return false;
     }
 
@@ -108,5 +113,5 @@ export function useFcmToken() {
     return stored === token;
   }
 
-  return { isAndroidApp, getFcmToken, registerFcmToken, registerFcmTokenWithRetry, toggleTrustedDevice, getTrustedStatus };
+  return { getFcmToken, getDeviceInfo, registerFcmToken, registerFcmTokenWithRetry, toggleTrustedDevice, getTrustedStatus };
 }
