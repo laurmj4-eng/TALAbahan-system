@@ -24,6 +24,11 @@ export function useFcmToken() {
     return null;
   }
 
+  function parseDeviceModelFromUA(ua) {
+    const match = ua.match(/Android\s+\d+(?:\.\d+)*;\s*([^;)]+)/);
+    return match ? match[1].trim() : '';
+  }
+
   function getDeviceInfo() {
     const bridge = window.AndroidBridge;
     const bridgeOk = !!(bridge && typeof bridge.getFcmToken === 'function');
@@ -32,6 +37,10 @@ export function useFcmToken() {
     if (bridgeOk) {
       if (typeof bridge.getDeviceModel === 'function') deviceModel = bridge.getDeviceModel();
       if (typeof bridge.getDeviceName === 'function') deviceName = bridge.getDeviceName();
+    }
+    // Fallback: parse model from user agent if bridge methods missing
+    if (!deviceModel && !deviceName) {
+      deviceModel = parseDeviceModelFromUA(navigator.userAgent);
     }
     return {
       userAgent: navigator.userAgent,

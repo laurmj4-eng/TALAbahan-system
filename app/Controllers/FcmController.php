@@ -254,6 +254,28 @@ class FcmController extends BaseController
         ]);
     }
 
+    public function markDelivered()
+    {
+        $json = $this->request->getJSON(true);
+        if (!$json || empty($json['broadcast_id']) || empty($json['token'])) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Missing broadcast_id or token.',
+            ])->setStatusCode(400);
+        }
+
+        $broadcastId = (int) $json['broadcast_id'];
+        $token       = trim($json['token']);
+
+        $receiptModel = new \App\Models\BroadcastReceiptModel();
+        $updated = $receiptModel->markDelivered($token, $broadcastId);
+
+        return $this->response->setJSON([
+            'status'  => $updated ? 'success' : 'error',
+            'message' => $updated ? 'Delivery confirmed.' : 'No matching pending receipt found.',
+        ]);
+    }
+
     public function sendOrderStatusPush(int $orderId, string $newStatus): void
     {
         try {

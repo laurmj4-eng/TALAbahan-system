@@ -10,6 +10,9 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('health', 'Health::index');
 $routes->get('debug/env', 'DebugController::checkEnv');
 
+// FCM delivery receipt callback from Android (no auth — validates via broadcast_id + token match)
+$routes->post('api/fcm/delivered', 'FcmController::markDelivered');
+
 // App config served as external JS (keeps secrets out of view-source)
 $routes->get('app-config.js', 'AppConfig::js');
 
@@ -85,6 +88,8 @@ $routes->group('api', ['filter' => 'apiAuth'], function($routes) {
     // Developer API Routes
     $routes->get('developer/devices', '\App\Controllers\Developer\Dashboard::getDevices');
     $routes->post('developer/broadcast', '\App\Controllers\Developer\Dashboard::broadcast');
+    $routes->get('developer/broadcast-history', '\App\Controllers\Developer\Dashboard::broadcastHistory');
+    $routes->get('developer/broadcast-receipts/(:num)', '\App\Controllers\Developer\Dashboard::broadcastReceipts/$1');
     $routes->post('developer/update-profile', '\App\Controllers\Developer\Dashboard::updateProfile');
     $routes->get('developer/users', '\App\Controllers\Developer\UserController::getUsers');
     $routes->post('developer/users/save', '\App\Controllers\Developer\UserController::saveUser');

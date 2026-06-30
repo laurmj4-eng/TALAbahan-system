@@ -238,6 +238,98 @@
               class="p-3 md:p-4 rounded-xl border text-xs md:text-sm font-bold"
             >
               {{ broadcastResult.message }}
+              <div v-if="broadcastResult.broadcast_id" class="mt-2 text-[0.7rem] font-normal opacity-70">
+                Broadcast #{{ broadcastResult.broadcast_id }} — 
+                <button @click="viewBroadcastReceipts(broadcastResult.broadcast_id)" class="underline hover:no-underline cursor-pointer">View device details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Broadcast History -->
+      <div class="space-y-3 md:space-y-6">
+        <div class="flex items-center gap-2 md:gap-3">
+          <Radio class="text-cyan-500 w-4 h-4 md:w-6 md:h-6" />
+          <h3 class="text-base md:text-xl font-bold text-white tracking-tight">Broadcast History</h3>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl md:rounded-2xl border border-white/[0.08] bg-slate-900/60">
+          <table class="w-full text-left text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-white/[0.08] text-white/50 font-bold uppercase tracking-wider">
+                <th class="p-2 md:p-3">Title</th>
+                <th class="p-2 md:p-3">Target</th>
+                <th class="p-2 md:p-3">Sent</th>
+                <th class="p-2 md:p-3">Delivered</th>
+                <th class="p-2 md:p-3">Failed</th>
+                <th class="p-2 md:p-3">Sent By</th>
+                <th class="p-2 md:p-3">When</th>
+                <th class="p-2 md:p-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="b in broadcastHistory"
+                :key="b.id"
+                class="border-b border-white/[0.05] hover:bg-white/[0.03] transition-colors"
+              >
+                <td class="p-2 md:p-3">
+                  <div class="font-semibold text-white truncate max-w-[160px]">{{ b.title }}</div>
+                  <div class="text-[0.6rem] text-white/40 truncate max-w-[160px]">{{ b.body }}</div>
+                </td>
+                <td class="p-2 md:p-3 text-white/70"><span class="font-mono text-[0.65rem]">{{ b.target }}</span></td>
+                <td class="p-2 md:p-3">
+                  <span class="text-emerald-400 font-bold">{{ b.sent_count }}</span>
+                  <span class="text-white/40 text-[0.6rem]">/{{ b.total_devices }}</span>
+                </td>
+                <td class="p-2 md:p-3">
+                  <span class="text-cyan-400 font-bold">{{ b.delivered_count }}</span>
+                </td>
+                <td class="p-2 md:p-3">
+                  <span v-if="b.failed_count > 0" class="text-rose-400 font-bold">{{ b.failed_count }}</span>
+                  <span v-else class="text-white/40">0</span>
+                </td>
+                <td class="p-2 md:p-3 text-white/60 text-[0.65rem]">{{ b.created_by_username || '—' }}</td>
+                <td class="p-2 md:p-3 text-white/60 text-[0.65rem] whitespace-nowrap">{{ formatTime(b.created_at) }}</td>
+                <td class="p-2 md:p-3">
+                  <button @click="viewBroadcastReceipts(b.id)" class="text-cyan-400 hover:text-cyan-300 text-[0.6rem] font-bold underline transition-colors">Details</button>
+                </td>
+              </tr>
+              <tr v-if="!broadcastHistory.length">
+                <td colspan="8" class="p-8 text-center text-white/30 italic">No broadcasts sent yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Receipt Detail Modal -->
+        <div v-if="showReceiptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @click.self="showReceiptModal = false">
+          <div class="bg-slate-900 rounded-2xl border border-white/[0.08] w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-white/[0.08]">
+              <h4 class="text-sm font-bold text-white">Broadcast #{{ receiptBroadcastId }} — Device Details</h4>
+              <button @click="showReceiptModal = false" class="text-white/40 hover:text-white text-lg leading-none">&times;</button>
+            </div>
+            <div class="overflow-y-auto p-4 space-y-2">
+              <div v-if="!receipts.length" class="text-white/30 italic text-center py-8">No receipt data.</div>
+              <div v-for="r in receipts" :key="r.id"
+                class="flex items-center gap-3 p-2 rounded-lg bg-white/[0.03] border border-white/[0.05] text-xs">
+                <div class="w-2 h-2 rounded-full shrink-0"
+                  :class="r.status === 'delivered' ? 'bg-emerald-400' : r.status === 'failed' ? 'bg-rose-400' : 'bg-amber-400'">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-white font-medium truncate">{{ r.username || '—' }}</div>
+                  <div class="text-white/40 truncate">{{ r.email || '—' }}</div>
+                </div>
+                <div class="hidden md:block text-white/50 truncate max-w-[140px]" :title="r.device_model">{{ r.device_model || '—' }}</div>
+                <div class="shrink-0">
+                  <span class="text-[0.55rem] font-bold uppercase px-1.5 py-0.5 rounded"
+                    :class="r.status === 'delivered' ? 'bg-emerald-500/15 text-emerald-400' : r.status === 'failed' ? 'bg-rose-500/15 text-rose-400' : 'bg-amber-500/15 text-amber-400'">
+                    {{ r.status }}
+                  </span>
+                  <div v-if="r.fcm_error" class="text-[0.5rem] text-rose-400/60 mt-0.5 truncate max-w-[120px]" :title="r.fcm_error">{{ r.fcm_error }}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -275,6 +367,11 @@ const registerStatus = ref('unknown');
 const registerStatusMsg = ref('Not attempted');
 const registering = ref(false);
 const registerResult = ref('');
+
+const broadcastHistory = ref([]);
+const showReceiptModal = ref(false);
+const receiptBroadcastId = ref(null);
+const receipts = ref([]);
 
 function refreshDeviceStatus() {
   const { getFcmToken } = useFcmToken();
@@ -360,6 +457,31 @@ const fetchDevices = async () => {
   }
 };
 
+const fetchBroadcastHistory = async () => {
+  try {
+    const res = await axios.get('/api/developer/broadcast-history');
+    if (res.data?.status === 'success') {
+      broadcastHistory.value = res.data.broadcasts || [];
+    }
+  } catch (err) {
+    console.error('Failed to fetch broadcast history:', err);
+  }
+};
+
+const viewBroadcastReceipts = async (id) => {
+  receiptBroadcastId.value = id;
+  receipts.value = [];
+  showReceiptModal.value = true;
+  try {
+    const res = await axios.get('/api/developer/broadcast-receipts/' + id);
+    if (res.data?.status === 'success') {
+      receipts.value = res.data.receipts || [];
+    }
+  } catch (err) {
+    console.error('Failed to fetch receipts:', err);
+  }
+};
+
 const sendBroadcast = async () => {
   if (sending.value || !broadcastBody.value.trim()) return;
   sending.value = true;
@@ -375,8 +497,10 @@ const sendBroadcast = async () => {
     if (res.data?.status === 'success') {
       broadcastResult.value = {
         success: true,
+        broadcast_id: res.data.broadcast_id,
         message: res.data.message || 'Broadcast sent successfully.',
       };
+      fetchBroadcastHistory();
     } else {
       broadcastResult.value = {
         success: false,
@@ -397,6 +521,7 @@ let interval;
 onMounted(() => {
   fetchDevices();
   refreshDeviceStatus();
+  fetchBroadcastHistory();
   interval = setInterval(fetchDevices, 30000);
 });
 
