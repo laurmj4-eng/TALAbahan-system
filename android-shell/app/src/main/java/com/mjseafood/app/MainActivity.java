@@ -274,17 +274,30 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void downloadUpdate(String apkUrl) {
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+    private boolean canPostNotifications() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+            || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+               == PackageManager.PERMISSION_GRANTED;
+    }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPDATE_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle("Downloading update")
-            .setContentText("Starting...")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)
-            .setProgress(0, 0, true);
-        notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+    private void downloadUpdate(String apkUrl) {
+        boolean canNotify = canPostNotifications();
+
+        Toast.makeText(this, "New update available. Downloading...", Toast.LENGTH_LONG).show();
+
+        NotificationCompat.Builder builder = null;
+        NotificationManagerCompat notificationManager = null;
+        if (canNotify) {
+            notificationManager = NotificationManagerCompat.from(this);
+            builder = new NotificationCompat.Builder(this, UPDATE_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.stat_sys_download)
+                .setContentTitle("Downloading update")
+                .setContentText("Starting...")
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(true)
+                .setProgress(0, 0, true);
+            notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+        }
 
         backgroundHandler.post(() -> {
             try {
@@ -310,7 +323,7 @@ public class MainActivity extends Activity {
                     output.write(buffer, 0, bytesRead);
                     totalBytes += bytesRead;
 
-                    if (contentLength > 0) {
+                    if (canNotify && contentLength > 0) {
                         int pct = (int) (totalBytes * 100 / contentLength);
                         if (pct > lastProgressReport) {
                             lastProgressReport = pct;
@@ -329,24 +342,29 @@ public class MainActivity extends Activity {
                 input.close();
 
                 mainHandler.post(() -> {
-                    builder.setContentTitle("Installing update")
-                        .setContentText("Please wait...")
-                        .setProgress(0, 0, true)
-                        .setOngoing(false);
-                    notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                    if (canNotify) {
+                        builder.setContentTitle("Installing update")
+                            .setContentText("Please wait...")
+                            .setProgress(0, 0, true)
+                            .setOngoing(false);
+                        notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                    }
+                    Toast.makeText(MainActivity.this, "Installing update...", Toast.LENGTH_SHORT).show();
                     installApk(apkFile);
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
                 mainHandler.post(() -> {
-                    builder.setContentTitle("Update failed")
-                        .setContentText("Download error. Tap to retry.")
-                        .setProgress(0, 0, false)
-                        .setOngoing(false);
-                    notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
-                    mainHandler.postDelayed(() ->
-                        notificationManager.cancel(UPDATE_NOTIFICATION_ID), 5000);
+                    if (canNotify) {
+                        builder.setContentTitle("Update failed")
+                            .setContentText("Download error.")
+                            .setProgress(0, 0, false)
+                            .setOngoing(false);
+                        notificationManager.notify(UPDATE_NOTIFICATION_ID, builder.build());
+                        mainHandler.postDelayed(() ->
+                            notificationManager.cancel(UPDATE_NOTIFICATION_ID), 5000);
+                    }
                     Toast.makeText(MainActivity.this,
                         "Update download failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
