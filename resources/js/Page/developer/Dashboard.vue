@@ -94,8 +94,8 @@
                 <td class="p-2 md:p-3 text-white/70 text-[0.65rem] md:text-xs max-w-[160px] truncate" :title="d.email">
                   {{ d.email || '—' }}
                 </td>
-                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[180px] truncate" :title="d.device_model">
-                  {{ d.device_model || '—' }}
+                <td class="p-2 md:p-3 text-white/80 font-mono text-[0.65rem] md:text-xs max-w-[180px] truncate" :title="d.device_model || d.token_preview">
+                  {{ d.device_model || d.token_preview || '—' }}
                 </td>
                 <td class="p-2 md:p-3 text-white/70 font-mono text-xs whitespace-nowrap">{{ d.app_version || '—' }}</td>
                 <td class="p-2 md:p-3 whitespace-nowrap">
@@ -321,7 +321,7 @@
                   <div class="text-white font-medium truncate">{{ r.username || '—' }}</div>
                   <div class="text-white/40 truncate">{{ r.email || '—' }}</div>
                 </div>
-                <div class="hidden md:block text-white/50 truncate max-w-[140px]" :title="r.device_model">{{ r.device_model || '—' }}</div>
+                <div class="hidden md:block text-white/50 truncate max-w-[140px]" :title="r.device_model || r.token">{{ r.device_model || (r.token ? '...' + r.token.slice(-8) : '—') }}</div>
                 <div class="shrink-0">
                   <span class="text-[0.55rem] font-bold uppercase px-1.5 py-0.5 rounded"
                     :class="r.status === 'delivered' ? 'bg-emerald-500/15 text-emerald-400' : r.status === 'failed' ? 'bg-rose-500/15 text-rose-400' : 'bg-amber-500/15 text-amber-400'">

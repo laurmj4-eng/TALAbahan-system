@@ -42,6 +42,9 @@ export function useFcmToken() {
     if (!deviceModel && !deviceName) {
       deviceModel = parseDeviceModelFromUA(navigator.userAgent);
     }
+    if (!deviceModel) {
+      deviceModel = 'Android';
+    }
     return {
       userAgent: navigator.userAgent,
       bridgeAvailable: bridgeOk,
