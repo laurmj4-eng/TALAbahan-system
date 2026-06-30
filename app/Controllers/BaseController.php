@@ -70,5 +70,8 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+
+        // Send CSRF token in every response so JavaScript can update the meta tag
+        $this->response->setHeader('X-CSRF-TOKEN', csrf_hash());
     }
 }

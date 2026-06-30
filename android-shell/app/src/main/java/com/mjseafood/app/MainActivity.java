@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
     private static final String VERSION_URL = BASE_URL + "/version.json";
     private static final String AUTHORITY = "com.Mjtalabahan.app.fileprovider";
     private static final String DEEP_LINK_SCHEME = "talabahan:";
-    private static final long PAGE_LOAD_TIMEOUT_MS = 30000;
+    private static final long PAGE_LOAD_TIMEOUT_MS = 90000;
     private static final String APP_CACHE_DIR = "updates";
     private static final String UPDATE_CHANNEL_ID = "talabahan_updates";
     private static final int UPDATE_NOTIFICATION_ID = 1000;
@@ -130,6 +130,10 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
+            String restoredUrl = webView.getUrl();
+            if (restoredUrl == null || "about:blank".equals(restoredUrl)) {
+                webView.loadUrl(SITE_URL);
+            }
         } else {
             if (!handleDeepLinkIntent(getIntent())) {
                 webView.loadUrl(SITE_URL);
@@ -423,6 +427,7 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient() {
             private boolean isLoadingTimeout = false;
+            private Runnable pendingTimeoutRunnable;
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -478,16 +483,24 @@ public class MainActivity extends Activity {
                 progressBar.setProgress(0);
                 isLoadingTimeout = false;
 
-                mainHandler.postDelayed(() -> {
+                // Cancel any previous pending timeout (e.g., from redirects)
+                if (pendingTimeoutRunnable != null) {
+                    mainHandler.removeCallbacks(pendingTimeoutRunnable);
+                }
+
+                pendingTimeoutRunnable = () -> {
                     if (progressBar.getVisibility() == View.VISIBLE && !isLoadingTimeout) {
                         isLoadingTimeout = true;
                         Toast.makeText(MainActivity.this,
-                                "Page is taking longer than expected...", Toast.LENGTH_LONG).show();
-                        view.stopLoading();
-                        view.loadUrl("about:blank");
+                                "Still loading... check your connection", Toast.LENGTH_LONG).show();
+                        // Don't stop loading — let the server finish cold-starting.
+                        // Show an error page so the user isn't staring at a white screen.
+                        showErrorPage("Still Loading",
+                            "The page is taking longer than expected. This can happen on the first load of the day.");
                         progressBar.setVisibility(View.GONE);
                     }
-                }, PAGE_LOAD_TIMEOUT_MS);
+                };
+                mainHandler.postDelayed(pendingTimeoutRunnable, PAGE_LOAD_TIMEOUT_MS);
             }
 
             @Override
@@ -496,6 +509,11 @@ public class MainActivity extends Activity {
                 swipeRefreshLayout.setRefreshing(false);
                 isLoadingTimeout = true;
                 progressBar.setVisibility(View.GONE);
+
+                if (pendingTimeoutRunnable != null) {
+                    mainHandler.removeCallbacks(pendingTimeoutRunnable);
+                    pendingTimeoutRunnable = null;
+                }
 
                 view.evaluateJavascript(
                     "(function(){" +
@@ -516,6 +534,14 @@ public class MainActivity extends Activity {
                 swipeRefreshLayout.setRefreshing(false);
                 isLoadingTimeout = true;
                 progressBar.setVisibility(View.GONE);
+
+                if (pendingTimeoutRunnable != null) {
+                    mainHandler.removeCallbacks(pendingTimeoutRunnable);
+                    pendingTimeoutRunnable = null;
+                }
+
+                showErrorPage("Connection Error",
+                    "Failed to connect. Check your internet and try again.<br><small>" + description + "</small>");
             }
 
             @Override
@@ -529,25 +555,35 @@ public class MainActivity extends Activity {
 
             @Override
             public void onReceivedSslError(WebView view, SslErrorHandler handler, android.net.http.SslError error) {
-                StringBuilder msg = new StringBuilder("SSL Error: ");
+                // Don't silently cancel — show a user-facing error page instead
+                String msg;
                 switch (error.getPrimaryError()) {
                     case android.net.http.SslError.SSL_UNTRUSTED:
-                        msg.append("The certificate authority is not trusted.");
+                        msg = "The certificate authority is not trusted.";
                         break;
                     case android.net.http.SslError.SSL_EXPIRED:
-                        msg.append("The certificate has expired.");
+                        msg = "The certificate has expired.";
                         break;
                     case android.net.http.SslError.SSL_IDMISMATCH:
-                        msg.append("The certificate Hostname mismatch.");
+                        msg = "The certificate hostname does not match.";
                         break;
                     case android.net.http.SslError.SSL_NOTYETVALID:
-                        msg.append("The certificate is not yet valid.");
+                        msg = "The certificate is not yet valid.";
                         break;
                     default:
-                        msg.append("Unknown SSL error.");
+                        msg = "Unknown SSL error.";
                 }
-                Toast.makeText(MainActivity.this, msg.toString(), Toast.LENGTH_LONG).show();
                 handler.cancel();
+                swipeRefreshLayout.setRefreshing(false);
+                progressBar.setVisibility(View.GONE);
+
+                if (pendingTimeoutRunnable != null) {
+                    mainHandler.removeCallbacks(pendingTimeoutRunnable);
+                    pendingTimeoutRunnable = null;
+                }
+
+                showErrorPage("Security Error",
+                    msg + "<br><small>Please contact support if this persists.</small>");
             }
 
             @Override
@@ -788,6 +824,25 @@ public class MainActivity extends Activity {
                 return "{\"pending\": true}";
             }
         }, "AndroidBridge");
+    }
+
+    private void showErrorPage(String title, String message) {
+        String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1.0'>" +
+            "<style>body{margin:0;padding:32px;font-family:-apple-system,sans-serif;background:#020617;color:#f1f5f9;" +
+            "display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;box-sizing:border-box}" +
+            "h1{font-size:22px;margin:0 0 8px;font-weight:700}" +
+            "p{color:#64748b;font-size:14px;line-height:1.6;margin:0 0 24px;max-width:300px}" +
+            "button{background:#22d3ee;color:#020617;border:none;border-radius:12px;padding:14px 36px;font-size:15px;font-weight:600;cursor:pointer}" +
+            "</style></head><body>" +
+            "<h1>" + title + "</h1>" +
+            "<p>" + message + "</p>" +
+            "<button onclick='location.reload()'>Retry</button>" +
+            "</body></html>";
+        mainHandler.post(() -> {
+            if (webView != null) {
+                webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+            }
+        });
     }
 
     private void requestFreshLocation() {

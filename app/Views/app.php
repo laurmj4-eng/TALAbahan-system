@@ -88,6 +88,9 @@ if (!function_exists('vite_css')) {
     <link rel="manifest" href="<?= base_url('manifest.json') ?>">
     <meta name="theme-color" content="#020617">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
+    <meta name="csrf-name" content="<?= csrf_token() ?>">
+    <meta name="csrf-header" content="X-CSRF-TOKEN">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MJ Talabahan">
@@ -171,8 +174,8 @@ if (!function_exists('vite_css')) {
         var img=new Image();
         img.onload=function(){hideOffline();};
         img.onerror=function(){
-          // 3. Fallback: fetch HEAD request
-          fetch('/app-config.js?_nc='+Date.now(),{method:'HEAD',cache:'no-store',mode:'no-cors'})
+          // 3. Fallback: fetch HEAD request (no-cors removed — opaque responses always resolve)
+          fetch('/app-config.js?_nc='+Date.now(),{method:'HEAD',cache:'no-store'})
             .then(function(r){hideOffline();})
             .catch(function(){
               // Genuinely offline — show the screen
@@ -186,11 +189,8 @@ if (!function_exists('vite_css')) {
       window.addEventListener('offline',function(){probeNetwork();});
       window.addEventListener('online',function(){hideOffline();});
 
-      // On initial load: only probe if navigator.onLine is false
-      // (Android WebView commonly lies about this)
-      if(!navigator.onLine){
-        probeNetwork();
-      }
+      // On initial load: always probe because Android WebView lies about navigator.onLine
+      probeNetwork();
     })();
     </script>
 </body>
