@@ -368,6 +368,14 @@ class Auth extends BaseController
 
     public function logout()
     {
+        $userId = (int) session()->get('user_id');
+        if ($userId > 0) {
+            $tokenModel = new \App\Models\FcmTokenModel();
+            $tokenModel->where('user_id', $userId)
+                ->set(['last_connected' => '2000-01-01 00:00:00'])
+                ->update();
+        }
+
         session()->destroy();
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');

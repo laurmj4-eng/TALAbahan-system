@@ -56,10 +56,12 @@ axios.interceptors.response.use(response => {
   return response;
 });
 
-// Re-attempt FCM registration on every Inertia navigation
+// Re-attempt FCM registration on every Inertia navigation (only inside Android app)
 router.on('navigate', () => {
-  const { registerFcmToken } = useFcmToken();
-  registerFcmToken();
+  if (window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function') {
+    const { registerFcmToken } = useFcmToken();
+    registerFcmToken();
+  }
 });
 
 // Standardize the initialization process
@@ -113,8 +115,11 @@ function initInertia() {
         .mount(el);
 
       // Always attempt FCM registration (device can register without userId, linked later on login)
-      const { registerFcmTokenWithRetry } = useFcmToken();
-      registerFcmTokenWithRetry();
+      // Only inside the Android app
+      if (window.AndroidBridge && typeof window.AndroidBridge.getFcmToken === 'function') {
+        const { registerFcmTokenWithRetry } = useFcmToken();
+        registerFcmTokenWithRetry();
+      }
     },
   });
 }

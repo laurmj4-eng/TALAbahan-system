@@ -55,8 +55,9 @@ export function useFcmToken() {
     const token = getFcmToken();
     if (!token) {
       const info = getDeviceInfo();
-      console.log('[FCM] No token available yet (attempt ' + (registerAttempts + 1) + ') '
-        + 'bridge=' + info.bridgeAvailable + ' ua=<' + info.userAgent.slice(-30) + '>');
+      if (info.bridgeAvailable) {
+        console.log('[FCM] No token yet (attempt ' + (registerAttempts + 1) + ')');
+      }
       return false;
     }
 
