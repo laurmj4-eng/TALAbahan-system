@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -47,6 +48,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -617,8 +619,19 @@ public class MainActivity extends Activity {
 
             @JavascriptInterface
             public String getFcmToken() {
-                return getSharedPreferences("fcm_prefs", MODE_PRIVATE)
-                    .getString("fcm_token", "");
+                SharedPreferences prefs = getSharedPreferences("fcm_prefs", MODE_PRIVATE);
+                String cached = prefs.getString("fcm_token", "");
+                if (!cached.isEmpty()) {
+                    return cached;
+                }
+                // No cached token — actively request one from Firebase
+                FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            prefs.edit().putString("fcm_token", task.getResult()).apply();
+                        }
+                    });
+                return "";
             }
 
             @JavascriptInterface

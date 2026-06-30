@@ -4,8 +4,17 @@ export function useFcmToken() {
   const TOKEN_ENDPOINT = '/api/fcm/register';
   const TRUSTED_ENDPOINT = '/api/admin/fcm/toggle-trusted';
   let registerAttempts = 0;
-  const MAX_ATTEMPTS = 20;
+  const MAX_ATTEMPTS = 200;
   const RETRY_DELAY_MS = 3000;
+
+  // Reset attempts when returning to foreground
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && registerAttempts > 0) {
+        registerAttempts = Math.max(0, registerAttempts - 20);
+      }
+    });
+  }
 
   function isAndroidApp() {
     return navigator.userAgent.includes('TALAbahanAndroidApp');
@@ -22,7 +31,10 @@ export function useFcmToken() {
 
   async function registerFcmToken() {
     const token = getFcmToken();
-    if (!token) return false;
+    if (!token) {
+      console.log('[FCM] No token available yet (attempt ' + (registerAttempts + 1) + ')');
+      return false;
+    }
 
     const payload = {
       token,
@@ -38,6 +50,7 @@ export function useFcmToken() {
       const response = await axios.post(TOKEN_ENDPOINT, payload);
       if (response.data?.status === 'success') {
         console.log('[FCM] Token registered successfully');
+        registerAttempts = 0;
         return true;
       }
       console.warn('[FCM] Registration response:', response.data);

@@ -1,5 +1,6 @@
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
+import { router } from '@inertiajs/core';
 import axios from 'axios';
 import '../css/app.css';
 import '../css/recaptcha.css';
@@ -53,6 +54,14 @@ axios.interceptors.response.use(response => {
     if (meta) meta.content = newToken;
   }
   return response;
+});
+
+// Re-attempt FCM registration on every Inertia navigation if logged in
+router.on('navigate', () => {
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    const { registerFcmToken } = useFcmToken();
+    registerFcmToken();
+  }
 });
 
 // Standardize the initialization process
